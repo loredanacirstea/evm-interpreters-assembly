@@ -8,7 +8,6 @@
       return
     stop
     sub_0: assembly {
-          // free mem pointer
           0xc0
           0x40
           mstore
@@ -18,1140 +17,4282 @@
           0xa0
           mstore
 
-          tag_1
           calldatasize
+          0x00
+          0xc0
+          calldatacopy
+          0x01
+          calldatasize
+          add
+          0xc0
+          add
+          0x40
+          mstore
+          tag_1
+          0xc0
           tag_2
           jump	// in
         tag_1:
-          calldatasize
+          jump(tag_3)
+        tag_2:  // eval
           0x00
+          0xf8
+          0x02
+          exp
           dup3
-          calldatacopy
-          dup1
           mload
-          0x20
-          dup3
-          add
-          mload
-          0x40
+          div
+          0x01
           dup4
           add
-          mload
           swap3
           pop
-          tag_3
-          dup4
+          0x02
+          0x80
           dup3
+          lt
+          0x5f
+          dup4
+          gt
+          add
+          eq
+          iszero
+          tag_5
+          jumpi
+          0x5f
+          dup2
+          sub
+          0x08
+          dup2
+          mul
+          0x0100
+          sub
+          0x02
+          exp
           dup5
-          tag_4
-          jump	// in
-        tag_3:
-          swap3
+          mload
+          div
+          swap3 // replace value with new value
           pop
-          pop
-          pop
-          dup1
-          0x00
-          mstore
-          pop
-          0x20
-          0x00
-          return
-          jump(tag_5)
-        tag_4:
-          0x04
+          dup4  // dups data_ptr
+          // dup2  // dups size
+          // dup5  // dups data_ptr
+          add    // add with size
+          swap3  // replaces with new data_ptr
+          pop // pops old data_ptr
+          // swap1 // pops size from push if
+          // pop
+          // swap1 // swaps value with opcode, so it gets processed below
+          // swap3
+          // pop
+          // dup1
+          // dup5
+          // add
+          // swap4
+          // pop
+          // pop
+        tag_5:
+          //0x06
+          //swap2
+          //pop
+          0x10
           dup2
           mul
           0xa0
           mload
           add
-          swap1 // remove native function code; only args
+          swap1  // opcode first & remove
           pop
+          tag_2  // add return tag after operation
+          swap2  // swap with value
+          swap1  // swap value with position; now: data_ptr, tag_2, value, pos
+          jump // in
         tag_6:
-          jump	// out
-        tag_7:
-          0x00
-          0x40
-          mload
-          swap1
-          pop
-        tag_8:
-          swap1
-          jump	// out
-        tag_2:
-          0x00
-          0x40
-          mload
-          swap1
-          pop
-          dup2
-          dup2
-          add
-          0x40
-          mstore
-        tag_9:
-          swap2
-          swap1
+        tag_4:
           pop
           jump	// out
-        tag_5:
+        tag_3:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         // we keep 4 instructions per function, for easy pc calculation
         stop_00:  // 0x00
             stop  // the following is not executed
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         add_21:  // 0x01
+            pop
+            dup4
+            dup4
             add
-            dup2
+            swap4
+            pop
+            swap2
+            pop
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
         mul_21:  // 0x02
+            pop
+            dup4
+            dup4
             mul
-            dup2
+            swap4
+            pop
+            swap2
+            pop
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
         sub_21:  // 0x03
+            pop
+            dup4
+            dup4
             sub
-            dup2
+            swap4
+            pop
+            swap2
+            pop
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
         div_21:  // 0x04
+            pop
+            dup4
+            dup4
             div
-            dup2
+            swap4
+            pop
+            swap2
+            pop
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
         sdiv_21:  // 0x05
+            pop
+            dup4
+            dup4
             sdiv
-            dup2
+            swap4
+            pop
+            swap2
+            pop
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
         mod_21:  // 0x06
+            pop
+            dup4
+            dup4
             mod
-            dup2
+            swap4
+            pop
+            swap2
+            pop
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
         smod_21:  // 0x07
+            pop
+            dup4
+            dup4
             smod
-            dup2
+            swap4
+            pop
+            swap2
+            pop
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
         addmod_31:  // 0x08
+            pop
+            dup4
+            dup4
             addmod
-            dup2
+            swap4
+            pop
+            swap2
+            pop
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
         mulmod_31:  // 0x09
+            pop
+            dup4
+            dup4
             mulmod
-            dup2
+            swap4
+            pop
+            swap2
+            pop
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
         exp_21:  // 0x0a
+            pop
+            dup4
+            dup4
             exp
-            dup2
+            swap4
+            pop
+            swap2
+            pop
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
         signextend_21:  // 0x0b
+            pop
+            dup4
+            dup4
             signextend
-            dup2
+            swap4
+            pop
+            swap2
+            pop
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_1:  // 0x0c
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_2:  // 0x0d
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_3:  // 0x0e
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_4:  // 0x0f
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         lt_21:  // 0x10
+            pop
+            dup4
+            dup4
             lt
-            dup2
+            swap4
+            pop
+            swap2
+            pop
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
         gt_21:  // 0x11
+            pop
+            dup4
+            dup4
             gt
-            dup2
+            swap4
+            pop
+            swap2
+            pop
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
         slt_21:  // 0x12
+            pop
+            dup4
+            dup4
             slt
-            dup2
+            swap4
+            pop
+            swap2
+            pop
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
         sgt_21:  // 0x13
+            pop
+            dup4
+            dup4
             sgt
-            dup2
+            swap4
+            pop
+            swap2
+            pop
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
         eq_21:  // 0x14
+            pop
+            dup4
+            dup4
             eq
-            dup2
+            swap4
+            pop
+            swap2
+            pop
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
         iszero_11:  // 0x15
             iszero
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         and_21:  // 0x16
+            pop
+            dup4
+            dup4
             and
-            dup2
+            swap4
+            pop
+            swap2
+            pop
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
         or_21:  // 0x17
+            pop
+            dup4
+            dup4
             or
-            dup2
+            swap4
+            pop
+            swap2
+            pop
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
         xor_21:  // 0x18
+            pop
+            dup4
+            dup4
             xor
-            dup2
+            swap4
+            pop
+            swap2
+            pop
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
         not_11:  // 0x19
             not
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         byte_21:  // 0x1a
+            pop
+            dup4
+            dup4
             byte
-            dup2
+            swap4
+            pop
+            swap2
+            pop
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
         shl_21:  // 0x1b
-            shl
-            dup2
+            pop
+            dup4
+            dup4
+            stop // shl // TODO
+            swap4
+            pop
+            swap2
+            pop
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
         shr_21:  // 0x1c
-            shr
-            dup2
+            pop
+            dup4
+            dup4
+            stop // shr // TODO
+            swap4
+            pop
+            swap2
+            pop
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
         sar_21:  // 0x1d
-            sar
-            dup2
+            pop
+            dup4
+            dup4
+            stop // sar // TODO
+            swap4
+            pop
+            swap2
+            pop
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_5:  // 0x1e
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_6:  // 0x1f
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         sha3_21:  // 0x20
+            pop
+            dup4
+            dup4
             sha3
-            dup2
+            swap4
+            pop
+            swap2
+            pop
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_7:  // 0x21
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_8:  // 0x22
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_9:  // 0x23
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_9:  // 0x24
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_9:  // 0x25
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_9:  // 0x26
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_9:  // 0x27
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_9:  // 0x28
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_9:  // 0x29
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_9:  // 0x2a
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_9:  // 0x2b
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_9:  // 0x2c
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_9:  // 0x2d
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_9:  // 0x2e
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_9:  // 0x2f
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         address_01:  // 0x30
             address
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         balance_11:  // 0x31
             balance
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         origin_01:  // 0x32
             origin
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         caller_01:  // 0x33
             caller
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         callvalue_01:  // 0x34
             callvalue
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         calldataload_11:  // 0x35
             calldataload
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         calldatasize_01:  // 0x36
             calldatasize
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         calldatacopy_30:  // 0x37
             calldatacopy
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         codesize_01:  // 0x38
             codesize
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         codecopy_30:  // 0x39
             codecopy
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         gasprice_01:  // 0x3a
             gasprice
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         extcodesize_11:  // 0x3b
             extcodesize
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         extcodecopy_40:  // 0x3c
             extcodecopy
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         returndatasize_01:  // 0x3d
             returndatasize
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         returndatacopy_30:  // 0x3e
             returndatacopy
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_10:  // 0x3f
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         blockhash_11:  // 0x40
             blockhash
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         coinbase_01:  // 0x41
             coinbase
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         timestamp_01:  // 0x42
             timestamp
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         number_01:  // 0x43
             number
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         difficulty_01:  // 0x44
             difficulty
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         gaslimit_01:  // 0x45
             gaslimit
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_10:  // 0x46
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_11:  // 0x47
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_12:  // 0x48
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_13:  // 0x49
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_14:  // 0x4a
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_15:  // 0x4b
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_16:  // 0x4c
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_17:  // 0x4d
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_18:  // 0x4e
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_19:  // 0x4f
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         pop_00:  // 0x50
             pop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         mload_00:  // 0x51
             mload
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         mstore_00:  // 0x52
+            dup5
+            dup5
             mstore
-            dup2
+            pop
+            swap2
+            pop
+            swap2
+            pop
             jump
-        mstore_00:  // 0x53
-            mstore8
-            dup2
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+        mstore8_00:  // 0x53
+            dup5
+            dup5
+            mstore
+            pop
+            swap2
+            pop
+            swap2
+            pop
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         sload_00:  // 0x54
             sload
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         sstore_00:  // 0x55
             sstore
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         jump_00:  // 0x56
             jump
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         jumpi_00:  // 0x57
             jumpi
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         pc_00:  // 0x58
             pc
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         msize_00:  // 0x59
             msize
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         gas_00:  // 0x5a
             gas
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         jumpdest_00:  // 0x5b
             jumpdest
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_20:  // 0x5c
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_21:  // 0x5d
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_22:  // 0x5e
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_23:  // 0x5f
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         push1_01:  // 0x60
-            push1
-            dup2
+            swap2
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         push2_01:  // 0x61
-            push2
-            dup2
+            swap2
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         push3_01:  // 0x62
-            push3
-            dup2
+            swap2
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         push4_01:  // 0x63
-            push4
-            dup2
+            swap2
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         push5_01:  // 0x64
-            push5
-            dup2
+            swap2
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         push6_01:  // 0x65
-            push6
-            dup2
+            swap2
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         push7_01:  // 0x66
-            push7
-            dup2
+            swap2
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         push8_01:  // 0x67
-            push8
-            dup2
+            swap2
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         push9_01:  // 0x68
-            push9
-            dup2
+            swap2
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         push10_01:  // 0x69
-            push10
-            dup2
+            swap2
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         push11_01:  // 0x6a
-            push11
-            dup2
+            swap2
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         push12_01:  // 0x6b
-            push12
-            dup2
+            swap2
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         push13_01:  // 0x6c
-            push13
-            dup2
+            swap2
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         push14_01:  // 0x6d
-            push14
-            dup2
+            swap2
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         push15_01:  // 0x6e
-            push15
-            dup2
+            swap2
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         push16_01:  // 0x6f
-            push16
-            dup2
+            swap2
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         push17_01:  // 0x70
-            push17
-            dup2
+            swap2
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         push18_01:  // 0x71
-            push18
-            dup2
+            swap2
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         push19_01:  // 0x72
-            push19
-            dup2
+            swap2
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         push20_01:  // 0x73
-            push20
-            dup2
+            swap2
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         push21_01:  // 0x74
-            push21
-            dup2
+            swap2
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         push22_01:  // 0x75
-            push22
-            dup2
+            swap2
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         push23_01:  // 0x76
-            push23
-            dup2
+            swap2
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         push24_01:  // 0x77
-            push24
-            dup2
+            swap2
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         push25_01:  // 0x78
-            push25
-            dup2
+            swap2
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         push26_01:  // 0x79
-            push26
-            dup2
+            swap2
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         push27_01:  // 0x7a
-            push27
-            dup2
+            swap2
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         push28_01:  // 0x7b
-            push28
-            dup2
+            swap2
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         push29_01:  // 0x7c
-            push29
-            dup2
+            swap2
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         push30_01:  // 0x7d
-            push30
-            dup2
+            swap2
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         push31_01:  // 0x7e
-            push31
-            dup2
+            swap2
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         push32_01:  // 0x7f
-            push32
-            dup2
+            swap2
+            swap1
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         dup1_00:  // 0x80
             dup1
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         dup2_00:  // 0x81
             dup2
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         dup3_00:  // 0x82
             dup3
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         dup4_00:  // 0x83
             dup4
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         dup5_00:  // 0x84
             dup5
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         dup6_00:  // 0x85
             dup6
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         dup7_00:  // 0x86
             dup7
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         dup8_00:  // 0x87
             dup8
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         dup9_00:  // 0x88
             dup9
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         dup10_00:  // 0x89
             dup10
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         dup11_00:  // 0x8a
             dup11
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         dup12_00:  // 0x8b
             dup12
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         dup13_00:  // 0x8c
             dup13
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         dup14_00:  // 0x8d
             dup14
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         dup15_00:  // 0x8e
             dup15
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         dup16_00:  // 0x8f
             dup16
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         swap1_00:  // 0x90
             swap1
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         swap2_00:  // 0x91
             swap2
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         swap3_00:  // 0x92
             swap3
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         swap4_00:  // 0x93
             swap4
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         swap5_00:  // 0x94
             swap5
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         swap6_00:  // 0x95
             swap6
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         swap7_00:  // 0x96
             swap7
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         swap8_00:  // 0x97
             swap8
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         swap9_00:  // 0x98
             swap9
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         swap10_00:  // 0x99
             swap10
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         swap11_00:  // 0x9a
             swap11
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         swap12_00:  // 0x9b
             swap12
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         swap13_00:  // 0x9c
             swap13
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         swap14_00:  // 0x9d
             swap14
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         swap15_00:  // 0x9e
             swap15
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         swap16_00:  // 0x9f
             swap16
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         log0_20:  // 0xa0
             log0
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         log1_30:  // 0xa1
             log1
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         log2_40:  // 0xa2
             log2
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         log3_50:  // 0xa3
             log3
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         log4_60:  // 0xa4
             log4
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_24:  // 0xa5
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_25:  // 0xa6
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_26:  // 0xa7
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_27:  // 0xa8
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_28:  // 0xa9
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_29:  // 0xaa
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_30:  // 0xab
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_31:  // 0xac
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_32:  // 0xad
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_33:  // 0xae
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_34:  // 0xaf
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_36:  // 0xb0
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_37:  // 0xb1
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_38:  // 0xb2
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_39:  // 0xb3
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_40:  // 0xb4
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_41:  // 0xb5
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_42:  // 0xb6
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_43:  // 0xb7
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_44:  // 0xb8
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_45:  // 0xb9
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_46:  // 0xba
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_47:  // 0xbb
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_48:  // 0xbc
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_49:  // 0xbd
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_50:  // 0xbe
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_51:  // 0xbf
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_52:  // 0xc0
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_53:  // 0xc1
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_54:  // 0xc2
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_55:  // 0xc3
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_56:  // 0xc4
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_57:  // 0xc5
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_58:  // 0xc6
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_59:  // 0xc7
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_60:  // 0xc8
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_61:  // 0xc9
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_62:  // 0xca
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_63:  // 0xcb
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_64:  // 0xcc
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_65:  // 0xcd
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_66:  // 0xce
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_67:  // 0xcf
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_68:  // 0xd0
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_69:  // 0xd1
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_70:  // 0xd2
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_71:  // 0xd3
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_72:  // 0xd4
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_73:  // 0xd5
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_74:  // 0xd6
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_75:  // 0xd7
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_76:  // 0xd8
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_77:  // 0xd9
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_78:  // 0xda
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_79:  // 0xdb
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_80:  // 0xdc
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_81:  // 0xdd
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_82:  // 0xde
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_83:  // 0xdf
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_84:  // 0xe0
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_85:  // 0xe1
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_86:  // 0xe2
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_87:  // 0xe3
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_88:  // 0xe4
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_89:  // 0xe5
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_90:  // 0xe6
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_91:  // 0xe7
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_92:  // 0xe8
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_93:  // 0xe9
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_94:  // 0xea
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_95:  // 0xeb
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_96:  // 0xec
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_97:  // 0xed
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_98:  // 0xee
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_99:  // 0xef
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         create_31:  // 0xf0
             create
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         call_71:  // 0xf1
             call
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         callcode_71:  // 0xf2
             callcode
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         return_20:  // 0xf3
+            dup5
+            dup5
             return
-            dup2
-            jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         delegatecall_61:  // 0xf4
             delegatecall
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         create2_41:  // 0xf5
-            create2
+            stop// create2 // TODO
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_100:  // 0xf6
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_101:  // 0xf7
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_102:  // 0xf8
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_103:  // 0xf9
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         staticcall_61:  // 0xfa
             staticcall
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_104:  // 0xfb
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_105:  // 0xfc ? TXEXECGAS
-            invalid
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         revert_20:  // 0xfd
             revert
             dup2
             jump
-        unused_106:  // 0xfe
-            invalid
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+        unused_106:  // 0xfe - INVALID
+            stop
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         selfdestruct_10:  // 0xff
-            selfdestruct
+            stop // selfdestruct // TODO
             dup2
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
     }
-
-
-// stop
-// 0x0000000000000000000000000000000000000000000000000000000000000000
-
-// add
-// 0x000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000070000000000000000000000000000000000000000000000000000000000000003
-
-// mul
-0x000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000070000000000000000000000000000000000000000000000000000000000000003
-
-// mod
-// 0x0000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000b0000000000000000000000000000000000000000000000000000000000000003
-
-//smod
-// 0x0000000000000000000000000000000000000000000000000000000000000007000000000000000000000000000000000000000000000000000000000000000b0000000000000000000000000000000000000000000000000000000000000003
-// 2
-
-//addmod
-// 0x0000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000050000000000000000000000000000000000000000000000000000000000000004
-// 3
-
-
-// iszero
-// 0x00000000000000000000000000000000000000000000000000000000000000150000000000000000000000000000000000000000000000000000000000000007
-
-
-
-
-
-
-
 
