@@ -7,25 +7,28 @@ object "RecursionStackOverflow" {
     code {
         // freeMemPtr
         mstore(0x40, 0xc0) // 192
-        let nativeFPtr := allocate(392)
-        mstore(0x20, nativeFPtr)
 
-        let code := 0x01
-        let a := 10
-        let b := 15
+        let _calldata := allocate(calldatasize())
+        calldatacopy(_calldata, 0, calldatasize())
 
-        // somehow jump to code
-        // nativeFPtr + code*16+8
+        // here add tags for native functions
+        // mstore(0xa0, first function tag for stop)
 
+        // code * 4 - next tag
+
+        let code := mload(_calldata)
+        let a := mload(add(_calldata, 32))
+        let b := mload(add(_calldata, 64))
         let res := runFromPos(code, a, b)
 
         mstore(0, res)
         return (0, 32)
 
         function runFromPos(_code, _a, _b) -> _result {
-            // let pos := mload(add(mload(0x20), add(mul(_code, 16), 8)))
-            let pos := mul(_code, 32)
-            _result := add(_a, _b)
+            // mload(0xa0) - start function tag
+            // 4: 4 instructions / function
+            let pos := add(mload(0xa0), mul(_code, 4))
+            _result := pos
         }
 
         function freeMemPtr() -> ptr {
