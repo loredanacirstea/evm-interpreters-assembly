@@ -1480,10 +1480,10 @@
             stop
         pop_00:  // 0x50
             pop
-            dup2
+            swap2
+            pop
+            swap1
             jump
-            stop
-            stop
             stop
             stop
             stop
