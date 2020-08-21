@@ -2246,12 +2246,12 @@
             stop
             stop
             stop
-        dup1_00:  // 0x80
-            dup1
-            dup2
+        dup1_00:  // 0x80  // !== dup2
+            pop
+            dup3
+            swap2
+            swap1
             jump
-            stop
-            stop
             stop
             stop
             stop
@@ -2263,11 +2263,11 @@
             stop
             stop
         dup2_00:  // 0x81
-            dup2
-            dup2
+            pop
+            dup4
+            swap2
+            swap1
             jump
-            stop
-            stop
             stop
             stop
             stop
@@ -2279,11 +2279,11 @@
             stop
             stop
         dup3_00:  // 0x82
-            dup3
-            dup2
+            pop
+            dup5
+            swap2
+            swap1
             jump
-            stop
-            stop
             stop
             stop
             stop
@@ -2295,11 +2295,11 @@
             stop
             stop
         dup4_00:  // 0x83
-            dup4
-            dup2
+            pop
+            dup6
+            swap2
+            swap1
             jump
-            stop
-            stop
             stop
             stop
             stop
@@ -2311,11 +2311,11 @@
             stop
             stop
         dup5_00:  // 0x84
-            dup5
-            dup2
+            pop
+            dup7
+            swap2
+            swap1
             jump
-            stop
-            stop
             stop
             stop
             stop
@@ -2327,11 +2327,11 @@
             stop
             stop
         dup6_00:  // 0x85
-            dup6
-            dup2
+            pop
+            dup8
+            swap2
+            swap1
             jump
-            stop
-            stop
             stop
             stop
             stop
@@ -2343,11 +2343,11 @@
             stop
             stop
         dup7_00:  // 0x86
-            dup7
-            dup2
+            pop
+            dup9
+            swap2
+            swap1
             jump
-            stop
-            stop
             stop
             stop
             stop
@@ -2359,11 +2359,11 @@
             stop
             stop
         dup8_00:  // 0x87
-            dup8
-            dup2
+            pop
+            dup10
+            swap2
+            swap1
             jump
-            stop
-            stop
             stop
             stop
             stop
@@ -2375,11 +2375,11 @@
             stop
             stop
         dup9_00:  // 0x88
-            dup9
-            dup2
+            pop
+            dup11
+            swap2
+            swap1
             jump
-            stop
-            stop
             stop
             stop
             stop
@@ -2391,11 +2391,11 @@
             stop
             stop
         dup10_00:  // 0x89
-            dup10
-            dup2
+            pop
+            dup12
+            swap2
+            swap1
             jump
-            stop
-            stop
             stop
             stop
             stop
@@ -2407,11 +2407,11 @@
             stop
             stop
         dup11_00:  // 0x8a
-            dup11
-            dup2
+            pop
+            dup13
+            swap2
+            swap1
             jump
-            stop
-            stop
             stop
             stop
             stop
@@ -2423,11 +2423,11 @@
             stop
             stop
         dup12_00:  // 0x8b
-            dup12
-            dup2
+            pop
+            dup14
+            swap2
+            swap1
             jump
-            stop
-            stop
             stop
             stop
             stop
@@ -2439,11 +2439,11 @@
             stop
             stop
         dup13_00:  // 0x8c
-            dup13
-            dup2
+            pop
+            dup15
+            swap2
+            swap1
             jump
-            stop
-            stop
             stop
             stop
             stop
@@ -2455,11 +2455,11 @@
             stop
             stop
         dup14_00:  // 0x8d
-            dup14
-            dup2
+            pop
+            dup16
+            swap2
+            swap1
             jump
-            stop
-            stop
             stop
             stop
             stop
@@ -2471,11 +2471,11 @@
             stop
             stop
         dup15_00:  // 0x8e
-            dup15
-            dup2
+            pop
+            stop // dup17 // TODO
+            swap2
+            swap1
             jump
-            stop
-            stop
             stop
             stop
             stop
@@ -2487,11 +2487,11 @@
             stop
             stop
         dup16_00:  // 0x8f
-            dup16
-            dup2
+            pop
+            stop // dup18 // TODO
+            swap2
+            swap1
             jump
-            stop
-            stop
             stop
             stop
             stop
