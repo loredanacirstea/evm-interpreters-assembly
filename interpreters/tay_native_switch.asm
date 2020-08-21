@@ -535,12 +535,12 @@
             stop
             stop
         iszero_11:  // 0x15
+            pop
+            dup3
             iszero
-            dup2
+            swap3
+            pop
             jump
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -599,12 +599,12 @@
             stop
             stop
         not_11:  // 0x19
+            pop
+            dup3
             not
-            dup2
+            swap3
+            pop
             jump
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -983,12 +983,12 @@
             stop
             stop
         balance_11:  // 0x31
+            pop
+            dup3
             balance
-            dup2
+            swap3
+            pop
             jump
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -1047,12 +1047,12 @@
             stop
             stop
         calldataload_11:  // 0x35
+            pop
+            dup3
             calldataload
-            dup2
+            swap3
+            pop
             jump
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -1143,12 +1143,12 @@
             stop
             stop
         extcodesize_11:  // 0x3b
+            pop
+            dup3
             extcodesize
-            dup2
+            swap3
+            pop
             jump
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -1206,13 +1206,13 @@
             stop
             stop
             stop
-        unused_10:  // 0x3f
-            stop
-            dup2
+        extcodehash_11:  // 0x3f
+            pop
+            dup3
+            stop // extcodehash // TODO
+            swap3
+            pop
             jump
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -1223,12 +1223,12 @@
             stop
             stop
         blockhash_11:  // 0x40
+            pop
+            dup3
             blockhash
-            dup2
+            swap3
+            pop
             jump
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -1494,13 +1494,13 @@
             stop
             stop
             stop
-        mload_00:  // 0x51
+        mload_11:  // 0x51
+            pop
+            dup3
             mload
-            dup2
+            swap3
+            pop
             jump
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -1542,13 +1542,13 @@
             stop
             stop
             stop
-        sload_00:  // 0x54
+        sload_11:  // 0x54
+            pop
+            dup3
             sload
-            dup2
+            swap3
+            pop
             jump
-            stop
-            stop
-            stop
             stop
             stop
             stop
