@@ -89,7 +89,7 @@
           dup3
           0xe0
           mstore
-          0x10
+          0x08
           dup2
           mul
           0xa0
@@ -206,14 +206,6 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         add_21:  // 0x01
             pop
             add
@@ -221,14 +213,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         mul_21:  // 0x02
             pop
@@ -238,14 +222,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         sub_21:  // 0x03
             pop
             sub
@@ -253,14 +229,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         div_21:  // 0x04
             pop
@@ -270,14 +238,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         sdiv_21:  // 0x05
             pop
             sdiv
@@ -285,14 +245,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         mod_21:  // 0x06
             pop
@@ -302,14 +254,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         smod_21:  // 0x07
             pop
             smod
@@ -317,14 +261,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         addmod_31:  // 0x08
             pop
@@ -334,14 +270,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         mulmod_31:  // 0x09
             pop
             mulmod
@@ -349,14 +277,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         exp_21:  // 0x0a
             pop
@@ -366,14 +286,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         signextend_21:  // 0x0b
             pop
             signextend
@@ -382,26 +294,10 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_1:  // 0x0c
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -414,26 +310,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_3:  // 0x0e
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -446,14 +326,6 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         lt_21:  // 0x10
             pop
             lt
@@ -461,14 +333,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         gt_21:  // 0x11
             pop
@@ -478,14 +342,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         slt_21:  // 0x12
             pop
             slt
@@ -493,14 +349,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         sgt_21:  // 0x13
             pop
@@ -510,14 +358,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         eq_21:  // 0x14
             pop
             eq
@@ -525,14 +365,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         iszero_11:  // 0x15
             pop
@@ -542,14 +374,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         and_21:  // 0x16
             pop
             and
@@ -557,14 +381,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         or_21:  // 0x17
             pop
@@ -574,14 +390,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         xor_21:  // 0x18
             pop
             xor
@@ -589,14 +397,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         not_11:  // 0x19
             pop
@@ -606,14 +406,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         byte_21:  // 0x1a
             pop
             byte
@@ -621,14 +413,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         shl_21:  // 0x1b
             pop
@@ -638,14 +422,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         shr_21:  // 0x1c
             pop
             stop // shr // TODO
@@ -653,14 +429,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         sar_21:  // 0x1d
             pop
@@ -670,26 +438,10 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_5:  // 0x1e
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -702,14 +454,6 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         sha3_21:  // 0x20
             pop
             sha3
@@ -718,26 +462,10 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_7:  // 0x21
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -750,26 +478,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_9:  // 0x23
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -782,26 +494,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_9:  // 0x25
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -814,26 +510,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_9:  // 0x27
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -846,26 +526,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_9:  // 0x29
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -878,26 +542,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_9:  // 0x2b
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -910,26 +558,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_9:  // 0x2d
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -942,26 +574,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_9:  // 0x2f
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -974,14 +590,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         balance_11:  // 0x31
             pop
             balance
@@ -989,14 +597,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         origin_01:  // 0x32
             pop
@@ -1006,14 +606,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         caller_01:  // 0x33
             pop
             caller
@@ -1021,14 +613,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         callvalue_01:  // 0x34
             pop
@@ -1038,14 +622,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         calldataload_11:  // 0x35
             pop
             calldataload
@@ -1053,14 +629,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         calldatasize_01:  // 0x36
             pop
@@ -1070,14 +638,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         calldatacopy_30:  // 0x37
             pop
             calldatacopy
@@ -1085,14 +645,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         codesize_01:  // 0x38
             pop
@@ -1102,14 +654,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         codecopy_30:  // 0x39
             pop
             codecopy
@@ -1117,14 +661,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         gasprice_01:  // 0x3a
             pop
@@ -1134,14 +670,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         extcodesize_11:  // 0x3b
             pop
             extcodesize
@@ -1149,14 +677,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         extcodecopy_40:  // 0x3c
             pop
@@ -1166,14 +686,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         returndatasize_01:  // 0x3d
             pop
             returndatasize
@@ -1181,14 +693,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         returndatacopy_30:  // 0x3e
             pop
@@ -1198,14 +702,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         extcodehash_11:  // 0x3f
             pop
             stop // extcodehash // TODO
@@ -1213,14 +709,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         blockhash_11:  // 0x40
             pop
@@ -1230,14 +718,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         coinbase_01:  // 0x41
             pop
             coinbase
@@ -1245,14 +725,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         timestamp_01:  // 0x42
             pop
@@ -1262,14 +734,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         number_01:  // 0x43
             pop
             number
@@ -1277,14 +741,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         difficulty_01:  // 0x44
             pop
@@ -1294,14 +750,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         gaslimit_01:  // 0x45
             pop
             gaslimit
@@ -1309,14 +757,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         chainid_01:  // 0x46
             pop
@@ -1326,14 +766,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         selfbalance_01:  // 0x47
             pop
             stop // selfbalance // TODO
@@ -1342,26 +774,10 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_12:  // 0x48
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -1374,26 +790,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_14:  // 0x4a
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -1406,26 +806,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_16:  // 0x4c
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -1438,26 +822,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_18:  // 0x4e
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -1470,14 +838,6 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         pop_00:  // 0x50
             pop
             pop
@@ -1485,14 +845,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         mload_11:  // 0x51
             pop
@@ -1502,14 +854,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         mstore_20:  // 0x52
             pop
             mstore
@@ -1517,14 +861,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         mstore8_20:  // 0x53
             pop
@@ -1534,14 +870,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         sload_11:  // 0x54
             pop
             sload
@@ -1549,14 +877,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         sstore_20:  // 0x55
             pop
@@ -1566,26 +886,10 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         jump_10:  // 0x56  // v1 (tag), v0, tag_2, data_ptr
             jump
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -1598,14 +902,6 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         pc_01:  // 0x58
             pop
             pc
@@ -1613,14 +909,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         msize_01:  // 0x59
             pop
@@ -1630,14 +918,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         gas_01:  // 0x5a
             pop
             gas
@@ -1646,26 +926,10 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         jumpdest_00:  // 0x5b
             jumpdest
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -1678,26 +942,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_21:  // 0x5d
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -1710,26 +958,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_23:  // 0x5f
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -1742,27 +974,11 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         push2_01:  // 0x61
             0xc0
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -1774,27 +990,11 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         push4_01:  // 0x63
             0xc0
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -1806,27 +1006,11 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         push6_01:  // 0x65
             0xc0
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -1838,27 +1022,11 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         push8_01:  // 0x67
             0xc0
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -1870,27 +1038,11 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         push10_01:  // 0x69
             0xc0
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -1902,27 +1054,11 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         push12_01:  // 0x6b
             0xc0
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -1934,27 +1070,11 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         push14_01:  // 0x6d
             0xc0
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -1966,27 +1086,11 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         push16_01:  // 0x6f
             0xc0
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -1998,27 +1102,11 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         push18_01:  // 0x71
             0xc0
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -2030,27 +1118,11 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         push20_01:  // 0x73
             0xc0
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -2062,27 +1134,11 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         push22_01:  // 0x75
             0xc0
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -2094,27 +1150,11 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         push24_01:  // 0x77
             0xc0
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -2126,27 +1166,11 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         push26_01:  // 0x79
             0xc0
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -2158,27 +1182,11 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         push28_01:  // 0x7b
             0xc0
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -2190,27 +1198,11 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         push30_01:  // 0x7d
             0xc0
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -2222,27 +1214,11 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         push32_01:  // 0x7f
             0xc0
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -2254,14 +1230,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         dup2_00:  // 0x81
             pop
             dup2
@@ -2269,14 +1237,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         dup3_00:  // 0x82
             pop
@@ -2286,14 +1246,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         dup4_00:  // 0x83
             pop
             dup4
@@ -2301,14 +1253,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         dup5_00:  // 0x84
             pop
@@ -2318,14 +1262,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         dup6_00:  // 0x85
             pop
             dup6
@@ -2333,14 +1269,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         dup7_00:  // 0x86
             pop
@@ -2350,14 +1278,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         dup8_00:  // 0x87
             pop
             dup8
@@ -2365,14 +1285,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         dup9_00:  // 0x88
             pop
@@ -2382,14 +1294,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         dup10_00:  // 0x89
             pop
             dup10
@@ -2397,14 +1301,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         dup11_00:  // 0x8a
             pop
@@ -2414,14 +1310,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         dup12_00:  // 0x8b
             pop
             dup12
@@ -2429,14 +1317,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         dup13_00:  // 0x8c
             pop
@@ -2446,14 +1326,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         dup14_00:  // 0x8d
             pop
             dup14
@@ -2461,14 +1333,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         dup15_00:  // 0x8e
             pop
@@ -2478,14 +1342,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         dup16_00:  // 0x8f
             pop
             dup16
@@ -2493,14 +1349,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         swap1_00:  // 0x90
             pop
@@ -2510,14 +1358,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         swap2_00:  // 0x91
             pop
             swap2
@@ -2525,14 +1365,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         swap3_00:  // 0x92
             pop
@@ -2542,14 +1374,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         swap4_00:  // 0x93
             pop
             swap4
@@ -2557,14 +1381,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         swap5_00:  // 0x94
             pop
@@ -2574,14 +1390,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         swap6_00:  // 0x95
             pop
             swap6
@@ -2589,14 +1397,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         swap7_00:  // 0x96
             pop
@@ -2606,14 +1406,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         swap8_00:  // 0x97
             pop
             swap8
@@ -2621,14 +1413,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         swap9_00:  // 0x98
             pop
@@ -2638,14 +1422,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         swap10_00:  // 0x99
             pop
             swap10
@@ -2653,14 +1429,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         swap11_00:  // 0x9a
             pop
@@ -2670,14 +1438,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         swap12_00:  // 0x9b
             pop
             swap12
@@ -2685,14 +1445,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         swap13_00:  // 0x9c
             pop
@@ -2702,14 +1454,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         swap14_00:  // 0x9d
             pop
             swap14
@@ -2717,14 +1461,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         swap15_00:  // 0x9e
             pop
@@ -2734,14 +1470,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         swap16_00:  // 0x9f
             pop
             swap16
@@ -2749,14 +1477,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         log0_20:  // 0xa0
             pop
@@ -2766,14 +1486,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         log1_30:  // 0xa1
             pop
             log1
@@ -2781,14 +1493,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         log2_40:  // 0xa2
             pop
@@ -2798,14 +1502,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         log3_50:  // 0xa3
             pop
             log3
@@ -2813,14 +1509,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         log4_60:  // 0xa4
             pop
@@ -2830,26 +1518,10 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_24:  // 0xa5
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -2862,26 +1534,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_26:  // 0xa7
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -2894,26 +1550,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_28:  // 0xa9
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -2926,26 +1566,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_30:  // 0xab
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -2958,26 +1582,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_32:  // 0xad
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -2990,26 +1598,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_34:  // 0xaf
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -3022,26 +1614,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_37:  // 0xb1
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -3054,26 +1630,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_39:  // 0xb3
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -3086,26 +1646,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_41:  // 0xb5
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -3118,26 +1662,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_43:  // 0xb7
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -3150,26 +1678,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_45:  // 0xb9
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -3182,26 +1694,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_47:  // 0xbb
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -3214,26 +1710,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_49:  // 0xbd
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -3246,26 +1726,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_51:  // 0xbf
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -3278,26 +1742,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_53:  // 0xc1
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -3310,26 +1758,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_55:  // 0xc3
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -3342,26 +1774,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_57:  // 0xc5
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -3374,26 +1790,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_59:  // 0xc7
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -3406,26 +1806,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_61:  // 0xc9
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -3438,26 +1822,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_63:  // 0xcb
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -3470,26 +1838,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_65:  // 0xcd
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -3502,26 +1854,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_67:  // 0xcf
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -3534,26 +1870,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_69:  // 0xd1
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -3566,26 +1886,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_71:  // 0xd3
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -3598,26 +1902,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_73:  // 0xd5
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -3630,26 +1918,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_75:  // 0xd7
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -3662,26 +1934,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_77:  // 0xd9
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -3694,26 +1950,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_79:  // 0xdb
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -3726,26 +1966,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_81:  // 0xdd
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -3758,26 +1982,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_83:  // 0xdf
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -3790,26 +1998,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_85:  // 0xe1
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -3822,26 +2014,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_87:  // 0xe3
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -3854,26 +2030,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_89:  // 0xe5
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -3886,26 +2046,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_91:  // 0xe7
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -3918,26 +2062,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_93:  // 0xe9
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -3950,26 +2078,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_95:  // 0xeb
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -3982,26 +2094,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_97:  // 0xed
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -4014,26 +2110,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_99:  // 0xef
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -4046,14 +2126,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         call_71:  // 0xf1
             pop
             call
@@ -4061,14 +2133,6 @@
             // push
             mload
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
         callcode_71:  // 0xf2
             pop
@@ -4078,25 +2142,9 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         return_20:  // 0xf3
             pop
             return
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -4110,14 +2158,6 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         create2_41:  // 0xf5
             pop
             stop // create2 // TODO
@@ -4126,26 +2166,10 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_100:  // 0xf6
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -4158,26 +2182,10 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_102:  // 0xf8
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -4190,14 +2198,6 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         staticcall_61:  // 0xfa
             pop
             staticcall
@@ -4206,26 +2206,10 @@
             mload
             jump
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_104:  // 0xfb
             stop
             dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -4238,25 +2222,9 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         revert_20:  // 0xfd
             pop
             revert
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -4270,25 +2238,9 @@
             stop
             stop
             stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         selfdestruct_10:  // 0xff
             pop
             stop // selfdestruct // TODO
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
