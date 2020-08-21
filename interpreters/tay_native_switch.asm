@@ -328,32 +328,32 @@
             stop
         addmod_31:  // 0x08
             pop
-            dup4
-            dup4
-            addmod
+            swap1
             swap4
-            pop
+            swap1
+            swap3
+            swap1
             swap2
-            pop
+            addmod
+            swap2
             swap1
             jump
-            stop
             stop
             stop
             stop
             stop
         mulmod_31:  // 0x09
             pop
-            dup4
-            dup4
-            mulmod
+            swap1
             swap4
-            pop
+            swap1
+            swap3
+            swap1
             swap2
-            pop
+            mulmod
+            swap2
             swap1
             jump
-            stop
             stop
             stop
             stop
@@ -4039,17 +4039,17 @@
             stop
             stop
         create_31:  // 0xf0
+            pop
+            swap1
+            swap4
+            swap1
+            swap3
+            swap1
+            swap2
             create
-            dup2
+            swap2
+            swap1
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
