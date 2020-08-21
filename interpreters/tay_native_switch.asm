@@ -2759,15 +2759,15 @@
             stop
             stop
         log0_20:  // 0xa0
-            dup5
-            dup5
+            pop
             log0
-            pop
-            swap2
-            pop
-            swap2
-            pop
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
             stop
             stop
             stop
@@ -4247,9 +4247,9 @@
             stop
             stop
         revert_20:  // 0xfd
-            dup5
-            dup5
+            pop
             revert
+            stop
             stop
             stop
             stop
@@ -4280,8 +4280,8 @@
             stop
         selfdestruct_10:  // 0xff
             stop // selfdestruct // TODO
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
