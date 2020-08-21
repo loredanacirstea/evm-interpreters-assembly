@@ -2807,37 +2807,37 @@
             stop
             stop
         log3_50:  // 0xa3
+            pop
+            swap1
+            swap6
+            swap1
+            swap5
+            swap1
+            swap4
+            swap1
+            swap3
+            swap1
+            swap2
             log3
-            dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
         log4_60:  // 0xa4
+            pop
+            swap1
+            swap7
+            swap1
+            swap6
+            swap1
+            swap5
+            swap1
+            swap4
+            swap1
+            swap3
+            swap1
+            swap2
             log4
-            dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         unused_24:  // 0xa5
             stop
             dup2
@@ -4103,21 +4103,21 @@
             stop
             stop
         delegatecall_61:  // 0xf4
-            delegatecall
-            dup2
+            pop
+            swap1
+            swap7
+            swap1
+            swap6
+            swap1
+            swap5
+            swap1
+            swap4
+            swap1
+            swap3
+            swap1
+            swap2
+            stop // delegatecall // TODO not enough instructions
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
         create2_41:  // 0xf5
             stop// create2 // TODO
             dup2
