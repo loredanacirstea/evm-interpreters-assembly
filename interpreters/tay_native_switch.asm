@@ -1159,17 +1159,17 @@
             stop
             stop
         extcodecopy_40:  // 0x3c
+            pop
+            swap1
+            swap5
+            swap1
+            swap4
+            swap1
+            swap3
+            swap1
+            swap2
             extcodecopy
-            dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -2791,17 +2791,17 @@
             stop
             stop
         log2_40:  // 0xa2
+            pop
+            swap1
+            swap5
+            swap1
+            swap4
+            swap1
+            swap3
+            swap1
+            swap2
             log2
-            dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
