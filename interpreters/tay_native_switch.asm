@@ -4119,19 +4119,19 @@
             stop // delegatecall // TODO not enough instructions
             jump
         create2_41:  // 0xf5
-            stop// create2 // TODO
-            dup2
+            pop
+            swap1
+            swap5
+            swap1
+            swap4
+            swap1
+            swap3
+            swap1
+            swap2
+            stop // create2 // TODO
+            swap2
+            swap1
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
         unused_100:  // 0xf6
