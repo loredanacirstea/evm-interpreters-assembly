@@ -8,8 +8,9 @@
       return
     stop
     sub_0: assembly {
+          // eval tag value tag_2
+          tag_2
           0xc0
-          0x40
           mstore
 
           // start tag value - native functions
@@ -17,24 +18,30 @@
           0xa0
           mstore
 
+          // current data_ptr
+          0x0100
+          0xe0
+          mstore
+
           calldatasize
           0x00
-          0xc0
+          0x0100
           calldatacopy
           0x01
           calldatasize
           add
-          0xc0
+          0x0100
           add
           0x40
           mstore
           tag_1
-          0xc0
           tag_2
           jump	// in
         tag_1:
           jump(tag_3)
         tag_2:  // eval
+          0xe0
+          mload
           0x00
           0xf8
           0x02
@@ -75,26 +82,13 @@
           swap3 // replace value with new value
           pop
           dup4  // dups data_ptr
-          // dup2  // dups size
-          // dup5  // dups data_ptr
           add    // add with size
           swap3  // replaces with new data_ptr
           pop // pops old data_ptr
-          // swap1 // pops size from push if
-          // pop
-          // swap1 // swaps value with opcode, so it gets processed below
-          // swap3
-          // pop
-          // dup1
-          // dup5
-          // add
-          // swap4
-          // pop
-          // pop
         tag_5:
-          //0x06
-          //swap2
-          //pop
+          dup3
+          0xe0
+          mstore
           0x10
           dup2
           mul
@@ -103,15 +97,21 @@
           add
           swap1  // opcode first & remove
           pop
-          tag_2  // add return tag after operation
-          swap2  // swap with value
-          swap1  // swap value with position; now: data_ptr, tag_2, value, pos
+          swap1 // value on top
+          swap2 // data_ptr on top, to remove -> pos on top for jump
+          pop
           jump // in
         tag_6:
         tag_4:
           pop
           jump	// out
         tag_3:
+
+
+
+
+
+
 
 
 
@@ -536,10 +536,10 @@
             stop
         iszero_11:  // 0x15
             pop
-            dup3
             iszero
-            swap3
-            pop
+            0xc0
+            // push
+            mload
             jump
             stop
             stop
@@ -1511,14 +1511,11 @@
             stop
             stop
         mstore_20:  // 0x52
-            dup5
-            dup5
+            pop
             mstore
-            pop
-            swap2
-            pop
-            swap2
-            pop
+            0xc0
+            // push
+            mload
             jump
             stop
             stop
@@ -1526,15 +1523,15 @@
             stop
             stop
             stop
-        mstore8_00:  // 0x53
-            dup5
-            dup5
-            mstore
+            stop
+            stop
+            stop
+        mstore8_20:  // 0x53
             pop
-            swap2
-            pop
-            swap2
-            pop
+            mstore8
+            0xc0
+            // push
+            mload
             jump
             stop
             stop
@@ -1574,7 +1571,7 @@
             stop
             stop
             stop
-        jump_00:  // 0x56
+        jump_10:  // 0x56  // v1 (tag), v0, tag_2, data_ptr
             jump
             dup2
             jump
@@ -1735,10 +1732,10 @@
             stop
             stop
         push1_01:  // 0x60
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -4087,9 +4084,9 @@
             stop
             stop
         return_20:  // 0xf3
-            dup5
-            dup5
+            pop
             return
+            stop
             stop
             stop
             stop
