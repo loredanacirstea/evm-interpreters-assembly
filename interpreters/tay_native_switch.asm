@@ -967,11 +967,11 @@
             stop
             stop
         address_01:  // 0x30
+            pop
             address
-            dup2
+            swap2
+            swap1
             jump
-            stop
-            stop
             stop
             stop
             stop
@@ -999,11 +999,11 @@
             stop
             stop
         origin_01:  // 0x32
+            pop
             origin
-            dup2
+            swap2
+            swap1
             jump
-            stop
-            stop
             stop
             stop
             stop
@@ -1015,11 +1015,11 @@
             stop
             stop
         caller_01:  // 0x33
+            pop
             caller
-            dup2
+            swap2
+            swap1
             jump
-            stop
-            stop
             stop
             stop
             stop
@@ -1031,11 +1031,11 @@
             stop
             stop
         callvalue_01:  // 0x34
+            pop
             callvalue
-            dup2
+            swap2
+            swap1
             jump
-            stop
-            stop
             stop
             stop
             stop
@@ -1063,11 +1063,11 @@
             stop
             stop
         calldatasize_01:  // 0x36
+            pop
             calldatasize
-            dup2
+            swap2
+            swap1
             jump
-            stop
-            stop
             stop
             stop
             stop
@@ -1095,11 +1095,11 @@
             stop
             stop
         codesize_01:  // 0x38
+            pop
             codesize
-            dup2
+            swap2
+            swap1
             jump
-            stop
-            stop
             stop
             stop
             stop
@@ -1127,11 +1127,11 @@
             stop
             stop
         gasprice_01:  // 0x3a
+            pop
             gasprice
-            dup2
+            swap2
+            swap1
             jump
-            stop
-            stop
             stop
             stop
             stop
@@ -1175,11 +1175,11 @@
             stop
             stop
         returndatasize_01:  // 0x3d
+            pop
             returndatasize
-            dup2
+            swap2
+            swap1
             jump
-            stop
-            stop
             stop
             stop
             stop
@@ -1239,11 +1239,11 @@
             stop
             stop
         coinbase_01:  // 0x41
+            pop
             coinbase
-            dup2
+            swap2
+            swap1
             jump
-            stop
-            stop
             stop
             stop
             stop
@@ -1255,11 +1255,11 @@
             stop
             stop
         timestamp_01:  // 0x42
+            pop
             timestamp
-            dup2
+            swap2
+            swap1
             jump
-            stop
-            stop
             stop
             stop
             stop
@@ -1271,11 +1271,11 @@
             stop
             stop
         number_01:  // 0x43
+            pop
             number
-            dup2
+            swap2
+            swap1
             jump
-            stop
-            stop
             stop
             stop
             stop
@@ -1287,11 +1287,11 @@
             stop
             stop
         difficulty_01:  // 0x44
+            pop
             difficulty
-            dup2
+            swap2
+            swap1
             jump
-            stop
-            stop
             stop
             stop
             stop
@@ -1303,8 +1303,10 @@
             stop
             stop
         gaslimit_01:  // 0x45
+            pop
             gaslimit
-            dup2
+            swap2
+            swap1
             jump
             stop
             stop
@@ -1316,11 +1318,11 @@
             stop
             stop
             stop
-            stop
-            stop
-        unused_10:  // 0x46
-            stop
-            dup2
+        chainid_01:  // 0x46
+            pop
+            stop // chainid // TODO
+            swap2
+            swap1
             jump
             stop
             stop
@@ -1332,14 +1334,12 @@
             stop
             stop
             stop
-            stop
-            stop
-        unused_11:  // 0x47
-            stop
-            dup2
+        selfbalance_01:  // 0x47
+            pop
+            stop // selfbalance // TODO
+            swap2
+            swap1
             jump
-            stop
-            stop
             stop
             stop
             stop
@@ -1606,9 +1606,11 @@
             stop
             stop
             stop
-        pc_00:  // 0x58
+        pc_01:  // 0x58
+            pop
             pc
-            dup2
+            swap2
+            swap1
             jump
             stop
             stop
@@ -1620,11 +1622,11 @@
             stop
             stop
             stop
-            stop
-            stop
-        msize_00:  // 0x59
+        msize_01:  // 0x59
+            pop
             msize
-            dup2
+            swap2
+            swap1
             jump
             stop
             stop
@@ -1636,14 +1638,12 @@
             stop
             stop
             stop
-            stop
-            stop
-        gas_00:  // 0x5a
+        gas_01:  // 0x5a
+            pop
             gas
-            dup2
+            swap2
+            swap1
             jump
-            stop
-            stop
             stop
             stop
             stop
