@@ -34,7 +34,6 @@
           add
           0x40
           mstore
-          tag_1
           tag_2
           jump	// in
         tag_1:
