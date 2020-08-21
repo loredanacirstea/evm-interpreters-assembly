@@ -19,18 +19,18 @@
           mstore
 
           // current data_ptr
-          0x0100
           0xe0
+          0x80
           mstore
 
           calldatasize
           0x00
-          0x0100
+          0xe0
           calldatacopy
           0x01
           calldatasize
           add
-          0x0100
+          0xe0
           add
           0x40
           mstore
@@ -39,7 +39,7 @@
         tag_1:
           jump(tag_3)
         tag_2:  // eval
-          0xe0
+          0x80    // push data pointer on stack
           mload
           0x00
           0xf8
@@ -86,7 +86,7 @@
           pop // pops old data_ptr
         tag_5:
           dup3
-          0xe0
+          0x80    // store data_ptr
           mstore
           0x08
           dup2
@@ -105,6 +105,7 @@
           pop
           jump	// out
         tag_3:
+
 
 
 
@@ -885,19 +886,19 @@
             mload
             jump
             stop
-        jump_10:  // 0x56  // v1 (tag), v0, tag_2, data_ptr
-            jump
-            dup2
-            jump
-            stop
-            stop
-            stop
-            stop
-        jumpi_00:  // 0x57
-            jumpi
-            dup2
+        jump_10:  // 0x56
+            pop
+            jump_10_extra
+            //
+            // push2 ?
             jump
             stop
+            stop
+        jumpi_20:    // 0x57  // cond, new data_ptr, v0 -> dest, v0, cond, jump_10
+            jumpi_20_extra
+            //
+            // push?
+            jump
             stop
             stop
             stop
@@ -925,7 +926,7 @@
             mload
             jump
             stop
-        jumpdest_00:  // 0x5b
+        jumpdest_00:  // 0x5b  // TODO maybe mark jumpdests in memory
             pop
             0xc0
             // push
@@ -2245,5 +2246,29 @@
             stop
             stop
             stop
+        jump_10_extra:
+            0xe0        // start of data data_ptr
+            // push1
+            add
+            0x80          // store new data_ptr
+            // push
+            mstore
+            0xc0
+            // push
+            mload
+            jump
+        jumpi_20_extra:
+            swap1    // cond, v0, dest
+            swap2    // dest, v0, cond
+            jump_10
+            // push
+            jumpi
+            pop
+            pop
+            0xc0
+            // push
+            mload
+            jump
+
     }
 
