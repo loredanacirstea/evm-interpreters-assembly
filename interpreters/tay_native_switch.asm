@@ -416,7 +416,7 @@
             stop
         shl_21:  // 0x1b
             pop
-            stop // shl // TODO
+            shl
             0xc0
             // push
             mload
@@ -424,7 +424,7 @@
             stop
         shr_21:  // 0x1c
             pop
-            stop // shr // TODO
+            shr
             0xc0
             // push
             mload
@@ -432,7 +432,7 @@
             stop
         sar_21:  // 0x1d
             pop
-            stop // sar // TODO
+            sar
             0xc0
             // push
             mload
@@ -704,7 +704,7 @@
             stop
         extcodehash_11:  // 0x3f
             pop
-            stop // extcodehash // TODO
+            extcodehash
             0xc0
             // push
             mload
@@ -926,13 +926,13 @@
             mload
             jump
             stop
-        jumpdest_00:  // 0x5b  // TODO maybe mark jumpdests in memory
+        jumpdest_00:  // 0x5b // here we do not raise an invalid opcode exception
             pop
+            jumpdest
             0xc0
             // push
             mload
             jump
-            stop
             stop
         unused_20:  // 0x5c
             stop
@@ -2160,7 +2160,7 @@
             stop
         create2_41:  // 0xf5
             pop
-            stop // create2 // TODO
+            create2
             0xc0
             // push
             mload
@@ -2240,7 +2240,7 @@
             stop
         selfdestruct_10:  // 0xff
             pop
-            stop // selfdestruct // TODO
+            selfdestruct
             stop
             stop
             stop
@@ -2269,6 +2269,5 @@
             // push
             mload
             jump
-
     }
 
