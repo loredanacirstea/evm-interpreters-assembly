@@ -295,32 +295,32 @@
             stop
         unused_1:  // 0x0c
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_2:  // 0x0d
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_3:  // 0x0e
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_4:  // 0x0f
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
@@ -439,16 +439,16 @@
             stop
         unused_5:  // 0x1e
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_6:  // 0x1f
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
@@ -463,120 +463,120 @@
             stop
         unused_7:  // 0x21
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_8:  // 0x22
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_9:  // 0x23
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_9:  // 0x24
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_9:  // 0x25
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_9:  // 0x26
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_9:  // 0x27
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_9:  // 0x28
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_9:  // 0x29
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_9:  // 0x2a
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_9:  // 0x2b
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_9:  // 0x2c
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_9:  // 0x2d
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_9:  // 0x2e
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_9:  // 0x2f
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
@@ -775,64 +775,64 @@
             stop
         unused_12:  // 0x48
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_13:  // 0x49
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_14:  // 0x4a
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_15:  // 0x4b
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_16:  // 0x4c
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_17:  // 0x4d
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_18:  // 0x4e
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_19:  // 0x4f
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
@@ -926,41 +926,41 @@
             jump
             stop
         jumpdest_00:  // 0x5b
-            jumpdest
-            dup2
+            pop
+            0xc0
+            // push
+            mload
             jump
-            stop
-            stop
             stop
             stop
         unused_20:  // 0x5c
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_21:  // 0x5d
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_22:  // 0x5e
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_23:  // 0x5f
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
@@ -1519,600 +1519,600 @@
             stop
         unused_24:  // 0xa5
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_25:  // 0xa6
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_26:  // 0xa7
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_27:  // 0xa8
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_28:  // 0xa9
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_29:  // 0xaa
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_30:  // 0xab
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_31:  // 0xac
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_32:  // 0xad
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_33:  // 0xae
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_34:  // 0xaf
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_36:  // 0xb0
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_37:  // 0xb1
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_38:  // 0xb2
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_39:  // 0xb3
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_40:  // 0xb4
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_41:  // 0xb5
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_42:  // 0xb6
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_43:  // 0xb7
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_44:  // 0xb8
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_45:  // 0xb9
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_46:  // 0xba
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_47:  // 0xbb
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_48:  // 0xbc
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_49:  // 0xbd
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_50:  // 0xbe
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_51:  // 0xbf
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_52:  // 0xc0
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_53:  // 0xc1
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_54:  // 0xc2
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_55:  // 0xc3
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_56:  // 0xc4
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_57:  // 0xc5
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_58:  // 0xc6
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_59:  // 0xc7
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_60:  // 0xc8
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_61:  // 0xc9
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_62:  // 0xca
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_63:  // 0xcb
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_64:  // 0xcc
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_65:  // 0xcd
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_66:  // 0xce
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_67:  // 0xcf
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_68:  // 0xd0
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_69:  // 0xd1
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_70:  // 0xd2
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_71:  // 0xd3
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_72:  // 0xd4
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_73:  // 0xd5
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_74:  // 0xd6
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_75:  // 0xd7
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_76:  // 0xd8
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_77:  // 0xd9
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_78:  // 0xda
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_79:  // 0xdb
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_80:  // 0xdc
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_81:  // 0xdd
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_82:  // 0xde
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_83:  // 0xdf
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_84:  // 0xe0
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_85:  // 0xe1
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_86:  // 0xe2
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_87:  // 0xe3
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_88:  // 0xe4
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_89:  // 0xe5
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_90:  // 0xe6
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_91:  // 0xe7
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_92:  // 0xe8
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_93:  // 0xe9
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_94:  // 0xea
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_95:  // 0xeb
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_96:  // 0xec
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_97:  // 0xed
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_98:  // 0xee
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_99:  // 0xef
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
@@ -2167,32 +2167,32 @@
             stop
         unused_100:  // 0xf6
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_101:  // 0xf7
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_102:  // 0xf8
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_103:  // 0xf9
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
@@ -2207,16 +2207,16 @@
             stop
         unused_104:  // 0xfb
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
             stop
         unused_105:  // 0xfc ? TXEXECGAS
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
@@ -2231,8 +2231,8 @@
             stop
         unused_106:  // 0xfe - INVALID
             stop
-            dup2
-            jump
+            stop
+            stop
             stop
             stop
             stop
