@@ -1559,15 +1559,15 @@
             stop
             stop
         sstore_20:  // 0x55
+            dup5
+            dup5
             sstore
-            dup2
+            pop
+            swap2
+            pop
+            swap2
+            pop
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -2759,15 +2759,15 @@
             stop
             stop
         log0_20:  // 0xa0
+            dup5
+            dup5
             log0
-            dup2
+            pop
+            swap2
+            pop
+            swap2
+            pop
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -4247,9 +4247,9 @@
             stop
             stop
         revert_20:  // 0xfd
+            dup5
+            dup5
             revert
-            dup2
-            jump
             stop
             stop
             stop
