@@ -1079,15 +1079,15 @@
             stop
             stop
         calldatacopy_30:  // 0x37
+            pop
+            swap1
+            swap4
+            swap1
+            swap3
+            swap1
+            swap2
             calldatacopy
-            dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -1111,15 +1111,15 @@
             stop
             stop
         codecopy_30:  // 0x39
+            pop
+            swap1
+            swap4
+            swap1
+            swap3
+            swap1
+            swap2
             codecopy
-            dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -1191,15 +1191,15 @@
             stop
             stop
         returndatacopy_30:  // 0x3e
+            pop
+            swap1
+            swap4
+            swap1
+            swap3
+            swap1
+            swap2
             returndatacopy
-            dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -1510,7 +1510,7 @@
             stop
             stop
             stop
-        mstore_00:  // 0x52
+        mstore_20:  // 0x52
             dup5
             dup5
             mstore
@@ -1558,7 +1558,7 @@
             stop
             stop
             stop
-        sstore_00:  // 0x55
+        sstore_20:  // 0x55
             sstore
             dup2
             jump
@@ -2775,15 +2775,15 @@
             stop
             stop
         log1_30:  // 0xa1
+            pop
+            swap1
+            swap4
+            swap1
+            swap3
+            swap1
+            swap2
             log1
-            dup2
             jump
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
             stop
             stop
             stop
