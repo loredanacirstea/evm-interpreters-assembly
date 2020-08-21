@@ -969,10 +969,10 @@
         address_01:  // 0x30
             pop
             address
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1001,10 +1001,10 @@
         origin_01:  // 0x32
             pop
             origin
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1017,10 +1017,10 @@
         caller_01:  // 0x33
             pop
             caller
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1033,10 +1033,10 @@
         callvalue_01:  // 0x34
             pop
             callvalue
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1065,10 +1065,10 @@
         calldatasize_01:  // 0x36
             pop
             calldatasize
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1097,10 +1097,10 @@
         codesize_01:  // 0x38
             pop
             codesize
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1129,10 +1129,10 @@
         gasprice_01:  // 0x3a
             pop
             gasprice
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1177,10 +1177,10 @@
         returndatasize_01:  // 0x3d
             pop
             returndatasize
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1241,10 +1241,10 @@
         coinbase_01:  // 0x41
             pop
             coinbase
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1257,10 +1257,10 @@
         timestamp_01:  // 0x42
             pop
             timestamp
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1273,10 +1273,10 @@
         number_01:  // 0x43
             pop
             number
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1289,10 +1289,10 @@
         difficulty_01:  // 0x44
             pop
             difficulty
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1305,10 +1305,10 @@
         gaslimit_01:  // 0x45
             pop
             gaslimit
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1321,10 +1321,10 @@
         chainid_01:  // 0x46
             pop
             stop // chainid // TODO
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1337,10 +1337,10 @@
         selfbalance_01:  // 0x47
             pop
             stop // selfbalance // TODO
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1609,10 +1609,10 @@
         pc_01:  // 0x58
             pop
             pc
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1625,10 +1625,10 @@
         msize_01:  // 0x59
             pop
             msize
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1641,10 +1641,10 @@
         gas_01:  // 0x5a
             pop
             gas
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1751,10 +1751,10 @@
             stop
             stop
         push2_01:  // 0x61
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1767,10 +1767,10 @@
             stop
             stop
         push3_01:  // 0x62
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1783,10 +1783,10 @@
             stop
             stop
         push4_01:  // 0x63
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1799,10 +1799,10 @@
             stop
             stop
         push5_01:  // 0x64
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1815,10 +1815,10 @@
             stop
             stop
         push6_01:  // 0x65
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1831,10 +1831,10 @@
             stop
             stop
         push7_01:  // 0x66
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1847,10 +1847,10 @@
             stop
             stop
         push8_01:  // 0x67
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1863,10 +1863,10 @@
             stop
             stop
         push9_01:  // 0x68
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1879,10 +1879,10 @@
             stop
             stop
         push10_01:  // 0x69
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1895,10 +1895,10 @@
             stop
             stop
         push11_01:  // 0x6a
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1911,10 +1911,10 @@
             stop
             stop
         push12_01:  // 0x6b
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1927,10 +1927,10 @@
             stop
             stop
         push13_01:  // 0x6c
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1943,10 +1943,10 @@
             stop
             stop
         push14_01:  // 0x6d
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1959,10 +1959,10 @@
             stop
             stop
         push15_01:  // 0x6e
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1975,10 +1975,10 @@
             stop
             stop
         push16_01:  // 0x6f
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -1991,10 +1991,10 @@
             stop
             stop
         push17_01:  // 0x70
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -2007,10 +2007,10 @@
             stop
             stop
         push18_01:  // 0x71
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -2023,10 +2023,10 @@
             stop
             stop
         push19_01:  // 0x72
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -2039,10 +2039,10 @@
             stop
             stop
         push20_01:  // 0x73
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -2055,10 +2055,10 @@
             stop
             stop
         push21_01:  // 0x74
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -2071,10 +2071,10 @@
             stop
             stop
         push22_01:  // 0x75
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -2087,10 +2087,10 @@
             stop
             stop
         push23_01:  // 0x76
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -2103,10 +2103,10 @@
             stop
             stop
         push24_01:  // 0x77
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -2119,10 +2119,10 @@
             stop
             stop
         push25_01:  // 0x78
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -2135,10 +2135,10 @@
             stop
             stop
         push26_01:  // 0x79
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -2151,10 +2151,10 @@
             stop
             stop
         push27_01:  // 0x7a
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -2167,10 +2167,10 @@
             stop
             stop
         push28_01:  // 0x7b
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -2183,10 +2183,10 @@
             stop
             stop
         push29_01:  // 0x7c
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -2199,10 +2199,10 @@
             stop
             stop
         push30_01:  // 0x7d
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -2215,10 +2215,10 @@
             stop
             stop
         push31_01:  // 0x7e
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
@@ -2231,10 +2231,10 @@
             stop
             stop
         push32_01:  // 0x7f
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
-            stop
             stop
             stop
             stop
