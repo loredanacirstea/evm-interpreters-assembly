@@ -216,15 +216,15 @@
             stop
         add_21:  // 0x01
             pop
-            dup4
-            dup4
             add
-            swap4
-            pop
-            swap2
-            pop
-            swap1
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
+            stop
             stop
             stop
             stop
@@ -232,15 +232,15 @@
             stop
         mul_21:  // 0x02
             pop
-            dup4
-            dup4
             mul
-            swap4
-            pop
-            swap2
-            pop
-            swap1
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
+            stop
             stop
             stop
             stop
@@ -248,15 +248,15 @@
             stop
         sub_21:  // 0x03
             pop
-            dup4
-            dup4
             sub
-            swap4
-            pop
-            swap2
-            pop
-            swap1
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
+            stop
             stop
             stop
             stop
@@ -264,15 +264,15 @@
             stop
         div_21:  // 0x04
             pop
-            dup4
-            dup4
             div
-            swap4
-            pop
-            swap2
-            pop
-            swap1
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
+            stop
             stop
             stop
             stop
@@ -280,15 +280,15 @@
             stop
         sdiv_21:  // 0x05
             pop
-            dup4
-            dup4
             sdiv
-            swap4
-            pop
-            swap2
-            pop
-            swap1
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
+            stop
             stop
             stop
             stop
@@ -296,15 +296,15 @@
             stop
         mod_21:  // 0x06
             pop
-            dup4
-            dup4
             mod
-            swap4
-            pop
-            swap2
-            pop
-            swap1
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
+            stop
             stop
             stop
             stop
@@ -312,15 +312,15 @@
             stop
         smod_21:  // 0x07
             pop
-            dup4
-            dup4
             smod
-            swap4
-            pop
-            swap2
-            pop
-            swap1
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
+            stop
             stop
             stop
             stop
@@ -328,47 +328,47 @@
             stop
         addmod_31:  // 0x08
             pop
-            swap1
-            swap4
-            swap1
-            swap3
-            swap1
-            swap2
             addmod
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
             stop
             stop
             stop
             stop
         mulmod_31:  // 0x09
             pop
-            swap1
-            swap4
-            swap1
-            swap3
-            swap1
-            swap2
             mulmod
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
             stop
             stop
             stop
             stop
         exp_21:  // 0x0a
             pop
-            dup4
-            dup4
             exp
-            swap4
-            pop
-            swap2
-            pop
-            swap1
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
+            stop
             stop
             stop
             stop
@@ -376,15 +376,15 @@
             stop
         signextend_21:  // 0x0b
             pop
-            dup4
-            dup4
             signextend
-            swap4
-            pop
-            swap2
-            pop
-            swap1
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
+            stop
             stop
             stop
             stop
@@ -456,15 +456,15 @@
             stop
         lt_21:  // 0x10
             pop
-            dup4
-            dup4
             lt
-            swap4
-            pop
-            swap2
-            pop
-            swap1
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
+            stop
             stop
             stop
             stop
@@ -472,15 +472,15 @@
             stop
         gt_21:  // 0x11
             pop
-            dup4
-            dup4
             gt
-            swap4
-            pop
-            swap2
-            pop
-            swap1
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
+            stop
             stop
             stop
             stop
@@ -488,15 +488,15 @@
             stop
         slt_21:  // 0x12
             pop
-            dup4
-            dup4
             slt
-            swap4
-            pop
-            swap2
-            pop
-            swap1
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
+            stop
             stop
             stop
             stop
@@ -504,15 +504,15 @@
             stop
         sgt_21:  // 0x13
             pop
-            dup4
-            dup4
             sgt
-            swap4
-            pop
-            swap2
-            pop
-            swap1
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
+            stop
             stop
             stop
             stop
@@ -520,15 +520,15 @@
             stop
         eq_21:  // 0x14
             pop
-            dup4
-            dup4
             eq
-            swap4
-            pop
-            swap2
-            pop
-            swap1
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
+            stop
             stop
             stop
             stop
@@ -552,15 +552,15 @@
             stop
         and_21:  // 0x16
             pop
-            dup4
-            dup4
             and
-            swap4
-            pop
-            swap2
-            pop
-            swap1
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
+            stop
             stop
             stop
             stop
@@ -568,15 +568,15 @@
             stop
         or_21:  // 0x17
             pop
-            dup4
-            dup4
             or
-            swap4
-            pop
-            swap2
-            pop
-            swap1
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
+            stop
             stop
             stop
             stop
@@ -584,15 +584,15 @@
             stop
         xor_21:  // 0x18
             pop
-            dup4
-            dup4
             xor
-            swap4
-            pop
-            swap2
-            pop
-            swap1
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
+            stop
             stop
             stop
             stop
@@ -600,10 +600,10 @@
             stop
         not_11:  // 0x19
             pop
-            dup3
             not
-            swap3
-            pop
+            0xc0
+            // push
+            mload
             jump
             stop
             stop
@@ -616,15 +616,15 @@
             stop
         byte_21:  // 0x1a
             pop
-            dup4
-            dup4
             byte
-            swap4
-            pop
-            swap2
-            pop
-            swap1
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
+            stop
             stop
             stop
             stop
@@ -632,15 +632,15 @@
             stop
         shl_21:  // 0x1b
             pop
-            dup4
-            dup4
             stop // shl // TODO
-            swap4
-            pop
-            swap2
-            pop
-            swap1
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
+            stop
             stop
             stop
             stop
@@ -648,15 +648,15 @@
             stop
         shr_21:  // 0x1c
             pop
-            dup4
-            dup4
             stop // shr // TODO
-            swap4
-            pop
-            swap2
-            pop
-            swap1
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
+            stop
             stop
             stop
             stop
@@ -664,15 +664,15 @@
             stop
         sar_21:  // 0x1d
             pop
-            dup4
-            dup4
             stop // sar // TODO
-            swap4
-            pop
-            swap2
-            pop
-            swap1
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
+            stop
             stop
             stop
             stop
@@ -712,15 +712,15 @@
             stop
         sha3_21:  // 0x20
             pop
-            dup4
-            dup4
             sha3
-            swap4
-            pop
-            swap2
-            pop
-            swap1
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
+            stop
             stop
             stop
             stop
@@ -984,10 +984,10 @@
             stop
         balance_11:  // 0x31
             pop
-            dup3
             balance
-            swap3
-            pop
+            0xc0
+            // push
+            mload
             jump
             stop
             stop
@@ -1048,10 +1048,10 @@
             stop
         calldataload_11:  // 0x35
             pop
-            dup3
             calldataload
-            swap3
-            pop
+            0xc0
+            // push
+            mload
             jump
             stop
             stop
@@ -1080,14 +1080,14 @@
             stop
         calldatacopy_30:  // 0x37
             pop
-            swap1
-            swap4
-            swap1
-            swap3
-            swap1
-            swap2
             calldatacopy
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
             stop
             stop
             stop
@@ -1112,14 +1112,14 @@
             stop
         codecopy_30:  // 0x39
             pop
-            swap1
-            swap4
-            swap1
-            swap3
-            swap1
-            swap2
             codecopy
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
             stop
             stop
             stop
@@ -1144,10 +1144,10 @@
             stop
         extcodesize_11:  // 0x3b
             pop
-            dup3
             extcodesize
-            swap3
-            pop
+            0xc0
+            // push
+            mload
             jump
             stop
             stop
@@ -1160,16 +1160,16 @@
             stop
         extcodecopy_40:  // 0x3c
             pop
-            swap1
-            swap5
-            swap1
-            swap4
-            swap1
-            swap3
-            swap1
-            swap2
             extcodecopy
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
             stop
             stop
             stop
@@ -1192,14 +1192,14 @@
             stop
         returndatacopy_30:  // 0x3e
             pop
-            swap1
-            swap4
-            swap1
-            swap3
-            swap1
-            swap2
             returndatacopy
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
             stop
             stop
             stop
@@ -1208,10 +1208,10 @@
             stop
         extcodehash_11:  // 0x3f
             pop
-            dup3
             stop // extcodehash // TODO
-            swap3
-            pop
+            0xc0
+            // push
+            mload
             jump
             stop
             stop
@@ -1224,10 +1224,10 @@
             stop
         blockhash_11:  // 0x40
             pop
-            dup3
             blockhash
-            swap3
-            pop
+            0xc0
+            // push
+            mload
             jump
             stop
             stop
@@ -1496,10 +1496,10 @@
             stop
         mload_11:  // 0x51
             pop
-            dup3
             mload
-            swap3
-            pop
+            0xc0
+            // push
+            mload
             jump
             stop
             stop
@@ -1544,10 +1544,10 @@
             stop
         sload_11:  // 0x54
             pop
-            dup3
             sload
-            swap3
-            pop
+            0xc0
+            // push
+            mload
             jump
             stop
             stop
@@ -1559,15 +1559,15 @@
             stop
             stop
         sstore_20:  // 0x55
-            dup5
-            dup5
+            pop
             sstore
-            pop
-            swap2
-            pop
-            swap2
-            pop
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
             stop
             stop
             stop
@@ -2776,14 +2776,14 @@
             stop
         log1_30:  // 0xa1
             pop
-            swap1
-            swap4
-            swap1
-            swap3
-            swap1
-            swap2
             log1
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
             stop
             stop
             stop
@@ -2792,52 +2792,52 @@
             stop
         log2_40:  // 0xa2
             pop
-            swap1
-            swap5
-            swap1
-            swap4
-            swap1
-            swap3
-            swap1
-            swap2
             log2
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
             stop
             stop
             stop
             stop
         log3_50:  // 0xa3
             pop
-            swap1
-            swap6
-            swap1
-            swap5
-            swap1
-            swap4
-            swap1
-            swap3
-            swap1
-            swap2
             log3
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
             stop
             stop
         log4_60:  // 0xa4
             pop
-            swap1
-            swap7
-            swap1
-            swap6
-            swap1
-            swap5
-            swap1
-            swap4
-            swap1
-            swap3
-            swap1
-            swap2
             log4
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         unused_24:  // 0xa5
             stop
             dup2
@@ -4040,27 +4040,27 @@
             stop
         create_31:  // 0xf0
             pop
-            swap1
-            swap4
-            swap1
-            swap3
-            swap1
-            swap2
             create
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
             stop
             stop
             stop
             stop
         call_71:  // 0xf1
+            pop
             call
-            dup2
+            0xc0
+            // push
+            mload
             jump
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -4071,12 +4071,12 @@
             stop
             stop
         callcode_71:  // 0xf2
+            pop
             callcode
-            dup2
+            0xc0
+            // push
+            mload
             jump
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -4104,34 +4104,34 @@
             stop
         delegatecall_61:  // 0xf4
             pop
-            swap1
-            swap7
-            swap1
-            swap6
-            swap1
-            swap5
-            swap1
-            swap4
-            swap1
-            swap3
-            swap1
-            swap2
-            stop // delegatecall // TODO not enough instructions
+            delegatecall
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
         create2_41:  // 0xf5
             pop
-            swap1
-            swap5
-            swap1
-            swap4
-            swap1
-            swap3
-            swap1
-            swap2
             stop // create2 // TODO
-            swap2
-            swap1
+            0xc0
+            // push
+            mload
             jump
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
             stop
             stop
         unused_100:  // 0xf6
@@ -4199,12 +4199,12 @@
             stop
             stop
         staticcall_61:  // 0xfa
+            pop
             staticcall
-            dup2
+            0xc0
+            // push
+            mload
             jump
-            stop
-            stop
-            stop
             stop
             stop
             stop
@@ -4279,8 +4279,8 @@
             stop
             stop
         selfdestruct_10:  // 0xff
+            pop
             stop // selfdestruct // TODO
-            stop
             stop
             stop
             stop
