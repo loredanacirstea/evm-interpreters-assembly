@@ -648,7 +648,7 @@
             stop
         codesize_01:  // 0x38
             pop
-            codesize
+            calldatasize  // this is our code size now
             0xc0
             // push
             mload
@@ -656,7 +656,7 @@
             stop
         codecopy_30:  // 0x39
             pop
-            codecopy
+            calldatacopy // codecopy
             0xc0
             // push
             mload
