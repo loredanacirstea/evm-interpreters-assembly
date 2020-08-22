@@ -1742,28 +1742,28 @@
             stop
             stop
             stop
-        unused_53:  // 0xc1
+        log_2_11:  // 0xc1
+            pop
+            log_2_11_extra
+            //
+            // push
+            jump
             stop
             stop
+        log_11:  // 0xc2 // TODO fixme
+            pop
+            log_11_extra
+            //
+            // push
+            jump
             stop
             stop
-            stop
-            stop
-            stop
-        unused_54:  // 0xc2
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-            stop
-        unused_55:  // 0xc3
-            stop
-            stop
-            stop
-            stop
-            stop
+        sqrt_11:  // 0xc3
+            pop
+            sqrt_11_extra
+            //
+            // push
+            jump
             stop
             stop
         unused_56:  // 0xc4
@@ -2263,6 +2263,214 @@
             jump_10
             // push
             jumpi
+            pop
+            pop
+            0xc0
+            // push
+            mload
+            jump
+        log_2_11_extra:
+            not(0x00)
+            dup2
+            add
+            0x02
+            dup2
+            div
+            dup2
+            or
+            swap1
+            pop
+            0x04
+            dup2
+            div
+            dup2
+            or
+            swap1
+            pop
+            0x10
+            dup2
+            div
+            dup2
+            or
+            swap1
+            pop
+            0x0100
+            dup1
+            dup3
+            div
+            dup3
+            or
+            swap2
+            pop
+            0x010000
+            dup3
+            div
+            dup3
+            or
+            swap2
+            pop
+            0x0100000000
+            dup3
+            div
+            dup3
+            or
+            swap2
+            pop
+            0x010000000000000000
+            dup3
+            div
+            dup3
+            or
+            swap2
+            pop
+            0x40
+            mload
+            0xf8f9cbfae6cc78fbefe7cdc3a1793dfcf4f0e8bbd8cec470b6a28a7a5a3e1efd
+            dup2
+            mstore
+            0xf5ecf1b3e9debc68e1d9cfabc5997135bfb7a7a3938b7b606b5b4b3f2f1f0ffe
+            0x20
+            dup3
+            add
+            mstore
+            0xf6e4ed9ff2d6b458eadcdf97bd91692de2d4da8fd2d0ac50c6ae9a8272523616
+            0x40
+            dup3
+            add
+            mstore
+            0xc8c0b887b0a8a4489c948c7f847c6125746c645c544c444038302820181008ff
+            0x60
+            dup3
+            add
+            mstore
+            0xf7cae577eec2a03cf3bad76fb589591debb2dd67e0aa9834bea6925f6a4a2e0e
+            0x80
+            dup3
+            add
+            mstore
+            0xe39ed557db96902cd38ed14fad815115c786af479b7e83247363534337271707
+            0xa0
+            dup3
+            add
+            mstore
+            0xc976c13bb96e881cb166a933a55e490d9d56952b8d4e801485467d2362422606
+            0xc0
+            dup3
+            add
+            mstore
+            0x753a6d1b65325d0c552a4d1345224105391a310b29122104190a110309020100
+            0xe0
+            dup3
+            add
+            mstore
+            dup2
+            dup2
+            add
+            0x40
+            mstore
+            0x01
+            0xf8
+            shl
+            dup1
+            dup2
+            0x818283848586878898a8b8c8d8e8f929395969799a9b9d9e9faaeb6bedeeff
+            0x01
+            0x01
+            0x80
+            shl
+            dup9
+            div
+            dup9
+            or
+            add
+            mul
+            div
+            0xff
+            sub
+            dup4
+            add
+            mload
+            div
+            swap4
+            pop
+            pop
+            pop
+            0x01
+            0xff
+            shl
+            dup4
+            gt
+            dup2
+            mul
+            dup3
+            add
+            swap3
+            pop
+            pop
+            pop
+            0xc0
+            // push
+            mload
+            jump
+        log_11_extra:
+            0xc0
+            mload
+            0x60
+            mstore
+            log_11_extra_2
+            0xc0
+            mstore
+            log_2_11_extra  // log2(base)
+            jump
+        log_11_extra_2:
+            log_11_extra_3
+            0xc0
+            mstore
+            swap1
+            log_2_11_extra  // log2(x)
+            jump
+        log_11_extra_3:
+            div      // log2(x)/log2(base)
+            0x60
+            mload
+            dup1
+            0xc0
+            mstore
+            jump
+        sqrt_11_extra:
+            0x02
+            dup1
+            0x01
+            dup4
+            add
+            div
+            dup3
+        sqrt_11_extra_loop:
+              dup1
+              dup3
+              lt
+              iszero
+              sqrt_11_extra_loop3
+              jumpi
+              dup2
+              swap1
+              pop
+              dup3
+              dup3
+              dup4
+              dup7
+              div
+              add
+              div
+              swap2
+              pop
+        sqrt_11_extra_loop2:
+            jump(sqrt_11_extra_loop)
+        sqrt_11_extra_loop3:
+            pop
+            dup1
+            swap3
+            pop
             pop
             pop
             0xc0
