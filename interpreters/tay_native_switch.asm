@@ -1766,12 +1766,12 @@
             jump
             stop
             stop
-        unused_56:  // 0xc4
-            stop
-            stop
-            stop
-            stop
-            stop
+        nthroot_31:  // 0xc4
+            pop
+            nthroot_31_extra
+            //
+            // push
+            jump
             stop
             stop
         unused_57:  // 0xc5
@@ -2472,6 +2472,90 @@
             swap3
             pop
             pop
+            pop
+            0xc0
+            // push
+            mload
+            jump
+        nthroot_31_extra:
+            dup1
+              0x0a
+              exp
+              dup3
+              mul
+              0x0a
+              0x00
+              not(0x00)
+              dup5
+              add
+            nthroot_31_extra1:
+              dup2
+              dup4
+              eq
+              iszero
+              iszero
+              nthroot_31_extra3
+              jumpi
+              dup3
+              dup4
+              swap3
+              pop
+              dup2
+              dup5
+              exp
+              dup6
+              dup2
+              dup7
+              mul
+              gt
+              0x01
+              dup2
+              eq
+              nthroot_31_extra5
+              jumpi
+              dup8
+              dup4
+              dup4
+              dup10
+              div
+              sub
+              div
+              dup4
+              add
+              swap6
+              pop
+              jump(nthroot_31_extra4)
+            nthroot_31_extra5:
+              dup8
+              dup3
+              dup9
+              div
+              dup8
+              sub
+              div
+              dup7
+              sub
+              swap6
+              pop
+            nthroot_31_extra4:
+              pop
+              pop
+              pop
+            nthroot_31_extra2:
+              jump(nthroot_31_extra1)
+            nthroot_31_extra3:
+              pop
+              pop
+              0x0a
+              0x05
+              dup3
+              add
+              div
+            swap3
+            pop
+            pop
+            pop
+            swap1
             pop
             0xc0
             // push

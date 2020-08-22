@@ -31,25 +31,15 @@ object "RecursionStackOverflow" {
         return(0, 32)
 
         function fibonacci() {
-            // fetch current memory frame
-            let _currentMemoryFrame := mload(0x60)
-            // fetch arguments
-            let value := mload(add(_currentMemoryFrame, 0x20))
-            // _currentMemoryFrame gets popped here.good
-
-            let switchcond := lt(value, 3)
-
-            if switchcond {
+            // fetch current memory frame -> input value
+            if lt(mload(add(mload(0x60), 0x20)), 3) {
                 // value is popped
                 // switchcond & eq(switchcond, 1) still on stack
                 // following is efficient - no dups
                 mstore(add(mload(0x60), 0x80), 1)
             }
-            if eq(switchcond, 0) {
+            if eq(lt(mload(add(mload(0x60), 0x20)), 3), 0) {
                 // fibonacci(value - 1) + fibonacci(value - 2)
-
-                // pop(value)
-                // pop switch value
 
                 {
                     // prepare memory frame for the next recursive call
