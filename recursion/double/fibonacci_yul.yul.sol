@@ -100,13 +100,10 @@ object "RecursionStackOverflow" {
 
                     // restore to original memory frame pointer
                     mstore(0x60, currentMemoryFramePointer)
+                    mstore(0x40, recursiveCallMemoryFramePointer)
                 }
             }
             // TAG_8
-        }
-
-        function freeMemPtr() -> ptr {
-            ptr := mload(0x40)
         }
 
         function allocate(size) -> ptr {

@@ -24,10 +24,8 @@
           dup3
           add
           mstore
-          dup1
           0x60
           mstore
-          pop      // pops currentMemoryFrame pointer
           tag_4   // fibonacci()
           jump	// in
         tag_3:   // return
@@ -201,30 +199,15 @@
           add
           mload
           jump	// out  - jumps to last post fibonacci tag - tag_10 / tag_12
-        tag_13:
-          0x00
-          0x40
-          mload
-          swap1
-          pop
-        tag_14:
-          swap1
-          jump	// out
         tag_2:    // allocate
-          0x00
           0x40
           mload
           swap1
-          pop
-          dup2
           dup2
           add
           0x40
           mstore
-        tag_15:
-          swap2
           swap1
-          pop
           jump	// out
         tag_5:
     }
