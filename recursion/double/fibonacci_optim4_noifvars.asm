@@ -60,18 +60,6 @@
           tag_8
           jump
         tag_7:    // if(2)
-          0x00
-          0x03
-          0x20
-          0x60
-          mload
-          add
-          mload
-          lt
-          eq
-          iszero
-          tag_8   // step end
-          jumpi   // if(2)
           0x60
           mload
           0x20
@@ -192,7 +180,6 @@
           pop
           pop
         tag_8:  //  - step end
-        tag_6:  //
           0x60
           mload
           0x60
