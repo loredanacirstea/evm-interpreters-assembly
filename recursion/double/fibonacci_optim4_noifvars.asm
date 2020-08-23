@@ -11,7 +11,7 @@
           0xc0
           0x40
           mstore
-          tag_3
+          tag_3    // store return tag in memory frame at ptr + 0x60
           0x0120
           mstore
           tag_1   // go after allocate
@@ -27,23 +27,17 @@
           dup1
           0x60
           mstore
-          // pop      // pops currentMemoryFrame pointer
-          tag_3   // return tag - this is stored now
+          pop      // pops currentMemoryFrame pointer
           tag_4   // fibonacci()
           jump	// in
         tag_3:   // return
           0x60
           mload
           0x80
-          // dup2
           add
           mload
-          swap1
-          pop
-          // dup1
           0x00
           mstore
-          pop
           0x20
           0x00
           return
