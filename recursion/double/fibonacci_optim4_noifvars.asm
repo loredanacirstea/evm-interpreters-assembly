@@ -11,12 +11,15 @@
           0xc0
           0x40
           mstore
-          tag_1
-          0xa0
-          tag_2
+          tag_3
+          0x0120
+          mstore
+          tag_1   // go after allocate
+          0xa0   // size for allocate 160
+          tag_2  // allocate
           jump	// in
         tag_1:
-          0x04
+          0x04   // initial value
           0x20
           dup3
           add
@@ -24,17 +27,20 @@
           dup1
           0x60
           mstore
-          tag_3
-          tag_4
+          // pop      // pops currentMemoryFrame pointer
+          tag_3   // return tag - this is stored now
+          tag_4   // fibonacci()
           jump	// in
-        tag_3:
+        tag_3:   // return
+          0x60
+          mload
           0x80
-          dup2
+          // dup2
           add
           mload
           swap1
           pop
-          dup1
+          // dup1
           0x00
           mstore
           pop
@@ -42,7 +48,7 @@
           0x00
           return
           jump(tag_5)
-        tag_4:
+        tag_4:     // fibonacci()
           0x03
           0x20
           0x60
@@ -51,15 +57,17 @@
           mload
           lt
           iszero
-          tag_7
-          jumpi
+          tag_7   // if(2) for n > 2
+          jumpi   // if(1) for n < 3
           0x01
           0x80
           0x60
           mload
           add
           mstore
-        tag_7:
+          tag_8
+          jump
+        tag_7:    // if(2)
           0x00
           0x03
           0x20
@@ -70,19 +78,19 @@
           lt
           eq
           iszero
-          tag_8
-          jumpi
+          tag_8   // step end
+          jumpi   // if(2)
           0x60
           mload
           0x20
           dup2
           add
           mload
-          tag_9
+          tag_9  // before (1) after allocate
           0xa0
-          tag_2
-          jump	// in
-        tag_9:
+          tag_2   // allocate
+          jump 	 // in
+        tag_9:   // before (1) after allocate
           dup3
           dup2
           mstore
@@ -93,23 +101,22 @@
           dup3
           add
           mstore
+          tag_10
+          0x60
+          dup3
+          add
+          mstore
           dup1
           0x60
           mstore
           // 5vars __currentMemoryFrame, _value, nextMemoryFrame
-          dup3   // dup1/dup3?
-          0x60
-          add
-          tag_10
-          swap1
-          mstore
           pop
           pop
           pop
           // tag_10 // LOR push1 0x85 -> mstore(add(mload(0x60), 0x60), 0x85)
-          tag_4
+          tag_4    // fibonacci()
           jump	// in
-        tag_10:
+        tag_10:   // post (1) - handle result & prepare next frame
           0x60
           mload
           dup1
@@ -131,11 +138,11 @@
           mload
           swap2
           pop
-          tag_11
+          tag_11  // before (2) after allocate
           0xa0
-          tag_2
-          jump	// in
-        tag_11:
+          tag_2   // allocate
+          jump	  // in
+        tag_11:   // before (2) after allocate
           dup2
           dup2
           mstore
@@ -150,19 +157,19 @@
           0x60
           mstore
           // 5vars __currentMemoryFrame, _value, nextMemoryFrame
-          dup2   // dup1/dup3?
+          dup1   // dup1/dup2?
           0x60
           add
-          tag_12
+          tag_12  // after (2) - handle result, update frame pointer
           swap1
           mstore
           pop
           pop
           pop
           // tag_12
-          tag_4
+          tag_4     // fibonacci()
           jump	// in
-        tag_12:
+        tag_12:   // after (2) - handle result, update frame pointer
           0x60
           mload
           dup1
@@ -190,15 +197,14 @@
           mstore
           pop
           pop
-        tag_8:  //  - after 2nd if finishes
-        tag_6:  // add tag_10 here
+        tag_8:  //  - step end
+        tag_6:  //
           0x60
-          mload
           mload
           0x60
           add
           mload
-          jump	// out  - jumps to last post fibonacci tag - tag_10
+          jump	// out  - jumps to last post fibonacci tag - tag_10 / tag_12
         tag_13:
           0x00
           0x40
@@ -208,7 +214,7 @@
         tag_14:
           swap1
           jump	// out
-        tag_2:
+        tag_2:    // allocate
           0x00
           0x40
           mload

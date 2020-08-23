@@ -23,6 +23,8 @@ object "RecursionStackOverflow" {
 
         fibonacci()
 
+        // TAG_3
+
         // fetch return value
         // if needed, currentMemoryFrame can be loaded from mem
         // instead of keeping it on the stack
@@ -30,6 +32,7 @@ object "RecursionStackOverflow" {
         mstore(0, result)
         return(0, 32)
 
+        // TAG_4
         function fibonacci() {
             // fetch current memory frame -> input value
             if lt(mload(add(mload(0x60), 0x20)), 3) {
@@ -38,6 +41,7 @@ object "RecursionStackOverflow" {
                 // following is efficient - no dups
                 mstore(add(mload(0x60), 0x80), 1)
             }
+            // TAG_7
             if eq(lt(mload(add(mload(0x60), 0x20)), 3), 0) {
                 // fibonacci(value - 1) + fibonacci(value - 2)
 
@@ -46,6 +50,8 @@ object "RecursionStackOverflow" {
                     let __currentMemoryFrame := mload(0x60)
                     let _value := mload(add(__currentMemoryFrame, 0x20))
                     let nextMemoryFrame := allocate(160)
+
+                    // TAG_9
                     mstore(nextMemoryFrame, __currentMemoryFrame)
                     mstore(add(nextMemoryFrame, 0x20), sub(_value, 1))
                     mstore(0x60, nextMemoryFrame)
@@ -56,6 +62,7 @@ object "RecursionStackOverflow" {
                 fibonacci()
 
                 {
+                    // TAG_10
                     let recursiveCallMemoryFramePointer := mload(0x60)
                     let currentMemoryFramePointer := mload(recursiveCallMemoryFramePointer)
                     // fetch the return values of the recursive call
@@ -69,6 +76,8 @@ object "RecursionStackOverflow" {
                     // prepare memory frame for the next recursive call
                     let _value := mload(add(currentMemoryFramePointer, 0x20))
                     let nextMemoryFrame := allocate(160)
+
+                    // TAG_11
                     mstore(nextMemoryFrame, currentMemoryFramePointer)
                     mstore(add(nextMemoryFrame, 0x20), sub(_value, 2))
                     mstore(0x60, nextMemoryFrame)
@@ -77,6 +86,7 @@ object "RecursionStackOverflow" {
                 fibonacci()
 
                 {
+                    // TAG_12
                     // fetch memory frame of the recursive call
                     let recursiveCallMemoryFramePointer := mload(0x60)
                     // fetch our own memory frame
@@ -88,11 +98,11 @@ object "RecursionStackOverflow" {
 
                     mstore(add(currentMemoryFramePointer, 0x80), add(result1, result2))
 
-
                     // restore to original memory frame pointer
                     mstore(0x60, currentMemoryFramePointer)
                 }
             }
+            // TAG_8
         }
 
         function freeMemPtr() -> ptr {
