@@ -1774,12 +1774,12 @@
             jump
             stop
             stop
-        unused_57:  // 0xc5
-            stop
-            stop
-            stop
-            stop
-            stop
+        factorial_11:  // 0xc5
+            pop
+            factorial_11_extra
+            //
+            // push
+            jump
             stop
             stop
         unused_58:  // 0xc6
@@ -2556,6 +2556,29 @@
             pop
             pop
             swap1
+            pop
+            0xc0
+            // push
+            mload
+            jump
+        factorial_11_extra:
+            dup1
+        factorial_11_extra_1:
+            0x02
+            dup2
+            lt
+            factorial_11_extra_return
+            jumpi
+            0x01
+            swap1
+            sub
+            swap1
+            dup2
+            mul
+            swap1
+            factorial_11_extra_1
+            jump
+        factorial_11_extra_return:
             pop
             0xc0
             // push
