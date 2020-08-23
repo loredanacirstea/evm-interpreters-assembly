@@ -173,7 +173,9 @@
           add
           mload
           swap2
-          pop
+          0x40    // deallocate frame - store recursiveCallMemoryFramePointer as free memory ptr
+          mstore
+          // pop
           0x40
           dup2
           add
