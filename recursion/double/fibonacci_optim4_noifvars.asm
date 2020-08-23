@@ -14,10 +14,16 @@
           tag_3    // store return tag in memory frame at ptr + 0x60
           0x0120
           mstore
-          tag_1   // go after allocate
-          0xa0   // size for allocate 160
-          tag_2  // allocate
-          jump	// in
+
+          0xa0   // allocation size 160
+          0x40
+          mload
+          swap1
+          dup2
+          add
+          0x40
+          mstore
+
         tag_1:
           0x04   // initial value
           0x20
@@ -66,11 +72,16 @@
           dup2
           add
           mload
-          tag_9  // before (1) after allocate
-          0xa0
-          tag_2   // allocate
-          jump 	 // in
-        tag_9:   // before (1) after allocate
+
+          0xa0  // allocation size 160
+          0x40
+          mload
+          swap1
+          dup2
+          add
+          0x40
+          mstore
+
           dup3
           dup2
           mstore
@@ -118,11 +129,16 @@
           mload
           swap2
           pop
-          tag_11  // before (2) after allocate
-          0xa0
-          tag_2   // allocate
-          jump	  // in
-        tag_11:   // before (2) after allocate
+
+          0xa0  // allocation size
+          0x40
+          mload
+          swap1
+          dup2
+          add
+          0x40
+          mstore
+
           dup2
           dup2
           mstore
@@ -146,7 +162,6 @@
           pop
           pop
           pop
-          // tag_12
           tag_4     // fibonacci()
           jump	// in
         tag_12:   // after (2) - handle result, update frame pointer
@@ -161,7 +176,6 @@
           swap2
           0x40    // deallocate frame - store recursiveCallMemoryFramePointer as free memory ptr
           mstore
-          // pop
           0x40
           dup2
           add
@@ -186,15 +200,5 @@
           add
           mload
           jump	// out  - jumps to last post fibonacci tag - tag_10 / tag_12
-        tag_2:    // allocate
-          0x40
-          mload
-          swap1
-          dup2
-          add
-          0x40
-          mstore
-          swap1
-          jump	// out
         tag_5:
     }
