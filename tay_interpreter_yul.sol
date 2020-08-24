@@ -73,8 +73,12 @@ object "Taylor" {
                 }
 
                 let fid := get4b(add(data_ptr, 4))
-                if lt(fid, 1024) {
+                switch lt(fid, 1024)
+                case 1 {
                     result_ptr := evalNativeFunc(fid, args_ptrs)
+                }
+                default {
+                    result_ptr := evalStoredFunc(get8b(data_ptr), args_ptrs)
                 }
             }
 
@@ -149,6 +153,13 @@ object "Taylor" {
             _result := 0x444
         }
 
+        function evalStoredFunc(fsig, arg_ptrs_ptr) -> _result {
+            let lambda_ptr := getFn(fsig)
+            // TODO: apply lambda on args
+            let end_ptr, result_ptr := eval(lambda_ptr, 0, 0)
+            _result := result_ptr
+        }
+
         function ttype(___t3) -> _ttype {
             _ttype := shr(248, mload(___t3))
         }
@@ -172,6 +183,65 @@ object "Taylor" {
 
         function t3_arity_(___t3) -> _result {
             _result := and(mload(___t3), 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff)
+        }
+
+        // last slot might be dirty with other data
+        function storeData(_pointer, storageKey) {
+            let sizeBytes := add(mload(_pointer), 32)
+            let slots := add(div(sizeBytes, 32), gt(mod(sizeBytes, 32), 0))
+            for { let i := 0 } lt(i, slots) { i := add(i, 1) } {
+                sstore(add(storageKey, i), mload(_pointer))
+                _pointer := add(_pointer, 32)
+            }
+        }
+
+        function getStoredData(_pointer, storageKey) {
+            // read first storage slot, for the length
+            let sizeBytes := sload(storageKey)
+            mstore(_pointer, sizeBytes)
+            _pointer := add(_pointer, 32)
+            storageKey := add(storageKey, 1)
+
+            let slots := add(div(sizeBytes, 32), gt(mod(sizeBytes, 32), 0))
+            let t_now := _pointer
+            for { let i := 0 } lt(i, slots) { i := add(i, 1) } {
+                mstore(t_now, sload(add(storageKey, i)))
+                t_now := add(t_now, 32)
+            }
+        }
+
+        function storeFn(_expr_ptr) {
+            let signature := add(add(0x3400100200000000, sload(0)), 2048)
+            storeData(_expr_ptr, mappingFnKey(signature))
+            // sstore(mappingFnNameKey(name), signature)
+            updateFnCounter()
+            // log3(0, 0, 0xffffffff, name, signature)
+        }
+
+        function mappingFnKey(signature) -> storageKey {
+            storageKey := mappingStorageKey(1, signature)
+        }
+
+        function getFn(signature) -> _pointer {
+            // The following does memory allocations, so we do it first
+            let key := mappingFnKey(signature)
+            _pointer := mload(0x40)
+            getStoredData(_pointer, key)
+
+            let len := mload(_pointer)
+            _pointer := add(allocate(add(len, 32)), 32)
+        }
+
+        function updateFnCounter() {
+            let count := sload(0)
+            sstore(0, add(count, 1))
+        }
+
+        function mappingStorageKey(storageIndex, key) -> storageKey {
+            let ptr := allocate(64)
+            mstore(ptr, key)
+            mstore(add(ptr, 32), storageIndex)
+            storageKey := keccak256(ptr, 64)
         }
     }}
 }
