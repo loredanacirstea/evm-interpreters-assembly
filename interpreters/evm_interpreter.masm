@@ -1,0 +1,756 @@
+deployer {
+      // eval tag value tag_2
+          tag_2
+          0xc0
+          mstore
+
+          // start tag value - native functions
+          stop_00
+          0xa0
+          mstore
+
+          // current data_ptr
+          0xe0
+          0x80
+          mstore
+
+          calldatasize
+          0x00
+          0xe0
+          calldatacopy
+          0x01
+          calldatasize
+          add
+          0xe0
+          add
+          0x40
+          mstore
+          tag_2
+          jump	// in
+        tag_1:
+          jump(tag_3)
+        tag_2:  // eval
+          0x80    // push data pointer on stack
+          mload
+          0x00
+          0xf8
+          0x02
+          exp
+          dup3
+          mload
+          div
+          0x01
+          dup4
+          add
+          swap3
+          pop
+          0x02
+          0x80
+          dup3
+          lt
+          0x5f
+          dup4
+          gt
+          add
+          eq
+          iszero
+          tag_5
+          jumpi
+          0x5f
+          dup2
+          sub
+          0x08
+          dup2
+          mul
+          0x0100
+          sub
+          0x02
+          exp
+          dup5
+          mload
+          div
+          swap3 // replace value with new value
+          pop
+          dup4  // dups data_ptr
+          add    // add with size
+          swap3  // replaces with new data_ptr
+          pop // pops old data_ptr
+        tag_5:
+          dup3
+          0x80    // store data_ptr
+          mstore
+          0x08
+          dup2
+          mul
+          0xa0
+          mload
+          add
+          swap1  // opcode first & remove
+          pop
+          swap1 // value on top
+          swap2 // data_ptr on top, to remove -> pos on top for jump
+          pop
+          jump // in
+        tag_6:
+        tag_4:
+          pop
+          jump	// out
+        tag_3:
+
+        // we keep 4 instructions per function, for easy pc calculation
+        stop_00:  // 0x00
+            stop  // the following is not executed
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+        wopcode 0x01, add, add_21
+        wopcode 0x02, mul, mul_21
+        wopcode 0x03, sub, sub_21
+        wopcode 0x04, div, div_21
+        wopcode 0x05, sdiv, sdiv_21
+        wopcode 0x06, mod, mod_21
+        wopcode 0x07, smod, smod_21
+        wopcode 0x08, addmod, addmod_31
+        wopcode 0x09, mulmod, mulmod_31
+        wopcode 0x0a, exp, exp_21
+        wopcode 0x0b, signextend, signextend_21
+        eopcode 0x0c, 1
+        eopcode 0x0d, 2
+        eopcode 0x0e, 3
+        eopcode 0x0f, 4
+        wopcode 0x10, lt, lt_21
+        wopcode 0x11, gt, gt_21
+        wopcode 0x12, slt, slt_21
+        wopcode 0x13, sgt, sgt_21
+        wopcode 0x14, eq, eq_21
+        wopcode 0x15, iszero, iszero_11
+        wopcode 0x16, and, and_21
+        wopcode 0x17, or, or_21
+        wopcode 0x18, xor, xor_21
+        wopcode 0x19, not, not_11
+        wopcode 0x1a, byte, byte_21
+        wopcode 0x1b, shl, shl_21
+        wopcode 0x1c, shr, shr_21
+        wopcode 0x1d, sar, sar_21
+        eopcode 0x1e, 5
+        eopcode 0x1f, 6
+        wopcode 0x20, sha3, sha3_21
+        eopcode 0x21, 7
+        eopcode 0x22, 8
+        eopcode 0x23, 9
+        eopcode 0x24, 10
+        eopcode 0x25, 11
+        eopcode 0x26, 12
+        eopcode 0x27, 13
+        eopcode 0x28, 14
+        eopcode 0x29, 15
+        eopcode 0x2a, 16
+        eopcode 0x2b, 17
+        eopcode 0x2c, 18
+        eopcode 0x2d, 19
+        eopcode 0x2e, 20
+        eopcode 0x2f, 21
+        wopcode 0x30, address, address_01
+        wopcode 0x31, balance, balance_11
+        wopcode 0x32, origin, origin_01
+        wopcode 0x33, caller, caller_01
+        wopcode 0x34, callvalue, callvalue_01
+        wopcode 0x35, calldataload, calldataload_11
+        wopcode 0x36, calldatasize, calldatasize_01
+        wopcode 0x37, calldatacopy, calldatacopy_30
+        wopcode 0x38, codesize, codesize_01
+        wopcode 0x39, codecopy, codecopy_30
+        wopcode 0x3a, gasprice, gasprice_01
+        wopcode 0x3b, extcodesize, extcodesize_11
+        wopcode 0x3c, extcodecopy, extcodecopy_40
+        wopcode 0x3d, returndatasize, returndatasize_01
+        wopcode 0x3e, returndatacopy, returndatacopy_30
+        wopcode 0x3f, extcodehash, extcodehash_11
+        wopcode 0x40, blockhash, blockhash_11
+        wopcode 0x41, coinbase, coinbase_01
+        wopcode 0x42, timestamp, timestamp_01
+        wopcode 0x43, number, number_01
+        wopcode 0x44, difficulty, difficulty_01
+        wopcode 0x45, gaslimit, gaslimit_01
+        wopcode 0x46, stop, chainid_01
+        wopcode 0x47, stop, selfbalance_01
+        eopcode 0x48, 22
+        eopcode 0x49, 23
+        eopcode 0x4a, 24
+        eopcode 0x4b, 25
+        eopcode 0x4c, 26
+        eopcode 0x4d, 27
+        eopcode 0x4e, 28
+        eopcode 0x4f, 29
+        wopcode 0x50, pop, pop_00
+        wopcode 0x51, mload, mload_11
+        wopcode 0x52, mstore, mstore_20
+        wopcode 0x53, mstore8, mstore8_20
+        wopcode 0x54, sload, sload_11
+        wopcode 0x55, sstore, sstore_20
+        jump_10:  // 0x56
+            pop
+            jump_10_extra
+            //
+            // push2 ?
+            jump
+            stop
+            stop
+        jumpi_20:    // 0x57  // cond, new data_ptr, v0 -> dest, v0, cond, jump_10
+            jumpi_20_extra
+            //
+            // push?
+            jump
+            stop
+            stop
+            stop
+        wopcode 0x58, pc, pc_01
+        wopcode 0x59, msize, msize_01
+        wopcode 0x5a, gas, gas_01
+        wopcode 0x5b, jumpdest, jumpdest_00
+        eopcode 0x5c, 30
+        eopcode 0x5d, 31
+        eopcode 0x5e, 32
+        eopcode 0x5f, 33
+        wopcode_push 0x60, 1
+        wopcode_push 0x61, 2
+        wopcode_push 0x62, 3
+        wopcode_push 0x63, 4
+        wopcode_push 0x64, 5
+        wopcode_push 0x65, 6
+        wopcode_push 0x66, 7
+        wopcode_push 0x67, 8
+        wopcode_push 0x68, 9
+        wopcode_push 0x69, 10
+        wopcode_push 0x6a, 11
+        wopcode_push 0x6b, 12
+        wopcode_push 0x6c, 13
+        wopcode_push 0x6d, 14
+        wopcode_push 0x6e, 15
+        wopcode_push 0x6f, 16
+        wopcode_push 0x70, 17
+        wopcode_push 0x71, 18
+        wopcode_push 0x72, 19
+        wopcode_push 0x73, 20
+        wopcode_push 0x74, 21
+        wopcode_push 0x75, 22
+        wopcode_push 0x76, 23
+        wopcode_push 0x77, 24
+        wopcode_push 0x78, 25
+        wopcode_push 0x79, 26
+        wopcode_push 0x7a, 27
+        wopcode_push 0x7b, 28
+        wopcode_push 0x7c, 29
+        wopcode_push 0x7d, 30
+        wopcode_push 0x7e, 31
+        wopcode_push 0x7f, 32
+        wopcode_dup 0x80, 1
+        wopcode_dup 0x81, 2
+        wopcode_dup 0x82, 3
+        wopcode_dup 0x83, 4
+        wopcode_dup 0x84, 5
+        wopcode_dup 0x85, 6
+        wopcode_dup 0x86, 7
+        wopcode_dup 0x87, 8
+        wopcode_dup 0x88, 9
+        wopcode_dup 0x89, 10
+        wopcode_dup 0x8a, 11
+        wopcode_dup 0x8b, 12
+        wopcode_dup 0x8c, 13
+        wopcode_dup 0x8d, 14
+        wopcode_dup 0x8e, 15
+        wopcode_dup 0x8f, 16
+        wopcode_swap 0x90, 1
+        wopcode_swap 0x91, 2
+        wopcode_swap 0x92, 3
+        wopcode_swap 0x93, 4
+        wopcode_swap 0x94, 5
+        wopcode_swap 0x95, 6
+        wopcode_swap 0x96, 7
+        wopcode_swap 0x97, 8
+        wopcode_swap 0x98, 9
+        wopcode_swap 0x99, 10
+        wopcode_swap 0x9a, 11
+        wopcode_swap 0x9b, 12
+        wopcode_swap 0x9c, 13
+        wopcode_swap 0x9d, 14
+        wopcode_swap 0x9e, 15
+        wopcode_swap 0x9f, 16
+        wopcode 0xa0, log0, log0_20
+        wopcode 0xa1, log1, log1_30
+        wopcode 0xa2, log2, log2_40
+        wopcode 0xa3, log3, log3_50
+        wopcode 0xa4, log4, log4_60
+        eopcode 0xa5, 34
+        eopcode 0xa6, 35
+        eopcode 0xa7, 36
+        eopcode 0xa8, 37
+        eopcode 0xa9, 38
+        eopcode 0xaa, 39
+        eopcode 0xab, 40
+        eopcode 0xac, 41
+        eopcode 0xad, 42
+        eopcode 0xae, 43
+        eopcode 0xaf, 44
+        eopcode 0xb0, 45
+        eopcode 0xb1, 46
+        eopcode 0xb2, 47
+        eopcode 0xb3, 48
+        eopcode 0xb4, 49
+        eopcode 0xb5, 50
+        eopcode 0xb6, 51
+        eopcode 0xb7, 52
+        eopcode 0xb8, 53
+        eopcode 0xb9, 54
+        eopcode 0xba, 55
+        eopcode 0xbb, 56
+        eopcode 0xbc, 57
+        eopcode 0xbd, 58
+        eopcode 0xbe, 59
+        eopcode 0xbf, 60
+        eopcode 0xc0, 61
+        log_2_11:  // 0xc1
+            pop
+            log_2_11_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        log_11:  // 0xc2 // TODO fixme
+            pop
+            log_11_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        sqrt_11:  // 0xc3
+            pop
+            sqrt_11_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        nthroot_31:  // 0xc4
+            pop
+            nthroot_31_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        factorial_11:  // 0xc5
+            pop
+            factorial_11_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        eopcode 0xc6, 62
+        eopcode 0xc7, 63
+        eopcode 0xc8, 64
+        eopcode 0xc9, 65
+        eopcode 0xca, 66
+        eopcode 0xcb, 67
+        eopcode 0xcc, 68
+        eopcode 0xcd, 69
+        eopcode 0xce, 70
+        eopcode 0xcf, 71
+        eopcode 0xd0, 72
+        eopcode 0xd1, 73
+        eopcode 0xd2, 74
+        eopcode 0xd3, 75
+        eopcode 0xd4, 76
+        eopcode 0xd5, 77
+        eopcode 0xd6, 78
+        eopcode 0xd7, 79
+        eopcode 0xd8, 80
+        eopcode 0xd9, 81
+        eopcode 0xda, 82
+        eopcode 0xdb, 83
+        eopcode 0xdc, 84
+        eopcode 0xdd, 85
+        eopcode 0xde, 86
+        eopcode 0xdf, 87
+        eopcode 0xe0, 88
+        eopcode 0xe1, 89
+        eopcode 0xe2, 90
+        eopcode 0xe3, 91
+        eopcode 0xe4, 92
+        eopcode 0xe5, 93
+        eopcode 0xe6, 94
+        eopcode 0xe7, 95
+        eopcode 0xe8, 96
+        eopcode 0xe9, 97
+        eopcode 0xea, 98
+        eopcode 0xeb, 99
+        eopcode 0xec, 100
+        eopcode 0xed, 101
+        eopcode 0xee, 102
+        eopcode 0xef, 103
+        wopcode 0xf0, create, create_31
+        wopcode 0xf1, call, call_71
+        wopcode 0xf2, callcode, callcode_71
+        wopcode 0xf3, return, return_20
+        wopcode 0xf4, delegatecall, delegatecall_61
+        wopcode 0xf5, create2, create2_41
+        eopcode 0xf6, 104
+        eopcode 0xf7, 105
+        eopcode 0xf8, 106
+        eopcode 0xf9, 107
+        wopcode 0xfa, staticcall, staticcall_61
+        eopcode 0xfb, 108
+        eopcode 0xfc, 109
+        wopcode 0xfd, revert, revert_20
+        eopcode 0xfe, 110
+        wopcode 0xff, selfdestruct, selfdestruct_10
+
+        jump_10_extra:
+            0xe0        // start of data data_ptr
+            // push1
+            add
+            0x80          // store new data_ptr
+            // push
+            mstore
+            0xc0
+            // push
+            mload
+            jump
+        jumpi_20_extra:
+            swap1    // cond, v0, dest
+            swap2    // dest, v0, cond
+            jump_10
+            // push
+            jumpi
+            pop
+            pop
+            0xc0
+            // push
+            mload
+            jump
+        log_2_11_extra:
+            not(0x00)
+            dup2
+            add
+            0x02
+            dup2
+            div
+            dup2
+            or
+            swap1
+            pop
+            0x04
+            dup2
+            div
+            dup2
+            or
+            swap1
+            pop
+            0x10
+            dup2
+            div
+            dup2
+            or
+            swap1
+            pop
+            0x0100
+            dup1
+            dup3
+            div
+            dup3
+            or
+            swap2
+            pop
+            0x010000
+            dup3
+            div
+            dup3
+            or
+            swap2
+            pop
+            0x0100000000
+            dup3
+            div
+            dup3
+            or
+            swap2
+            pop
+            0x010000000000000000
+            dup3
+            div
+            dup3
+            or
+            swap2
+            pop
+            0x40
+            mload
+            0xf8f9cbfae6cc78fbefe7cdc3a1793dfcf4f0e8bbd8cec470b6a28a7a5a3e1efd
+            dup2
+            mstore
+            0xf5ecf1b3e9debc68e1d9cfabc5997135bfb7a7a3938b7b606b5b4b3f2f1f0ffe
+            0x20
+            dup3
+            add
+            mstore
+            0xf6e4ed9ff2d6b458eadcdf97bd91692de2d4da8fd2d0ac50c6ae9a8272523616
+            0x40
+            dup3
+            add
+            mstore
+            0xc8c0b887b0a8a4489c948c7f847c6125746c645c544c444038302820181008ff
+            0x60
+            dup3
+            add
+            mstore
+            0xf7cae577eec2a03cf3bad76fb589591debb2dd67e0aa9834bea6925f6a4a2e0e
+            0x80
+            dup3
+            add
+            mstore
+            0xe39ed557db96902cd38ed14fad815115c786af479b7e83247363534337271707
+            0xa0
+            dup3
+            add
+            mstore
+            0xc976c13bb96e881cb166a933a55e490d9d56952b8d4e801485467d2362422606
+            0xc0
+            dup3
+            add
+            mstore
+            0x753a6d1b65325d0c552a4d1345224105391a310b29122104190a110309020100
+            0xe0
+            dup3
+            add
+            mstore
+            dup2
+            dup2
+            add
+            0x40
+            mstore
+            0x01
+            0xf8
+            shl
+            dup1
+            dup2
+            0x818283848586878898a8b8c8d8e8f929395969799a9b9d9e9faaeb6bedeeff
+            0x01
+            0x01
+            0x80
+            shl
+            dup9
+            div
+            dup9
+            or
+            add
+            mul
+            div
+            0xff
+            sub
+            dup4
+            add
+            mload
+            div
+            swap4
+            pop
+            pop
+            pop
+            0x01
+            0xff
+            shl
+            dup4
+            gt
+            dup2
+            mul
+            dup3
+            add
+            swap3
+            pop
+            pop
+            pop
+            0xc0
+            // push
+            mload
+            jump
+        log_11_extra:
+            0xc0
+            mload
+            0x60
+            mstore
+            log_11_extra_2
+            0xc0
+            mstore
+            log_2_11_extra  // log2(base)
+            jump
+        log_11_extra_2:
+            log_11_extra_3
+            0xc0
+            mstore
+            swap1
+            log_2_11_extra  // log2(x)
+            jump
+        log_11_extra_3:
+            div      // log2(x)/log2(base)
+            0x60
+            mload
+            dup1
+            0xc0
+            mstore
+            jump
+        sqrt_11_extra:
+            0x02
+            dup1
+            0x01
+            dup4
+            add
+            div
+            dup3
+        sqrt_11_extra_loop:
+              dup1
+              dup3
+              lt
+              iszero
+              sqrt_11_extra_loop3
+              jumpi
+              dup2
+              swap1
+              pop
+              dup3
+              dup3
+              dup4
+              dup7
+              div
+              add
+              div
+              swap2
+              pop
+        sqrt_11_extra_loop2:
+            jump(sqrt_11_extra_loop)
+        sqrt_11_extra_loop3:
+            pop
+            dup1
+            swap3
+            pop
+            pop
+            pop
+            0xc0
+            // push
+            mload
+            jump
+        nthroot_31_extra:
+            dup1
+              0x0a
+              exp
+              dup3
+              mul
+              0x0a
+              0x00
+              not(0x00)
+              dup5
+              add
+            nthroot_31_extra1:
+              dup2
+              dup4
+              eq
+              iszero
+              iszero
+              nthroot_31_extra3
+              jumpi
+              dup3
+              dup4
+              swap3
+              pop
+              dup2
+              dup5
+              exp
+              dup6
+              dup2
+              dup7
+              mul
+              gt
+              0x01
+              dup2
+              eq
+              nthroot_31_extra5
+              jumpi
+              dup8
+              dup4
+              dup4
+              dup10
+              div
+              sub
+              div
+              dup4
+              add
+              swap6
+              pop
+              jump(nthroot_31_extra4)
+            nthroot_31_extra5:
+              dup8
+              dup3
+              dup9
+              div
+              dup8
+              sub
+              div
+              dup7
+              sub
+              swap6
+              pop
+            nthroot_31_extra4:
+              pop
+              pop
+              pop
+            nthroot_31_extra2:
+              jump(nthroot_31_extra1)
+            nthroot_31_extra3:
+              pop
+              pop
+              0x0a
+              0x05
+              dup3
+              add
+              div
+            swap3
+            pop
+            pop
+            pop
+            swap1
+            pop
+            0xc0
+            // push
+            mload
+            jump
+        factorial_11_extra:
+            dup1
+        factorial_11_extra_1:
+            0x02
+            dup2
+            lt
+            factorial_11_extra_return
+            jumpi
+            0x01
+            swap1
+            sub
+            swap1
+            dup2
+            mul
+            swap1
+            factorial_11_extra_1
+            jump
+        factorial_11_extra_return:
+            pop
+            0xc0
+            // push
+            mload
+            jump
+}
+
+
+
+

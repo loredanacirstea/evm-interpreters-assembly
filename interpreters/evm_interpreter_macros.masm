@@ -1,0 +1,97 @@
+%macro deployer
+    dataSize(sub_0)
+    dataOffset(sub_0)
+    0x00
+    codecopy
+    dataSize(sub_0)
+    0x00
+    return
+    stop
+
+    sub_0: assembly {
+        %content
+    }
+%endmacro
+
+%macro calld
+    calldatasize
+    0x00
+    %0
+    calldatacopy
+%endmacro
+
+%macro return "return %0 %1"
+    %1
+    %0
+    return
+%endmacro
+
+%macrolist loadvals ","
+    %x
+    mload
+%endmacrolist
+
+%macro repeat
+   ` ${%content.repeat(%0)}
+   `
+%endmacro
+
+%macro let "let %0 := %1"
+   ` let %0 := ${ %1 + this.vars.test }
+   `
+%endmacro
+
+%macro wopcode
+    %2:  // %0
+        pop
+        %1
+        0xc0
+        // push
+        mload
+        jump
+        stop
+%endmacro
+
+%macro wopcode_push
+    push%1_01:  // %0
+        0xc0
+        // push
+        mload
+        jump
+        stop
+        stop
+        stop
+%endmacro
+
+%macro wopcode_dup
+    dup%1_00:  // %0
+        pop
+        dup%1
+        0xc0
+        // push
+        mload
+        jump
+        stop
+%endmacro
+
+%macro wopcode_swap
+    swap%1_00:  // %0
+        pop
+        swap%1
+        0xc0
+        // push
+        mload
+        jump
+        stop
+%endmacro
+
+%macro eopcode
+    unused_%1:  // %0
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+%endmacro
