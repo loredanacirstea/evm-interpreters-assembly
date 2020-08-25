@@ -1,101 +1,857 @@
 deployer {
-      // eval tag value tag_2
-          tag_2
-          0xc0
-          mstore
+        // freeMemPtr
+        mmstore 0x40 0xe0
 
-          // start tag value - native functions
-          stop_00
-          0xa0
-          mstore
+        // tag for returning from native function
+        mmstore 0xc0 tag_26_2
 
-          // current data_ptr
-          0xe0
-          0x80
-          mstore
+        // start tag value - native functions
+        mmstore 0xa0 stop_00
 
-          calldatasize
+        calldatasize
+        allocate 0x40
+
+    tag_1:          // read data
+      calldatasize
+      0x00
+      dup3
+      calldatacopy
+      tag_3
+      0x00
+      0x00
+      dup4
+      tag_4    // eval()
+      jump	// in
+    tag_3:
+      swap2
+      pop
+      pop
+      dup1
+      0x00
+      mstore
+      pop
+      0x20
+      0x00
+      return
+      jump(tag_5)
+    tag_4:     // eval
+      0x00
+      0x00
+      dup3
+      mload
+      0xfc
+      shr
+      dup1
+      0x01
+      dup2
+      eq
+      tag_8    // case 1 (number)
+      jumpi
+      0x03
+      dup2
+      eq
+      tag_9    // case 3 (function)
+      jumpi
+      0x04
+      dup2
+      eq
+      tag_10    // case 4 (bytelike)
+      jumpi
+      0x00
+      dup2
+      eq
+      tag_11    // case 0 (unknown)
+      jumpi
+      0xee00     // default
+      0x00
+      mstore
+      dup2
+      0x20
+      mstore
+      0x40
+      0x00
+      revert
+      jump(tag_7)
+    tag_8:      // case 1 (number)
+      0x04
+      dup6
+      add
+      mload
+      swap3
+      pop
+      0x24
+      dup6
+      add
+      swap4
+      pop
+      dup7
+      iszero
+      tag_12
+      jumpi
+
+      0x40
+      allocate 0x40
+    tag_13:
+      0x20
+      dup2
+      mstore
+      dup4
+      0x20
+      dup3
+      add
+      mstore
+      dup1
+      swap4
+      pop
+      pop
+    tag_12:
+      jump(tag_7)
+    tag_9:        // case 3 (function)
+      0x08
+      dup6
+      add
+      swap4
+      pop
+      tag_14
+      dup6
+      tag_15       // get4b
+      jump	// in
+    tag_14:
+      tag_16
+      dup2
+      tag_17        // getFuncArity
+      jump	// in
+    tag_16:
+      swap1
+      pop
+      0x00
+      0x20
+      0x01
+      dup4
+      add
+      mul
+      allocate 0x40
+
+    tag_18:
+      dup3
+      dup2
+      mstore
+      0x20
+      dup2
+      add
+      dup3
+    tag_19:    // for loop
+      dup5
+      dup2
+      lt
+      iszero
+      tag_21     // after for
+      jumpi     // for loop below
+      tag_22
+      dup5
+      dup13
+      dup12
+      tag_4  // eval()
+      jump	// in
+    tag_22:
+      dup1
+      dup5
+      mstore
+      pop
+      dup1
+      swap10
+      pop
+      pop
+      0x20
+      dup3
+      add
+      swap2
+      pop
+    tag_20:
+      0x01
+      dup2
+      add
+      swap1
+      pop
+      jump(tag_19)
+    tag_21:     // after for loop
+      pop
+      pop
+      tag_23
+      0x04
+      dup10
+      add
+      tag_15      // get4b
+      jump	// in
+    tag_23:
+        swap3
+        pop
+        0x0400
+        dup4
+        lt
+        0x01
+        dup2
+        eq
+        tag_25   // evalNativeFunc
+        jumpi
+        tag_26   // end of case 3 function
+        dup3
+        tag_27   // evalStoredFunc
+        dup12
+        tag_28   // get8b
+        jump	// in
+    tag_27:
+        tag_29
+        jump	// in
+    tag_26:
+        swap7
+        pop
+        jump(tag_24)
+    tag_25:      // evalNativeFunc
+        tag_30
+        dup3
+        dup6
+        tag_31   // evalNativeFunc
+        jump	// in
+    tag_30:
+        swap7
+        pop
+    tag_24:
+        pop
+        pop
+        pop
+        pop
+        stop
+        jump(tag_7)
+    tag_10:   // case 4 (bytelike)
+        tag_32
+        0x04
+        dup7
+        add
+        tag_15    // get4b
+        jump	// in
+    tag_32:
+        0x20
+        dup2
+        add
+        allocate 0x40
+    tag_33:
+        swap4
+        pop
+        dup1
+        dup5
+        mstore
+        tag_34
+        dup2
+        0x08
+        dup9
+        add
+        0x20
+        dup8
+        add
+        tag_35
+        jump	// in
+    tag_34:
+        dup1
+        0x08
+        dup8
+        add
+        add
+        swap5
+        pop
+        pop
+        // 0x0158
+        // mload
+        // 0x0158
+        // 0x20
+        // add
+        // mload
+        // stop
+        jump(tag_7)
+    tag_11:        // case 0 (unknown)
+        tag_36
+        dup6
+        tag_15   // get 4b
+        jump	// in
+    tag_36:
+        dup1
+        0x19
+        shr
+        0x02
+        dup2
+        eq
+        iszero
+        tag_37
+        jumpi
+        tag_38
+        dup3
+        tag_17
+        jump	// in
+    tag_38:
+        0x20
+        dup2
+        mul
+        0x20
+        dup11
+        add
+        add
+        swap1
+        pop
+        dup1
+        mload
+        swap6
+        pop
+        pop
+        0x04
+        dup8
+        add
+        swap6
+        pop
+    tag_37:
+        pop
+        pop
+    tag_7:
+      pop
+      pop
+    tag_6:
+      swap4
+      pop
+      swap4
+      swap2
+      pop
+      pop
+      jump	// out
+    tag_39:
+        0x00
+        0x03
+        dup3
+        0x1c
+        shr
+        eq
+        swap1
+        pop
+    tag_40:
+        swap2
+        swap1
+        pop
+        jump	// out
+    tag_17:      // getFuncArity
+      0x00
+      0x3f
+      dup3
+      and
+      swap1
+      pop
+    tag_41:
+        swap2
+        swap1
+        pop
+        jump	// out
+    tag_42:
+        0x00
+        dup2
+        mload
+        0x08
+        dup5
+        mul
+        0x0100
+        sub
+        shr
+        swap1
+        pop
+    tag_43:
+        swap3
+        swap2
+        pop
+        pop
+        jump	// out
+    tag_15:     // get4b
+        0x00
+        dup2
+        mload
+        0xe0
+        shr
+        swap1
+        pop
+    tag_44:
+        swap2
+        swap1
+        pop
+        jump	// out
+    tag_28:   // get8b
+        0x00
+        dup2
+        mload
+        0xc0
+        shr
+        swap1
+        pop
+    tag_45:
+        swap2
+        swap1
+        pop
+        jump	// out
+    tag_46:
+      swap2
+      swap1
+      pop
+      jump	// out
+    tag_35:
+      0x00
+      0x20
+      dup5
+      mod
+      gt
+      0x20
+      dup5
+      div
+      add
+      dup2
+      dup4
+      0x00
+    tag_48:
+      dup4
+        dup2
+        lt
+        iszero
+        tag_50
+        jumpi
+        dup2
+        mload
+        dup4
+        mstore
+        0x20
+        dup4
+        add
+        swap3
+        pop
+        0x20
+        dup3
+        add
+        swap2
+        pop
+    tag_49:
+        0x01
+        dup2
+        add
+        swap1
+        pop
+        jump(tag_48)
+    tag_50:
+        pop
+        pop
+        pop
+        pop
+    tag_47:
+        pop
+        pop
+        pop
+        jump	// out
+    tag_31:   // if NATIVE FUNCTION
+
+        swap1
+        0x20
+        add
+        mload   // first arg ptr to bytelike
+        //0x20
+        //add
+        //mload
+        //stop
+        swap1
+
+        0x08  // instructions per opcode
+        mul
+        0xa0
+        mload
+        add
+        jump
+    tag_26_2:
+      swap1
+      jump
+
+      0x20    // evm functions only return 1 output
+      allocate 0x40
+
+      swap1  // value last
+      dup2   // pointer last
+      mstore  // both value & pointer should be on stack; -> only pointer
+    tag_51:
+      swap1
+      jump	// out
+    tag_29:       // evalStoredFunc
           0x00
-          0xe0
-          calldatacopy
-          0x01
-          calldatasize
-          add
-          0xe0
-          add
-          0x40
-          mstore
-          tag_2
+          tag_53
+          dup3
+          tag_54    // getFn
           jump	// in
-        tag_1:
-          jump(tag_3)
-        tag_2:  // eval
-          0x80    // push data pointer on stack
-          mload
+        tag_53:
+          tag_55
+          dup3
+          dup4
+          dup4
+          tag_4    // eval
+          jump	// in
+        tag_55:
+          swap2
+          pop
+          pop
+          dup1
+          swap2
+          pop
+          pop
+        tag_52:
+          swap3
+          swap2
+          pop
+          pop
+          jump	// out
+        tag_56:
           0x00
+          dup2
+          mload
           0xf8
-          0x02
-          exp
+          shr
+          swap1
+          pop
+        tag_57:
+          swap2
+          swap1
+          pop
+          jump	// out
+        tag_58:
+          0x00
+          0x03
+          tag_60
+          dup4
+          tag_56
+          jump	// in
+        tag_60:
+          eq
+          swap1
+          pop
+        tag_59:
+          swap2
+          swap1
+          pop
+          jump	// out
+        tag_61:
+          0x00
+          0x20
+          dup3
+          add
+          swap1
+          pop
+        tag_62:
+          swap2
+          swap1
+          pop
+          jump	// out
+        tag_63:
+          0x00
+          sub(shl(0xf8, 0x01), 0x01)
           dup3
           mload
+          and
+          swap1
+          pop
+        tag_64:
+          swap2
+          swap1
+          pop
+          jump	// out
+        tag_65:
+          0x00
+          0x03
+          0xf8
+          shl
+          dup3
+          add
+          swap1
+          pop
+        tag_66:
+          swap2
+          swap1
+          pop
+          jump	// out
+        tag_67:
+          0x00
+          sub(shl(0xf8, 0x01), 0x01)
+          dup3
+          mload
+          and
+          swap1
+          pop
+        tag_68:
+          swap2
+          swap1
+          pop
+          jump	// out
+        tag_69:   // storeData
+          // 0x04
+          // tag_71
+          // dup3
+          // tag_15   // get4b
+          // jump	// in
+          0x20
+          dup2
+          mload
+        tag_71:
+          add
+          0x00
+          0x20
+          dup3
+          mod
+          gt
+          0x20
+          dup3
           div
+          add
+          swap1
+          pop
+          0x00
+        tag_72:
+          dup2
+          dup2
+          lt
+          iszero
+          tag_74
+          jumpi
+          dup3
+          mload
+          dup2
+          dup6
+          add
+          sstore
+          0x20
+          dup4
+          add
+          swap3
+          pop
+        tag_73:
+          0x01
+          dup2
+          add
+          swap1
+          pop
+          jump(tag_72)
+        tag_74:
+          pop
+          pop
+        tag_70:
+          pop
+          pop
+          jump	// out  // tag_83
+        tag_75:    // getStoredData
+          dup2
+          sload
+          dup1
+          dup3
+          mstore
+          0x20
+          dup3
+          add
+          swap2
+          pop
           0x01
           dup4
           add
           swap3
           pop
-          0x02
-          0x80
+          0x00
+          0x20
           dup3
-          lt
-          0x5f
-          dup4
+          mod
           gt
-          add
-          eq
-          iszero
-          tag_5
-          jumpi
-          0x5f
-          dup2
-          sub
-          0x08
-          dup2
-          mul
-          0x0100
-          sub
-          0x02
-          exp
-          dup5
-          mload
-          div
-          swap3 // replace value with new value
-          pop
-          dup4  // dups data_ptr
-          add    // add with size
-          swap3  // replaces with new data_ptr
-          pop // pops old data_ptr
-        tag_5:
+          0x20
           dup3
-          0x80    // store data_ptr
-          mstore
-          0x08
-          dup2
-          mul
-          0xa0
-          mload
+          div
           add
-          swap1  // opcode first & remove
+          swap1
           pop
-          swap1 // value on top
-          swap2 // data_ptr on top, to remove -> pos on top for jump
+          dup2
+          0x00
+        tag_77:
+        tag_78:   // getStoredData for loop
+          dup3
+          dup2
+          lt
+          iszero
+          tag_80
+          jumpi
+          dup1
+          dup6
+          add
+          sload
+          dup3
+          mstore
+          0x20
+          dup3
+          add
+          swap2
           pop
-          jump // in
-        tag_6:
-        tag_4:
+        tag_79:
+          0x01
+          dup2
+          add
+          swap1
+          pop
+          jump(tag_78)
+        tag_80:
+          pop
+          pop
+          pop
+        tag_76:
+          pop
           pop
           jump	// out
-        tag_3:
+        tag_81:     // storeFn
+          0x0800
+          0x00
+          sload
+          0x3400100200000000
+          add
+          add
+          tag_83
+          tag_84
+          dup3
+          tag_85   // mappingFnKey
+          jump	// in
+        tag_84:
+          dup4
+          tag_69
+          jump	// in
+        tag_83:
+          pop
+          tag_86
+          tag_87   // updateFnCounter
+          jump	// in
+        tag_86:
+        tag_82:
+          pop
+          jump	// out  // tag_30
+        tag_85:   // mappingFnKey
+          0x00
+          tag_89
+          dup3
+          0x01
+          tag_90
+          jump	// in
+        tag_89:
+          swap1
+          pop
+        tag_88:
+          swap2
+          swap1
+          pop
+          jump	// out
+        tag_54:     // getFn
+          0x00
+          tag_92
+          dup3
+          tag_85  // mappingFnKey
+          jump	// in
+        tag_92:
+          0x40
+          mload
+          swap2
+          pop
+          tag_93
+          dup2
+          dup4
+          tag_75   // getStoredData
+          jump	// in
+        tag_93:
+          pop
+          // tag_94
+          // dup2
+          // tag_15    // get4b
+          // jump	// in
+          dup1
+          mload
+        tag_94:
+          0x20
+          tag_95
+          0x20
+          dup4
+          add
+          tag_2
+          jump	// in
+        tag_95:
+          add
+          swap2
+          pop
+          pop
+        tag_91:
+          swap2
+          swap1
+          pop
+          jump	// out
+        tag_87:   // updateFnCounter
+          0x00
+          sload
+          0x01
+          dup2
+          add
+          0x00
+          sstore
+          pop
+        tag_96:
+          jump	// out
+        tag_90:
+          0x00
+          tag_98
+          0x40
+          tag_2
+          jump	// in
+        tag_98:
+          dup4
+          dup2
+          mstore
+          dup3
+          0x20
+          dup3
+          add
+          mstore
+          0x40
+          dup2
+          keccak256
+          swap2
+          pop
+          pop
+        tag_97:
+          swap3
+          swap2
+          pop
+          pop
+          jump	// out
+        tag_5:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         // we keep 4 instructions per function, for easy pc calculation
         stop_00:  // 0x00
@@ -410,7 +1166,14 @@ deployer {
         wopcode 0xfd, revert, revert_20
         eopcode 0xfe, 110
         wopcode 0xff, selfdestruct, selfdestruct_10
-
+        allocate_11: // 0x100
+            pop
+            allocate_11_extra
+            jump
+            stop
+            stop
+            stop
+            stop
         jump_10_extra:
             0xe0        // start of data data_ptr
             // push1
@@ -749,8 +1512,10 @@ deployer {
             // push
             mload
             jump
+        allocate_11_extra:
+            allocate 0x40
+            0xc0
+            // push
+            mload
+            jump
 }
-
-
-
-

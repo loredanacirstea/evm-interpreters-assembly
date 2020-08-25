@@ -20,10 +20,22 @@
     calldatacopy
 %endmacro
 
-%macro return "return %0 %1"
+%macro mreturn "return %0 %1"
     %1
     %0
     return
+%endmacro
+
+%macro mmstore "mstore %0 %1"
+    %1
+    %0
+    mstore
+%endmacro
+
+%macro mmload "mload %0 %1"
+    %1
+    %0
+    mload
 %endmacro
 
 %macrolist loadvals ","
@@ -94,4 +106,17 @@
         stop
         stop
         stop
+%endmacro
+
+%macro allocate
+    0x00
+    %0
+    mload
+    swap1
+    pop
+    dup2
+    dup2
+    add
+    %0
+    mstore
 %endmacro
