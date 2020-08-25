@@ -14,6 +14,8 @@ dataSize(sub_0)
 
 
 
+
+
         // freeMemPtr
         /* (0) mmstore 0x40, 0xe0      */
 0xe0
@@ -156,12 +158,11 @@ stop_00
 mload
             0xe0
             shr
-      tag_16
-      dup2
-      tag_17        // getFuncArity
-      jump	// in
-    tag_16:
-      swap1
+      dup1
+      /* (0) getfuncarity //   //    */
+0x3f
+            and
+      swap1     // remove 4bsig
       pop
       0x00
       0x20
@@ -336,11 +337,10 @@ mload
         iszero
         tag_37
         jumpi
-        tag_38
-        dup3
-        tag_17
-        jump	// in
-    tag_38:
+        dup2
+        /* (1) getfuncarity //   //    */
+0x3f
+            and
         0x20
         dup2
         mul
@@ -384,18 +384,6 @@ mload
         swap1
         pop
     tag_40:
-        swap2
-        swap1
-        pop
-        jump	// out
-    tag_17:      // getFuncArity
-      0x00
-      0x3f
-      dup3
-      and
-      swap1
-      pop
-    tag_41:
         swap2
         swap1
         pop
