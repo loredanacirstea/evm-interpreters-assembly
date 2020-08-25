@@ -109,12 +109,9 @@
 %endmacro
 
 %macro allocate
-    0x00
     %0
     mload
     swap1
-    pop
-    dup2
     dup2
     add
     %0

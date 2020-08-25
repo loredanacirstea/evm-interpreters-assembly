@@ -9,32 +9,34 @@ dataSize(sub_0)
 
     sub_0: assembly {
 
+
+
+
+
+
         // freeMemPtr
-        /* (0) mmstore 0x40, 0xe0    */
+        /* (0) mmstore 0x40, 0xe0      */
 0xe0
     0x40
     mstore
 
         // tag for returning from native function
-        /* (1) mmstore 0xc0, tag_26_2    */
+        /* (1) mmstore 0xc0, tag_26_2      */
 tag_26_2
     0xc0
     mstore
 
         // start tag value - native functions
-        /* (2) mmstore 0xa0, stop_00    */
+        /* (2) mmstore 0xa0, stop_00      */
 stop_00
     0xa0
     mstore
 
         calldatasize
-        /* (0) allocate 0x40    */
-0x00
-    0x40
+        /* (0) allocate 0x40      */
+0x40
     mload
     swap1
-    pop
-    dup2
     dup2
     add
     0x40
@@ -91,9 +93,10 @@ stop_00
       eq
       tag_11    // case 0 (unknown)
       jumpi
-      0xee00     // default
-      0x00
-      mstore
+      /* (3) mmstore 0x00, 0xee00   // error   */
+0xee00
+    0x00
+    mstore
       dup2
       0x20
       mstore
@@ -119,13 +122,10 @@ stop_00
       jumpi
 
       0x40
-      /* (1) allocate 0x40    */
-0x00
-    0x40
+      /* (1) allocate 0x40      */
+0x40
     mload
     swap1
-    pop
-    dup2
     dup2
     add
     0x40
@@ -151,11 +151,11 @@ stop_00
       add
       swap4
       pop
-      tag_14
-      dup6
-      tag_15       // get4b
-      jump	// in
-    tag_14:
+      dup5
+      /* (0) getfourb //   //   */
+mload
+            0xe0
+            shr
       tag_16
       dup2
       tag_17        // getFuncArity
@@ -169,13 +169,10 @@ stop_00
       dup4
       add
       mul
-      /* (2) allocate 0x40    */
-0x00
-    0x40
+      /* (2) allocate 0x40      */
+0x40
     mload
     swap1
-    pop
-    dup2
     dup2
     add
     0x40
@@ -226,13 +223,13 @@ stop_00
     tag_21:     // after for loop
       pop
       pop
-      tag_23
       0x04
-      dup10
+      dup9
       add
-      tag_15      // get4b
-      jump	// in
-    tag_23:
+      /* (1) getfourb //   //    */
+mload
+            0xe0
+            shr
         swap3
         pop
         0x0400
@@ -245,12 +242,12 @@ stop_00
         jumpi
         tag_26   // end of case 3 function
         dup3
-        tag_27   // evalStoredFunc
-        dup12
-        tag_28   // get8b
-        jump	// in
-    tag_27:
-        tag_29
+        dup11
+        /* (0) geteightb //   //   */
+mload
+            0xc0
+            shr
+        tag_29   // evalStoredFunc
         jump	// in
     tag_26:
         swap7
@@ -273,23 +270,20 @@ stop_00
         stop
         jump(tag_7)
     tag_10:   // case 4 (bytelike)
-        tag_32
         0x04
-        dup7
+        dup6
         add
-        tag_15    // get4b
-        jump	// in
-    tag_32:
+        /* (2) getfourb //   //    */
+mload
+            0xe0
+            shr
         0x20
         dup2
         add
-        /* (3) allocate 0x40    */
-0x00
-    0x40
+        /* (3) allocate 0x40      */
+0x40
     mload
     swap1
-    pop
-    dup2
     dup2
     add
     0x40
@@ -328,11 +322,11 @@ stop_00
         // stop
         jump(tag_7)
     tag_11:        // case 0 (unknown)
-        tag_36
-        dup6
-        tag_15   // get 4b
-        jump	// in
-    tag_36:
+        dup5
+        /* (3) getfourb //   //   */
+mload
+            0xe0
+            shr
         dup1
         0x19
         shr
@@ -424,27 +418,11 @@ stop_00
         pop
         pop
         jump	// out
-    tag_15:     // get4b
-        0x00
-        dup2
-        mload
-        0xe0
-        shr
-        swap1
-        pop
     tag_44:
         swap2
         swap1
         pop
         jump	// out
-    tag_28:   // get8b
-        0x00
-        dup2
-        mload
-        0xc0
-        shr
-        swap1
-        pop
     tag_45:
         swap2
         swap1
@@ -508,15 +486,11 @@ stop_00
         jump	// out
     tag_31:   // if NATIVE FUNCTION
 
-        swap1
-        0x20
-        add
-        mload   // first arg ptr to bytelike
+        //swap1
         //0x20
         //add
-        //mload
-        //stop
-        swap1
+        //mload   // first arg ptr to bytelike
+        //swap1
 
         0x08  // instructions per opcode
         mul
@@ -529,13 +503,10 @@ stop_00
       jump
 
       0x20    // evm functions only return 1 output
-      /* (4) allocate 0x40    */
-0x00
-    0x40
+      /* (4) allocate 0x40      */
+0x40
     mload
     swap1
-    pop
-    dup2
     dup2
     add
     0x40
@@ -656,11 +627,6 @@ stop_00
           pop
           jump	// out
         tag_69:   // storeData
-          // 0x04
-          // tag_71
-          // dup3
-          // tag_15   // get4b
-          // jump	// in
           0x20
           dup2
           mload
@@ -831,21 +797,21 @@ stop_00
           jump	// in
         tag_93:
           pop
-          // tag_94
-          // dup2
-          // tag_15    // get4b
-          // jump	// in
           dup1
           mload
         tag_94:
           0x20
-          tag_95
           0x20
-          dup4
+          dup3
           add
-          tag_2
-          jump	// in
-        tag_95:
+          /* (5) allocate 0x40      */
+0x40
+    mload
+    swap1
+    dup2
+    add
+    0x40
+    mstore
           add
           swap2
           pop
@@ -868,11 +834,15 @@ stop_00
           jump	// out
         tag_90:
           0x00
-          tag_98
           0x40
-          tag_2
-          jump	// in
-        tag_98:
+          /* (6) allocate 0x40      */
+0x40
+    mload
+    swap1
+    dup2
+    add
+    0x40
+    mstore
           dup4
           dup2
           mstore
@@ -899,29 +869,6 @@ stop_00
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         // we keep 4 instructions per function, for easy pc calculation
         stop_00:  // 0x00
             stop  // the following is not executed
@@ -931,7 +878,7 @@ stop_00
             stop
             stop
             stop
-        /* (0) wopcode 0x01, add, add_21    */
+        /* (0) wopcode 0x01, add, add_21      */
 add_21:  // 0x01
         pop
         add
@@ -940,7 +887,7 @@ add_21:  // 0x01
         mload
         jump
         stop
-        /* (1) wopcode 0x02, mul, mul_21    */
+        /* (1) wopcode 0x02, mul, mul_21      */
 mul_21:  // 0x02
         pop
         mul
@@ -949,7 +896,7 @@ mul_21:  // 0x02
         mload
         jump
         stop
-        /* (2) wopcode 0x03, sub, sub_21    */
+        /* (2) wopcode 0x03, sub, sub_21      */
 sub_21:  // 0x03
         pop
         sub
@@ -958,7 +905,7 @@ sub_21:  // 0x03
         mload
         jump
         stop
-        /* (3) wopcode 0x04, div, div_21    */
+        /* (3) wopcode 0x04, div, div_21      */
 div_21:  // 0x04
         pop
         div
@@ -967,7 +914,7 @@ div_21:  // 0x04
         mload
         jump
         stop
-        /* (4) wopcode 0x05, sdiv, sdiv_21    */
+        /* (4) wopcode 0x05, sdiv, sdiv_21      */
 sdiv_21:  // 0x05
         pop
         sdiv
@@ -976,7 +923,7 @@ sdiv_21:  // 0x05
         mload
         jump
         stop
-        /* (5) wopcode 0x06, mod, mod_21    */
+        /* (5) wopcode 0x06, mod, mod_21      */
 mod_21:  // 0x06
         pop
         mod
@@ -985,7 +932,7 @@ mod_21:  // 0x06
         mload
         jump
         stop
-        /* (6) wopcode 0x07, smod, smod_21    */
+        /* (6) wopcode 0x07, smod, smod_21      */
 smod_21:  // 0x07
         pop
         smod
@@ -994,7 +941,7 @@ smod_21:  // 0x07
         mload
         jump
         stop
-        /* (7) wopcode 0x08, addmod, addmod_31    */
+        /* (7) wopcode 0x08, addmod, addmod_31      */
 addmod_31:  // 0x08
         pop
         addmod
@@ -1003,7 +950,7 @@ addmod_31:  // 0x08
         mload
         jump
         stop
-        /* (8) wopcode 0x09, mulmod, mulmod_31    */
+        /* (8) wopcode 0x09, mulmod, mulmod_31      */
 mulmod_31:  // 0x09
         pop
         mulmod
@@ -1012,7 +959,7 @@ mulmod_31:  // 0x09
         mload
         jump
         stop
-        /* (9) wopcode 0x0a, exp, exp_21    */
+        /* (9) wopcode 0x0a, exp, exp_21      */
 exp_21:  // 0x0a
         pop
         exp
@@ -1021,7 +968,7 @@ exp_21:  // 0x0a
         mload
         jump
         stop
-        /* (10) wopcode 0x0b, signextend, signextend_21    */
+        /* (10) wopcode 0x0b, signextend, signextend_21      */
 signextend_21:  // 0x0b
         pop
         signextend
@@ -1030,7 +977,7 @@ signextend_21:  // 0x0b
         mload
         jump
         stop
-        /* (0) eopcode 0x0c, 1    */
+        /* (0) eopcode 0x0c, 1      */
 unused_1:  // 0x0c
         stop
         stop
@@ -1039,7 +986,7 @@ unused_1:  // 0x0c
         stop
         stop
         stop
-        /* (1) eopcode 0x0d, 2    */
+        /* (1) eopcode 0x0d, 2      */
 unused_2:  // 0x0d
         stop
         stop
@@ -1048,7 +995,7 @@ unused_2:  // 0x0d
         stop
         stop
         stop
-        /* (2) eopcode 0x0e, 3    */
+        /* (2) eopcode 0x0e, 3      */
 unused_3:  // 0x0e
         stop
         stop
@@ -1057,7 +1004,7 @@ unused_3:  // 0x0e
         stop
         stop
         stop
-        /* (3) eopcode 0x0f, 4    */
+        /* (3) eopcode 0x0f, 4      */
 unused_4:  // 0x0f
         stop
         stop
@@ -1066,7 +1013,7 @@ unused_4:  // 0x0f
         stop
         stop
         stop
-        /* (11) wopcode 0x10, lt, lt_21    */
+        /* (11) wopcode 0x10, lt, lt_21      */
 lt_21:  // 0x10
         pop
         lt
@@ -1075,7 +1022,7 @@ lt_21:  // 0x10
         mload
         jump
         stop
-        /* (12) wopcode 0x11, gt, gt_21    */
+        /* (12) wopcode 0x11, gt, gt_21      */
 gt_21:  // 0x11
         pop
         gt
@@ -1084,7 +1031,7 @@ gt_21:  // 0x11
         mload
         jump
         stop
-        /* (13) wopcode 0x12, slt, slt_21    */
+        /* (13) wopcode 0x12, slt, slt_21      */
 slt_21:  // 0x12
         pop
         slt
@@ -1093,7 +1040,7 @@ slt_21:  // 0x12
         mload
         jump
         stop
-        /* (14) wopcode 0x13, sgt, sgt_21    */
+        /* (14) wopcode 0x13, sgt, sgt_21      */
 sgt_21:  // 0x13
         pop
         sgt
@@ -1102,7 +1049,7 @@ sgt_21:  // 0x13
         mload
         jump
         stop
-        /* (15) wopcode 0x14, eq, eq_21    */
+        /* (15) wopcode 0x14, eq, eq_21      */
 eq_21:  // 0x14
         pop
         eq
@@ -1111,7 +1058,7 @@ eq_21:  // 0x14
         mload
         jump
         stop
-        /* (16) wopcode 0x15, iszero, iszero_11    */
+        /* (16) wopcode 0x15, iszero, iszero_11      */
 iszero_11:  // 0x15
         pop
         iszero
@@ -1120,7 +1067,7 @@ iszero_11:  // 0x15
         mload
         jump
         stop
-        /* (17) wopcode 0x16, and, and_21    */
+        /* (17) wopcode 0x16, and, and_21      */
 and_21:  // 0x16
         pop
         and
@@ -1129,7 +1076,7 @@ and_21:  // 0x16
         mload
         jump
         stop
-        /* (18) wopcode 0x17, or, or_21    */
+        /* (18) wopcode 0x17, or, or_21      */
 or_21:  // 0x17
         pop
         or
@@ -1138,7 +1085,7 @@ or_21:  // 0x17
         mload
         jump
         stop
-        /* (19) wopcode 0x18, xor, xor_21    */
+        /* (19) wopcode 0x18, xor, xor_21      */
 xor_21:  // 0x18
         pop
         xor
@@ -1147,7 +1094,7 @@ xor_21:  // 0x18
         mload
         jump
         stop
-        /* (20) wopcode 0x19, not, not_11    */
+        /* (20) wopcode 0x19, not, not_11      */
 not_11:  // 0x19
         pop
         not
@@ -1156,7 +1103,7 @@ not_11:  // 0x19
         mload
         jump
         stop
-        /* (21) wopcode 0x1a, byte, byte_21    */
+        /* (21) wopcode 0x1a, byte, byte_21      */
 byte_21:  // 0x1a
         pop
         byte
@@ -1165,7 +1112,7 @@ byte_21:  // 0x1a
         mload
         jump
         stop
-        /* (22) wopcode 0x1b, shl, shl_21    */
+        /* (22) wopcode 0x1b, shl, shl_21      */
 shl_21:  // 0x1b
         pop
         shl
@@ -1174,7 +1121,7 @@ shl_21:  // 0x1b
         mload
         jump
         stop
-        /* (23) wopcode 0x1c, shr, shr_21    */
+        /* (23) wopcode 0x1c, shr, shr_21      */
 shr_21:  // 0x1c
         pop
         shr
@@ -1183,7 +1130,7 @@ shr_21:  // 0x1c
         mload
         jump
         stop
-        /* (24) wopcode 0x1d, sar, sar_21    */
+        /* (24) wopcode 0x1d, sar, sar_21      */
 sar_21:  // 0x1d
         pop
         sar
@@ -1192,7 +1139,7 @@ sar_21:  // 0x1d
         mload
         jump
         stop
-        /* (4) eopcode 0x1e, 5    */
+        /* (4) eopcode 0x1e, 5      */
 unused_5:  // 0x1e
         stop
         stop
@@ -1201,7 +1148,7 @@ unused_5:  // 0x1e
         stop
         stop
         stop
-        /* (5) eopcode 0x1f, 6    */
+        /* (5) eopcode 0x1f, 6      */
 unused_6:  // 0x1f
         stop
         stop
@@ -1210,7 +1157,7 @@ unused_6:  // 0x1f
         stop
         stop
         stop
-        /* (25) wopcode 0x20, sha3, sha3_21    */
+        /* (25) wopcode 0x20, sha3, sha3_21      */
 sha3_21:  // 0x20
         pop
         sha3
@@ -1219,7 +1166,7 @@ sha3_21:  // 0x20
         mload
         jump
         stop
-        /* (6) eopcode 0x21, 7    */
+        /* (6) eopcode 0x21, 7      */
 unused_7:  // 0x21
         stop
         stop
@@ -1228,7 +1175,7 @@ unused_7:  // 0x21
         stop
         stop
         stop
-        /* (7) eopcode 0x22, 8    */
+        /* (7) eopcode 0x22, 8      */
 unused_8:  // 0x22
         stop
         stop
@@ -1237,7 +1184,7 @@ unused_8:  // 0x22
         stop
         stop
         stop
-        /* (8) eopcode 0x23, 9    */
+        /* (8) eopcode 0x23, 9      */
 unused_9:  // 0x23
         stop
         stop
@@ -1246,7 +1193,7 @@ unused_9:  // 0x23
         stop
         stop
         stop
-        /* (9) eopcode 0x24, 10    */
+        /* (9) eopcode 0x24, 10      */
 unused_10:  // 0x24
         stop
         stop
@@ -1255,7 +1202,7 @@ unused_10:  // 0x24
         stop
         stop
         stop
-        /* (10) eopcode 0x25, 11    */
+        /* (10) eopcode 0x25, 11      */
 unused_11:  // 0x25
         stop
         stop
@@ -1264,7 +1211,7 @@ unused_11:  // 0x25
         stop
         stop
         stop
-        /* (11) eopcode 0x26, 12    */
+        /* (11) eopcode 0x26, 12      */
 unused_12:  // 0x26
         stop
         stop
@@ -1273,7 +1220,7 @@ unused_12:  // 0x26
         stop
         stop
         stop
-        /* (12) eopcode 0x27, 13    */
+        /* (12) eopcode 0x27, 13      */
 unused_13:  // 0x27
         stop
         stop
@@ -1282,7 +1229,7 @@ unused_13:  // 0x27
         stop
         stop
         stop
-        /* (13) eopcode 0x28, 14    */
+        /* (13) eopcode 0x28, 14      */
 unused_14:  // 0x28
         stop
         stop
@@ -1291,7 +1238,7 @@ unused_14:  // 0x28
         stop
         stop
         stop
-        /* (14) eopcode 0x29, 15    */
+        /* (14) eopcode 0x29, 15      */
 unused_15:  // 0x29
         stop
         stop
@@ -1300,7 +1247,7 @@ unused_15:  // 0x29
         stop
         stop
         stop
-        /* (15) eopcode 0x2a, 16    */
+        /* (15) eopcode 0x2a, 16      */
 unused_16:  // 0x2a
         stop
         stop
@@ -1309,7 +1256,7 @@ unused_16:  // 0x2a
         stop
         stop
         stop
-        /* (16) eopcode 0x2b, 17    */
+        /* (16) eopcode 0x2b, 17      */
 unused_17:  // 0x2b
         stop
         stop
@@ -1318,7 +1265,7 @@ unused_17:  // 0x2b
         stop
         stop
         stop
-        /* (17) eopcode 0x2c, 18    */
+        /* (17) eopcode 0x2c, 18      */
 unused_18:  // 0x2c
         stop
         stop
@@ -1327,7 +1274,7 @@ unused_18:  // 0x2c
         stop
         stop
         stop
-        /* (18) eopcode 0x2d, 19    */
+        /* (18) eopcode 0x2d, 19      */
 unused_19:  // 0x2d
         stop
         stop
@@ -1336,7 +1283,7 @@ unused_19:  // 0x2d
         stop
         stop
         stop
-        /* (19) eopcode 0x2e, 20    */
+        /* (19) eopcode 0x2e, 20      */
 unused_20:  // 0x2e
         stop
         stop
@@ -1345,7 +1292,7 @@ unused_20:  // 0x2e
         stop
         stop
         stop
-        /* (20) eopcode 0x2f, 21    */
+        /* (20) eopcode 0x2f, 21      */
 unused_21:  // 0x2f
         stop
         stop
@@ -1354,7 +1301,7 @@ unused_21:  // 0x2f
         stop
         stop
         stop
-        /* (26) wopcode 0x30, address, address_01    */
+        /* (26) wopcode 0x30, address, address_01      */
 address_01:  // 0x30
         pop
         address
@@ -1363,7 +1310,7 @@ address_01:  // 0x30
         mload
         jump
         stop
-        /* (27) wopcode 0x31, balance, balance_11    */
+        /* (27) wopcode 0x31, balance, balance_11      */
 balance_11:  // 0x31
         pop
         balance
@@ -1372,7 +1319,7 @@ balance_11:  // 0x31
         mload
         jump
         stop
-        /* (28) wopcode 0x32, origin, origin_01    */
+        /* (28) wopcode 0x32, origin, origin_01      */
 origin_01:  // 0x32
         pop
         origin
@@ -1381,7 +1328,7 @@ origin_01:  // 0x32
         mload
         jump
         stop
-        /* (29) wopcode 0x33, caller, caller_01    */
+        /* (29) wopcode 0x33, caller, caller_01      */
 caller_01:  // 0x33
         pop
         caller
@@ -1390,7 +1337,7 @@ caller_01:  // 0x33
         mload
         jump
         stop
-        /* (30) wopcode 0x34, callvalue, callvalue_01    */
+        /* (30) wopcode 0x34, callvalue, callvalue_01      */
 callvalue_01:  // 0x34
         pop
         callvalue
@@ -1399,7 +1346,7 @@ callvalue_01:  // 0x34
         mload
         jump
         stop
-        /* (31) wopcode 0x35, calldataload, calldataload_11    */
+        /* (31) wopcode 0x35, calldataload, calldataload_11      */
 calldataload_11:  // 0x35
         pop
         calldataload
@@ -1408,7 +1355,7 @@ calldataload_11:  // 0x35
         mload
         jump
         stop
-        /* (32) wopcode 0x36, calldatasize, calldatasize_01    */
+        /* (32) wopcode 0x36, calldatasize, calldatasize_01      */
 calldatasize_01:  // 0x36
         pop
         calldatasize
@@ -1417,7 +1364,7 @@ calldatasize_01:  // 0x36
         mload
         jump
         stop
-        /* (33) wopcode 0x37, calldatacopy, calldatacopy_30    */
+        /* (33) wopcode 0x37, calldatacopy, calldatacopy_30      */
 calldatacopy_30:  // 0x37
         pop
         calldatacopy
@@ -1426,7 +1373,7 @@ calldatacopy_30:  // 0x37
         mload
         jump
         stop
-        /* (34) wopcode 0x38, codesize, codesize_01    */
+        /* (34) wopcode 0x38, codesize, codesize_01      */
 codesize_01:  // 0x38
         pop
         codesize
@@ -1435,7 +1382,7 @@ codesize_01:  // 0x38
         mload
         jump
         stop
-        /* (35) wopcode 0x39, codecopy, codecopy_30    */
+        /* (35) wopcode 0x39, codecopy, codecopy_30      */
 codecopy_30:  // 0x39
         pop
         codecopy
@@ -1444,7 +1391,7 @@ codecopy_30:  // 0x39
         mload
         jump
         stop
-        /* (36) wopcode 0x3a, gasprice, gasprice_01    */
+        /* (36) wopcode 0x3a, gasprice, gasprice_01      */
 gasprice_01:  // 0x3a
         pop
         gasprice
@@ -1453,7 +1400,7 @@ gasprice_01:  // 0x3a
         mload
         jump
         stop
-        /* (37) wopcode 0x3b, extcodesize, extcodesize_11    */
+        /* (37) wopcode 0x3b, extcodesize, extcodesize_11      */
 extcodesize_11:  // 0x3b
         pop
         extcodesize
@@ -1462,7 +1409,7 @@ extcodesize_11:  // 0x3b
         mload
         jump
         stop
-        /* (38) wopcode 0x3c, extcodecopy, extcodecopy_40    */
+        /* (38) wopcode 0x3c, extcodecopy, extcodecopy_40      */
 extcodecopy_40:  // 0x3c
         pop
         extcodecopy
@@ -1471,7 +1418,7 @@ extcodecopy_40:  // 0x3c
         mload
         jump
         stop
-        /* (39) wopcode 0x3d, returndatasize, returndatasize_01    */
+        /* (39) wopcode 0x3d, returndatasize, returndatasize_01      */
 returndatasize_01:  // 0x3d
         pop
         returndatasize
@@ -1480,7 +1427,7 @@ returndatasize_01:  // 0x3d
         mload
         jump
         stop
-        /* (40) wopcode 0x3e, returndatacopy, returndatacopy_30    */
+        /* (40) wopcode 0x3e, returndatacopy, returndatacopy_30      */
 returndatacopy_30:  // 0x3e
         pop
         returndatacopy
@@ -1489,7 +1436,7 @@ returndatacopy_30:  // 0x3e
         mload
         jump
         stop
-        /* (41) wopcode 0x3f, extcodehash, extcodehash_11    */
+        /* (41) wopcode 0x3f, extcodehash, extcodehash_11      */
 extcodehash_11:  // 0x3f
         pop
         extcodehash
@@ -1498,7 +1445,7 @@ extcodehash_11:  // 0x3f
         mload
         jump
         stop
-        /* (42) wopcode 0x40, blockhash, blockhash_11    */
+        /* (42) wopcode 0x40, blockhash, blockhash_11      */
 blockhash_11:  // 0x40
         pop
         blockhash
@@ -1507,7 +1454,7 @@ blockhash_11:  // 0x40
         mload
         jump
         stop
-        /* (43) wopcode 0x41, coinbase, coinbase_01    */
+        /* (43) wopcode 0x41, coinbase, coinbase_01      */
 coinbase_01:  // 0x41
         pop
         coinbase
@@ -1516,7 +1463,7 @@ coinbase_01:  // 0x41
         mload
         jump
         stop
-        /* (44) wopcode 0x42, timestamp, timestamp_01    */
+        /* (44) wopcode 0x42, timestamp, timestamp_01      */
 timestamp_01:  // 0x42
         pop
         timestamp
@@ -1525,7 +1472,7 @@ timestamp_01:  // 0x42
         mload
         jump
         stop
-        /* (45) wopcode 0x43, number, number_01    */
+        /* (45) wopcode 0x43, number, number_01      */
 number_01:  // 0x43
         pop
         number
@@ -1534,7 +1481,7 @@ number_01:  // 0x43
         mload
         jump
         stop
-        /* (46) wopcode 0x44, difficulty, difficulty_01    */
+        /* (46) wopcode 0x44, difficulty, difficulty_01      */
 difficulty_01:  // 0x44
         pop
         difficulty
@@ -1543,7 +1490,7 @@ difficulty_01:  // 0x44
         mload
         jump
         stop
-        /* (47) wopcode 0x45, gaslimit, gaslimit_01    */
+        /* (47) wopcode 0x45, gaslimit, gaslimit_01      */
 gaslimit_01:  // 0x45
         pop
         gaslimit
@@ -1552,7 +1499,7 @@ gaslimit_01:  // 0x45
         mload
         jump
         stop
-        /* (48) wopcode 0x46, stop, chainid_01    */
+        /* (48) wopcode 0x46, stop, chainid_01      */
 chainid_01:  // 0x46
         pop
         stop
@@ -1561,7 +1508,7 @@ chainid_01:  // 0x46
         mload
         jump
         stop
-        /* (49) wopcode 0x47, stop, selfbalance_01    */
+        /* (49) wopcode 0x47, stop, selfbalance_01      */
 selfbalance_01:  // 0x47
         pop
         stop
@@ -1570,7 +1517,7 @@ selfbalance_01:  // 0x47
         mload
         jump
         stop
-        /* (21) eopcode 0x48, 22    */
+        /* (21) eopcode 0x48, 22      */
 unused_22:  // 0x48
         stop
         stop
@@ -1579,7 +1526,7 @@ unused_22:  // 0x48
         stop
         stop
         stop
-        /* (22) eopcode 0x49, 23    */
+        /* (22) eopcode 0x49, 23      */
 unused_23:  // 0x49
         stop
         stop
@@ -1588,7 +1535,7 @@ unused_23:  // 0x49
         stop
         stop
         stop
-        /* (23) eopcode 0x4a, 24    */
+        /* (23) eopcode 0x4a, 24      */
 unused_24:  // 0x4a
         stop
         stop
@@ -1597,7 +1544,7 @@ unused_24:  // 0x4a
         stop
         stop
         stop
-        /* (24) eopcode 0x4b, 25    */
+        /* (24) eopcode 0x4b, 25      */
 unused_25:  // 0x4b
         stop
         stop
@@ -1606,7 +1553,7 @@ unused_25:  // 0x4b
         stop
         stop
         stop
-        /* (25) eopcode 0x4c, 26    */
+        /* (25) eopcode 0x4c, 26      */
 unused_26:  // 0x4c
         stop
         stop
@@ -1615,7 +1562,7 @@ unused_26:  // 0x4c
         stop
         stop
         stop
-        /* (26) eopcode 0x4d, 27    */
+        /* (26) eopcode 0x4d, 27      */
 unused_27:  // 0x4d
         stop
         stop
@@ -1624,7 +1571,7 @@ unused_27:  // 0x4d
         stop
         stop
         stop
-        /* (27) eopcode 0x4e, 28    */
+        /* (27) eopcode 0x4e, 28      */
 unused_28:  // 0x4e
         stop
         stop
@@ -1633,7 +1580,7 @@ unused_28:  // 0x4e
         stop
         stop
         stop
-        /* (28) eopcode 0x4f, 29    */
+        /* (28) eopcode 0x4f, 29      */
 unused_29:  // 0x4f
         stop
         stop
@@ -1642,7 +1589,7 @@ unused_29:  // 0x4f
         stop
         stop
         stop
-        /* (50) wopcode 0x50, pop, pop_00    */
+        /* (50) wopcode 0x50, pop, pop_00      */
 pop_00:  // 0x50
         pop
         pop
@@ -1651,7 +1598,7 @@ pop_00:  // 0x50
         mload
         jump
         stop
-        /* (51) wopcode 0x51, mload, mload_11    */
+        /* (51) wopcode 0x51, mload, mload_11      */
 mload_11:  // 0x51
         pop
         mload
@@ -1660,7 +1607,7 @@ mload_11:  // 0x51
         mload
         jump
         stop
-        /* (52) wopcode 0x52, mstore, mstore_20    */
+        /* (52) wopcode 0x52, mstore, mstore_20      */
 mstore_20:  // 0x52
         pop
         mstore
@@ -1669,7 +1616,7 @@ mstore_20:  // 0x52
         mload
         jump
         stop
-        /* (53) wopcode 0x53, mstore8, mstore8_20    */
+        /* (53) wopcode 0x53, mstore8, mstore8_20      */
 mstore8_20:  // 0x53
         pop
         mstore8
@@ -1678,7 +1625,7 @@ mstore8_20:  // 0x53
         mload
         jump
         stop
-        /* (54) wopcode 0x54, sload, sload_11    */
+        /* (54) wopcode 0x54, sload, sload_11      */
 sload_11:  // 0x54
         pop
         sload
@@ -1687,7 +1634,7 @@ sload_11:  // 0x54
         mload
         jump
         stop
-        /* (55) wopcode 0x55, sstore, sstore_20    */
+        /* (55) wopcode 0x55, sstore, sstore_20      */
 sstore_20:  // 0x55
         pop
         sstore
@@ -1712,7 +1659,7 @@ sstore_20:  // 0x55
             stop
             stop
             stop
-        /* (56) wopcode 0x58, pc, pc_01    */
+        /* (56) wopcode 0x58, pc, pc_01      */
 pc_01:  // 0x58
         pop
         pc
@@ -1721,7 +1668,7 @@ pc_01:  // 0x58
         mload
         jump
         stop
-        /* (57) wopcode 0x59, msize, msize_01    */
+        /* (57) wopcode 0x59, msize, msize_01      */
 msize_01:  // 0x59
         pop
         msize
@@ -1730,7 +1677,7 @@ msize_01:  // 0x59
         mload
         jump
         stop
-        /* (58) wopcode 0x5a, gas, gas_01    */
+        /* (58) wopcode 0x5a, gas, gas_01      */
 gas_01:  // 0x5a
         pop
         gas
@@ -1739,7 +1686,7 @@ gas_01:  // 0x5a
         mload
         jump
         stop
-        /* (59) wopcode 0x5b, jumpdest, jumpdest_00    */
+        /* (59) wopcode 0x5b, jumpdest, jumpdest_00      */
 jumpdest_00:  // 0x5b
         pop
         jumpdest
@@ -1748,7 +1695,7 @@ jumpdest_00:  // 0x5b
         mload
         jump
         stop
-        /* (29) eopcode 0x5c, 30    */
+        /* (29) eopcode 0x5c, 30      */
 unused_30:  // 0x5c
         stop
         stop
@@ -1757,7 +1704,7 @@ unused_30:  // 0x5c
         stop
         stop
         stop
-        /* (30) eopcode 0x5d, 31    */
+        /* (30) eopcode 0x5d, 31      */
 unused_31:  // 0x5d
         stop
         stop
@@ -1766,7 +1713,7 @@ unused_31:  // 0x5d
         stop
         stop
         stop
-        /* (31) eopcode 0x5e, 32    */
+        /* (31) eopcode 0x5e, 32      */
 unused_32:  // 0x5e
         stop
         stop
@@ -1775,7 +1722,7 @@ unused_32:  // 0x5e
         stop
         stop
         stop
-        /* (32) eopcode 0x5f, 33    */
+        /* (32) eopcode 0x5f, 33      */
 unused_33:  // 0x5f
         stop
         stop
@@ -1784,7 +1731,7 @@ unused_33:  // 0x5f
         stop
         stop
         stop
-        /* (0) wopcode_push 0x60, 1    */
+        /* (0) wopcode_push 0x60, 1      */
 push1_01:  // 0x60
         0xc0
         // push
@@ -1793,7 +1740,7 @@ push1_01:  // 0x60
         stop
         stop
         stop
-        /* (1) wopcode_push 0x61, 2    */
+        /* (1) wopcode_push 0x61, 2      */
 push2_01:  // 0x61
         0xc0
         // push
@@ -1802,7 +1749,7 @@ push2_01:  // 0x61
         stop
         stop
         stop
-        /* (2) wopcode_push 0x62, 3    */
+        /* (2) wopcode_push 0x62, 3      */
 push3_01:  // 0x62
         0xc0
         // push
@@ -1811,7 +1758,7 @@ push3_01:  // 0x62
         stop
         stop
         stop
-        /* (3) wopcode_push 0x63, 4    */
+        /* (3) wopcode_push 0x63, 4      */
 push4_01:  // 0x63
         0xc0
         // push
@@ -1820,7 +1767,7 @@ push4_01:  // 0x63
         stop
         stop
         stop
-        /* (4) wopcode_push 0x64, 5    */
+        /* (4) wopcode_push 0x64, 5      */
 push5_01:  // 0x64
         0xc0
         // push
@@ -1829,7 +1776,7 @@ push5_01:  // 0x64
         stop
         stop
         stop
-        /* (5) wopcode_push 0x65, 6    */
+        /* (5) wopcode_push 0x65, 6      */
 push6_01:  // 0x65
         0xc0
         // push
@@ -1838,7 +1785,7 @@ push6_01:  // 0x65
         stop
         stop
         stop
-        /* (6) wopcode_push 0x66, 7    */
+        /* (6) wopcode_push 0x66, 7      */
 push7_01:  // 0x66
         0xc0
         // push
@@ -1847,7 +1794,7 @@ push7_01:  // 0x66
         stop
         stop
         stop
-        /* (7) wopcode_push 0x67, 8    */
+        /* (7) wopcode_push 0x67, 8      */
 push8_01:  // 0x67
         0xc0
         // push
@@ -1856,7 +1803,7 @@ push8_01:  // 0x67
         stop
         stop
         stop
-        /* (8) wopcode_push 0x68, 9    */
+        /* (8) wopcode_push 0x68, 9      */
 push9_01:  // 0x68
         0xc0
         // push
@@ -1865,7 +1812,7 @@ push9_01:  // 0x68
         stop
         stop
         stop
-        /* (9) wopcode_push 0x69, 10    */
+        /* (9) wopcode_push 0x69, 10      */
 push10_01:  // 0x69
         0xc0
         // push
@@ -1874,7 +1821,7 @@ push10_01:  // 0x69
         stop
         stop
         stop
-        /* (10) wopcode_push 0x6a, 11    */
+        /* (10) wopcode_push 0x6a, 11      */
 push11_01:  // 0x6a
         0xc0
         // push
@@ -1883,7 +1830,7 @@ push11_01:  // 0x6a
         stop
         stop
         stop
-        /* (11) wopcode_push 0x6b, 12    */
+        /* (11) wopcode_push 0x6b, 12      */
 push12_01:  // 0x6b
         0xc0
         // push
@@ -1892,7 +1839,7 @@ push12_01:  // 0x6b
         stop
         stop
         stop
-        /* (12) wopcode_push 0x6c, 13    */
+        /* (12) wopcode_push 0x6c, 13      */
 push13_01:  // 0x6c
         0xc0
         // push
@@ -1901,7 +1848,7 @@ push13_01:  // 0x6c
         stop
         stop
         stop
-        /* (13) wopcode_push 0x6d, 14    */
+        /* (13) wopcode_push 0x6d, 14      */
 push14_01:  // 0x6d
         0xc0
         // push
@@ -1910,7 +1857,7 @@ push14_01:  // 0x6d
         stop
         stop
         stop
-        /* (14) wopcode_push 0x6e, 15    */
+        /* (14) wopcode_push 0x6e, 15      */
 push15_01:  // 0x6e
         0xc0
         // push
@@ -1919,7 +1866,7 @@ push15_01:  // 0x6e
         stop
         stop
         stop
-        /* (15) wopcode_push 0x6f, 16    */
+        /* (15) wopcode_push 0x6f, 16      */
 push16_01:  // 0x6f
         0xc0
         // push
@@ -1928,7 +1875,7 @@ push16_01:  // 0x6f
         stop
         stop
         stop
-        /* (16) wopcode_push 0x70, 17    */
+        /* (16) wopcode_push 0x70, 17      */
 push17_01:  // 0x70
         0xc0
         // push
@@ -1937,7 +1884,7 @@ push17_01:  // 0x70
         stop
         stop
         stop
-        /* (17) wopcode_push 0x71, 18    */
+        /* (17) wopcode_push 0x71, 18      */
 push18_01:  // 0x71
         0xc0
         // push
@@ -1946,7 +1893,7 @@ push18_01:  // 0x71
         stop
         stop
         stop
-        /* (18) wopcode_push 0x72, 19    */
+        /* (18) wopcode_push 0x72, 19      */
 push19_01:  // 0x72
         0xc0
         // push
@@ -1955,7 +1902,7 @@ push19_01:  // 0x72
         stop
         stop
         stop
-        /* (19) wopcode_push 0x73, 20    */
+        /* (19) wopcode_push 0x73, 20      */
 push20_01:  // 0x73
         0xc0
         // push
@@ -1964,7 +1911,7 @@ push20_01:  // 0x73
         stop
         stop
         stop
-        /* (20) wopcode_push 0x74, 21    */
+        /* (20) wopcode_push 0x74, 21      */
 push21_01:  // 0x74
         0xc0
         // push
@@ -1973,7 +1920,7 @@ push21_01:  // 0x74
         stop
         stop
         stop
-        /* (21) wopcode_push 0x75, 22    */
+        /* (21) wopcode_push 0x75, 22      */
 push22_01:  // 0x75
         0xc0
         // push
@@ -1982,7 +1929,7 @@ push22_01:  // 0x75
         stop
         stop
         stop
-        /* (22) wopcode_push 0x76, 23    */
+        /* (22) wopcode_push 0x76, 23      */
 push23_01:  // 0x76
         0xc0
         // push
@@ -1991,7 +1938,7 @@ push23_01:  // 0x76
         stop
         stop
         stop
-        /* (23) wopcode_push 0x77, 24    */
+        /* (23) wopcode_push 0x77, 24      */
 push24_01:  // 0x77
         0xc0
         // push
@@ -2000,7 +1947,7 @@ push24_01:  // 0x77
         stop
         stop
         stop
-        /* (24) wopcode_push 0x78, 25    */
+        /* (24) wopcode_push 0x78, 25      */
 push25_01:  // 0x78
         0xc0
         // push
@@ -2009,7 +1956,7 @@ push25_01:  // 0x78
         stop
         stop
         stop
-        /* (25) wopcode_push 0x79, 26    */
+        /* (25) wopcode_push 0x79, 26      */
 push26_01:  // 0x79
         0xc0
         // push
@@ -2018,7 +1965,7 @@ push26_01:  // 0x79
         stop
         stop
         stop
-        /* (26) wopcode_push 0x7a, 27    */
+        /* (26) wopcode_push 0x7a, 27      */
 push27_01:  // 0x7a
         0xc0
         // push
@@ -2027,7 +1974,7 @@ push27_01:  // 0x7a
         stop
         stop
         stop
-        /* (27) wopcode_push 0x7b, 28    */
+        /* (27) wopcode_push 0x7b, 28      */
 push28_01:  // 0x7b
         0xc0
         // push
@@ -2036,7 +1983,7 @@ push28_01:  // 0x7b
         stop
         stop
         stop
-        /* (28) wopcode_push 0x7c, 29    */
+        /* (28) wopcode_push 0x7c, 29      */
 push29_01:  // 0x7c
         0xc0
         // push
@@ -2045,7 +1992,7 @@ push29_01:  // 0x7c
         stop
         stop
         stop
-        /* (29) wopcode_push 0x7d, 30    */
+        /* (29) wopcode_push 0x7d, 30      */
 push30_01:  // 0x7d
         0xc0
         // push
@@ -2054,7 +2001,7 @@ push30_01:  // 0x7d
         stop
         stop
         stop
-        /* (30) wopcode_push 0x7e, 31    */
+        /* (30) wopcode_push 0x7e, 31      */
 push31_01:  // 0x7e
         0xc0
         // push
@@ -2063,7 +2010,7 @@ push31_01:  // 0x7e
         stop
         stop
         stop
-        /* (31) wopcode_push 0x7f, 32    */
+        /* (31) wopcode_push 0x7f, 32      */
 push32_01:  // 0x7f
         0xc0
         // push
@@ -2072,7 +2019,7 @@ push32_01:  // 0x7f
         stop
         stop
         stop
-        /* (0) wopcode_dup 0x80, 1    */
+        /* (0) wopcode_dup 0x80, 1      */
 dup1_00:  // 0x80
         pop
         dup1
@@ -2081,7 +2028,7 @@ dup1_00:  // 0x80
         mload
         jump
         stop
-        /* (1) wopcode_dup 0x81, 2    */
+        /* (1) wopcode_dup 0x81, 2      */
 dup2_00:  // 0x81
         pop
         dup2
@@ -2090,7 +2037,7 @@ dup2_00:  // 0x81
         mload
         jump
         stop
-        /* (2) wopcode_dup 0x82, 3    */
+        /* (2) wopcode_dup 0x82, 3      */
 dup3_00:  // 0x82
         pop
         dup3
@@ -2099,7 +2046,7 @@ dup3_00:  // 0x82
         mload
         jump
         stop
-        /* (3) wopcode_dup 0x83, 4    */
+        /* (3) wopcode_dup 0x83, 4      */
 dup4_00:  // 0x83
         pop
         dup4
@@ -2108,7 +2055,7 @@ dup4_00:  // 0x83
         mload
         jump
         stop
-        /* (4) wopcode_dup 0x84, 5    */
+        /* (4) wopcode_dup 0x84, 5      */
 dup5_00:  // 0x84
         pop
         dup5
@@ -2117,7 +2064,7 @@ dup5_00:  // 0x84
         mload
         jump
         stop
-        /* (5) wopcode_dup 0x85, 6    */
+        /* (5) wopcode_dup 0x85, 6      */
 dup6_00:  // 0x85
         pop
         dup6
@@ -2126,7 +2073,7 @@ dup6_00:  // 0x85
         mload
         jump
         stop
-        /* (6) wopcode_dup 0x86, 7    */
+        /* (6) wopcode_dup 0x86, 7      */
 dup7_00:  // 0x86
         pop
         dup7
@@ -2135,7 +2082,7 @@ dup7_00:  // 0x86
         mload
         jump
         stop
-        /* (7) wopcode_dup 0x87, 8    */
+        /* (7) wopcode_dup 0x87, 8      */
 dup8_00:  // 0x87
         pop
         dup8
@@ -2144,7 +2091,7 @@ dup8_00:  // 0x87
         mload
         jump
         stop
-        /* (8) wopcode_dup 0x88, 9    */
+        /* (8) wopcode_dup 0x88, 9      */
 dup9_00:  // 0x88
         pop
         dup9
@@ -2153,7 +2100,7 @@ dup9_00:  // 0x88
         mload
         jump
         stop
-        /* (9) wopcode_dup 0x89, 10    */
+        /* (9) wopcode_dup 0x89, 10      */
 dup10_00:  // 0x89
         pop
         dup10
@@ -2162,7 +2109,7 @@ dup10_00:  // 0x89
         mload
         jump
         stop
-        /* (10) wopcode_dup 0x8a, 11    */
+        /* (10) wopcode_dup 0x8a, 11      */
 dup11_00:  // 0x8a
         pop
         dup11
@@ -2171,7 +2118,7 @@ dup11_00:  // 0x8a
         mload
         jump
         stop
-        /* (11) wopcode_dup 0x8b, 12    */
+        /* (11) wopcode_dup 0x8b, 12      */
 dup12_00:  // 0x8b
         pop
         dup12
@@ -2180,7 +2127,7 @@ dup12_00:  // 0x8b
         mload
         jump
         stop
-        /* (12) wopcode_dup 0x8c, 13    */
+        /* (12) wopcode_dup 0x8c, 13      */
 dup13_00:  // 0x8c
         pop
         dup13
@@ -2189,7 +2136,7 @@ dup13_00:  // 0x8c
         mload
         jump
         stop
-        /* (13) wopcode_dup 0x8d, 14    */
+        /* (13) wopcode_dup 0x8d, 14      */
 dup14_00:  // 0x8d
         pop
         dup14
@@ -2198,7 +2145,7 @@ dup14_00:  // 0x8d
         mload
         jump
         stop
-        /* (14) wopcode_dup 0x8e, 15    */
+        /* (14) wopcode_dup 0x8e, 15      */
 dup15_00:  // 0x8e
         pop
         dup15
@@ -2207,7 +2154,7 @@ dup15_00:  // 0x8e
         mload
         jump
         stop
-        /* (15) wopcode_dup 0x8f, 16    */
+        /* (15) wopcode_dup 0x8f, 16      */
 dup16_00:  // 0x8f
         pop
         dup16
@@ -2216,7 +2163,7 @@ dup16_00:  // 0x8f
         mload
         jump
         stop
-        /* (0) wopcode_swap 0x90, 1    */
+        /* (0) wopcode_swap 0x90, 1      */
 swap1_00:  // 0x90
         pop
         swap1
@@ -2225,7 +2172,7 @@ swap1_00:  // 0x90
         mload
         jump
         stop
-        /* (1) wopcode_swap 0x91, 2    */
+        /* (1) wopcode_swap 0x91, 2      */
 swap2_00:  // 0x91
         pop
         swap2
@@ -2234,7 +2181,7 @@ swap2_00:  // 0x91
         mload
         jump
         stop
-        /* (2) wopcode_swap 0x92, 3    */
+        /* (2) wopcode_swap 0x92, 3      */
 swap3_00:  // 0x92
         pop
         swap3
@@ -2243,7 +2190,7 @@ swap3_00:  // 0x92
         mload
         jump
         stop
-        /* (3) wopcode_swap 0x93, 4    */
+        /* (3) wopcode_swap 0x93, 4      */
 swap4_00:  // 0x93
         pop
         swap4
@@ -2252,7 +2199,7 @@ swap4_00:  // 0x93
         mload
         jump
         stop
-        /* (4) wopcode_swap 0x94, 5    */
+        /* (4) wopcode_swap 0x94, 5      */
 swap5_00:  // 0x94
         pop
         swap5
@@ -2261,7 +2208,7 @@ swap5_00:  // 0x94
         mload
         jump
         stop
-        /* (5) wopcode_swap 0x95, 6    */
+        /* (5) wopcode_swap 0x95, 6      */
 swap6_00:  // 0x95
         pop
         swap6
@@ -2270,7 +2217,7 @@ swap6_00:  // 0x95
         mload
         jump
         stop
-        /* (6) wopcode_swap 0x96, 7    */
+        /* (6) wopcode_swap 0x96, 7      */
 swap7_00:  // 0x96
         pop
         swap7
@@ -2279,7 +2226,7 @@ swap7_00:  // 0x96
         mload
         jump
         stop
-        /* (7) wopcode_swap 0x97, 8    */
+        /* (7) wopcode_swap 0x97, 8      */
 swap8_00:  // 0x97
         pop
         swap8
@@ -2288,7 +2235,7 @@ swap8_00:  // 0x97
         mload
         jump
         stop
-        /* (8) wopcode_swap 0x98, 9    */
+        /* (8) wopcode_swap 0x98, 9      */
 swap9_00:  // 0x98
         pop
         swap9
@@ -2297,7 +2244,7 @@ swap9_00:  // 0x98
         mload
         jump
         stop
-        /* (9) wopcode_swap 0x99, 10    */
+        /* (9) wopcode_swap 0x99, 10      */
 swap10_00:  // 0x99
         pop
         swap10
@@ -2306,7 +2253,7 @@ swap10_00:  // 0x99
         mload
         jump
         stop
-        /* (10) wopcode_swap 0x9a, 11    */
+        /* (10) wopcode_swap 0x9a, 11      */
 swap11_00:  // 0x9a
         pop
         swap11
@@ -2315,7 +2262,7 @@ swap11_00:  // 0x9a
         mload
         jump
         stop
-        /* (11) wopcode_swap 0x9b, 12    */
+        /* (11) wopcode_swap 0x9b, 12      */
 swap12_00:  // 0x9b
         pop
         swap12
@@ -2324,7 +2271,7 @@ swap12_00:  // 0x9b
         mload
         jump
         stop
-        /* (12) wopcode_swap 0x9c, 13    */
+        /* (12) wopcode_swap 0x9c, 13      */
 swap13_00:  // 0x9c
         pop
         swap13
@@ -2333,7 +2280,7 @@ swap13_00:  // 0x9c
         mload
         jump
         stop
-        /* (13) wopcode_swap 0x9d, 14    */
+        /* (13) wopcode_swap 0x9d, 14      */
 swap14_00:  // 0x9d
         pop
         swap14
@@ -2342,7 +2289,7 @@ swap14_00:  // 0x9d
         mload
         jump
         stop
-        /* (14) wopcode_swap 0x9e, 15    */
+        /* (14) wopcode_swap 0x9e, 15      */
 swap15_00:  // 0x9e
         pop
         swap15
@@ -2351,7 +2298,7 @@ swap15_00:  // 0x9e
         mload
         jump
         stop
-        /* (15) wopcode_swap 0x9f, 16    */
+        /* (15) wopcode_swap 0x9f, 16      */
 swap16_00:  // 0x9f
         pop
         swap16
@@ -2360,7 +2307,7 @@ swap16_00:  // 0x9f
         mload
         jump
         stop
-        /* (60) wopcode 0xa0, log0, log0_20    */
+        /* (60) wopcode 0xa0, log0, log0_20      */
 log0_20:  // 0xa0
         pop
         log0
@@ -2369,7 +2316,7 @@ log0_20:  // 0xa0
         mload
         jump
         stop
-        /* (61) wopcode 0xa1, log1, log1_30    */
+        /* (61) wopcode 0xa1, log1, log1_30      */
 log1_30:  // 0xa1
         pop
         log1
@@ -2378,7 +2325,7 @@ log1_30:  // 0xa1
         mload
         jump
         stop
-        /* (62) wopcode 0xa2, log2, log2_40    */
+        /* (62) wopcode 0xa2, log2, log2_40      */
 log2_40:  // 0xa2
         pop
         log2
@@ -2387,7 +2334,7 @@ log2_40:  // 0xa2
         mload
         jump
         stop
-        /* (63) wopcode 0xa3, log3, log3_50    */
+        /* (63) wopcode 0xa3, log3, log3_50      */
 log3_50:  // 0xa3
         pop
         log3
@@ -2396,7 +2343,7 @@ log3_50:  // 0xa3
         mload
         jump
         stop
-        /* (64) wopcode 0xa4, log4, log4_60    */
+        /* (64) wopcode 0xa4, log4, log4_60      */
 log4_60:  // 0xa4
         pop
         log4
@@ -2405,7 +2352,7 @@ log4_60:  // 0xa4
         mload
         jump
         stop
-        /* (33) eopcode 0xa5, 34    */
+        /* (33) eopcode 0xa5, 34      */
 unused_34:  // 0xa5
         stop
         stop
@@ -2414,7 +2361,7 @@ unused_34:  // 0xa5
         stop
         stop
         stop
-        /* (34) eopcode 0xa6, 35    */
+        /* (34) eopcode 0xa6, 35      */
 unused_35:  // 0xa6
         stop
         stop
@@ -2423,7 +2370,7 @@ unused_35:  // 0xa6
         stop
         stop
         stop
-        /* (35) eopcode 0xa7, 36    */
+        /* (35) eopcode 0xa7, 36      */
 unused_36:  // 0xa7
         stop
         stop
@@ -2432,7 +2379,7 @@ unused_36:  // 0xa7
         stop
         stop
         stop
-        /* (36) eopcode 0xa8, 37    */
+        /* (36) eopcode 0xa8, 37      */
 unused_37:  // 0xa8
         stop
         stop
@@ -2441,7 +2388,7 @@ unused_37:  // 0xa8
         stop
         stop
         stop
-        /* (37) eopcode 0xa9, 38    */
+        /* (37) eopcode 0xa9, 38      */
 unused_38:  // 0xa9
         stop
         stop
@@ -2450,7 +2397,7 @@ unused_38:  // 0xa9
         stop
         stop
         stop
-        /* (38) eopcode 0xaa, 39    */
+        /* (38) eopcode 0xaa, 39      */
 unused_39:  // 0xaa
         stop
         stop
@@ -2459,7 +2406,7 @@ unused_39:  // 0xaa
         stop
         stop
         stop
-        /* (39) eopcode 0xab, 40    */
+        /* (39) eopcode 0xab, 40      */
 unused_40:  // 0xab
         stop
         stop
@@ -2468,7 +2415,7 @@ unused_40:  // 0xab
         stop
         stop
         stop
-        /* (40) eopcode 0xac, 41    */
+        /* (40) eopcode 0xac, 41      */
 unused_41:  // 0xac
         stop
         stop
@@ -2477,7 +2424,7 @@ unused_41:  // 0xac
         stop
         stop
         stop
-        /* (41) eopcode 0xad, 42    */
+        /* (41) eopcode 0xad, 42      */
 unused_42:  // 0xad
         stop
         stop
@@ -2486,7 +2433,7 @@ unused_42:  // 0xad
         stop
         stop
         stop
-        /* (42) eopcode 0xae, 43    */
+        /* (42) eopcode 0xae, 43      */
 unused_43:  // 0xae
         stop
         stop
@@ -2495,7 +2442,7 @@ unused_43:  // 0xae
         stop
         stop
         stop
-        /* (43) eopcode 0xaf, 44    */
+        /* (43) eopcode 0xaf, 44      */
 unused_44:  // 0xaf
         stop
         stop
@@ -2504,7 +2451,7 @@ unused_44:  // 0xaf
         stop
         stop
         stop
-        /* (44) eopcode 0xb0, 45    */
+        /* (44) eopcode 0xb0, 45      */
 unused_45:  // 0xb0
         stop
         stop
@@ -2513,7 +2460,7 @@ unused_45:  // 0xb0
         stop
         stop
         stop
-        /* (45) eopcode 0xb1, 46    */
+        /* (45) eopcode 0xb1, 46      */
 unused_46:  // 0xb1
         stop
         stop
@@ -2522,7 +2469,7 @@ unused_46:  // 0xb1
         stop
         stop
         stop
-        /* (46) eopcode 0xb2, 47    */
+        /* (46) eopcode 0xb2, 47      */
 unused_47:  // 0xb2
         stop
         stop
@@ -2531,7 +2478,7 @@ unused_47:  // 0xb2
         stop
         stop
         stop
-        /* (47) eopcode 0xb3, 48    */
+        /* (47) eopcode 0xb3, 48      */
 unused_48:  // 0xb3
         stop
         stop
@@ -2540,7 +2487,7 @@ unused_48:  // 0xb3
         stop
         stop
         stop
-        /* (48) eopcode 0xb4, 49    */
+        /* (48) eopcode 0xb4, 49      */
 unused_49:  // 0xb4
         stop
         stop
@@ -2549,7 +2496,7 @@ unused_49:  // 0xb4
         stop
         stop
         stop
-        /* (49) eopcode 0xb5, 50    */
+        /* (49) eopcode 0xb5, 50      */
 unused_50:  // 0xb5
         stop
         stop
@@ -2558,7 +2505,7 @@ unused_50:  // 0xb5
         stop
         stop
         stop
-        /* (50) eopcode 0xb6, 51    */
+        /* (50) eopcode 0xb6, 51      */
 unused_51:  // 0xb6
         stop
         stop
@@ -2567,7 +2514,7 @@ unused_51:  // 0xb6
         stop
         stop
         stop
-        /* (51) eopcode 0xb7, 52    */
+        /* (51) eopcode 0xb7, 52      */
 unused_52:  // 0xb7
         stop
         stop
@@ -2576,7 +2523,7 @@ unused_52:  // 0xb7
         stop
         stop
         stop
-        /* (52) eopcode 0xb8, 53    */
+        /* (52) eopcode 0xb8, 53      */
 unused_53:  // 0xb8
         stop
         stop
@@ -2585,7 +2532,7 @@ unused_53:  // 0xb8
         stop
         stop
         stop
-        /* (53) eopcode 0xb9, 54    */
+        /* (53) eopcode 0xb9, 54      */
 unused_54:  // 0xb9
         stop
         stop
@@ -2594,7 +2541,7 @@ unused_54:  // 0xb9
         stop
         stop
         stop
-        /* (54) eopcode 0xba, 55    */
+        /* (54) eopcode 0xba, 55      */
 unused_55:  // 0xba
         stop
         stop
@@ -2603,7 +2550,7 @@ unused_55:  // 0xba
         stop
         stop
         stop
-        /* (55) eopcode 0xbb, 56    */
+        /* (55) eopcode 0xbb, 56      */
 unused_56:  // 0xbb
         stop
         stop
@@ -2612,7 +2559,7 @@ unused_56:  // 0xbb
         stop
         stop
         stop
-        /* (56) eopcode 0xbc, 57    */
+        /* (56) eopcode 0xbc, 57      */
 unused_57:  // 0xbc
         stop
         stop
@@ -2621,7 +2568,7 @@ unused_57:  // 0xbc
         stop
         stop
         stop
-        /* (57) eopcode 0xbd, 58    */
+        /* (57) eopcode 0xbd, 58      */
 unused_58:  // 0xbd
         stop
         stop
@@ -2630,7 +2577,7 @@ unused_58:  // 0xbd
         stop
         stop
         stop
-        /* (58) eopcode 0xbe, 59    */
+        /* (58) eopcode 0xbe, 59      */
 unused_59:  // 0xbe
         stop
         stop
@@ -2639,7 +2586,7 @@ unused_59:  // 0xbe
         stop
         stop
         stop
-        /* (59) eopcode 0xbf, 60    */
+        /* (59) eopcode 0xbf, 60      */
 unused_60:  // 0xbf
         stop
         stop
@@ -2648,7 +2595,7 @@ unused_60:  // 0xbf
         stop
         stop
         stop
-        /* (60) eopcode 0xc0, 61    */
+        /* (60) eopcode 0xc0, 61      */
 unused_61:  // 0xc0
         stop
         stop
@@ -2697,7 +2644,7 @@ unused_61:  // 0xc0
             jump
             stop
             stop
-        /* (61) eopcode 0xc6, 62    */
+        /* (61) eopcode 0xc6, 62      */
 unused_62:  // 0xc6
         stop
         stop
@@ -2706,7 +2653,7 @@ unused_62:  // 0xc6
         stop
         stop
         stop
-        /* (62) eopcode 0xc7, 63    */
+        /* (62) eopcode 0xc7, 63      */
 unused_63:  // 0xc7
         stop
         stop
@@ -2715,7 +2662,7 @@ unused_63:  // 0xc7
         stop
         stop
         stop
-        /* (63) eopcode 0xc8, 64    */
+        /* (63) eopcode 0xc8, 64      */
 unused_64:  // 0xc8
         stop
         stop
@@ -2724,7 +2671,7 @@ unused_64:  // 0xc8
         stop
         stop
         stop
-        /* (64) eopcode 0xc9, 65    */
+        /* (64) eopcode 0xc9, 65      */
 unused_65:  // 0xc9
         stop
         stop
@@ -2733,7 +2680,7 @@ unused_65:  // 0xc9
         stop
         stop
         stop
-        /* (65) eopcode 0xca, 66    */
+        /* (65) eopcode 0xca, 66      */
 unused_66:  // 0xca
         stop
         stop
@@ -2742,7 +2689,7 @@ unused_66:  // 0xca
         stop
         stop
         stop
-        /* (66) eopcode 0xcb, 67    */
+        /* (66) eopcode 0xcb, 67      */
 unused_67:  // 0xcb
         stop
         stop
@@ -2751,7 +2698,7 @@ unused_67:  // 0xcb
         stop
         stop
         stop
-        /* (67) eopcode 0xcc, 68    */
+        /* (67) eopcode 0xcc, 68      */
 unused_68:  // 0xcc
         stop
         stop
@@ -2760,7 +2707,7 @@ unused_68:  // 0xcc
         stop
         stop
         stop
-        /* (68) eopcode 0xcd, 69    */
+        /* (68) eopcode 0xcd, 69      */
 unused_69:  // 0xcd
         stop
         stop
@@ -2769,7 +2716,7 @@ unused_69:  // 0xcd
         stop
         stop
         stop
-        /* (69) eopcode 0xce, 70    */
+        /* (69) eopcode 0xce, 70      */
 unused_70:  // 0xce
         stop
         stop
@@ -2778,7 +2725,7 @@ unused_70:  // 0xce
         stop
         stop
         stop
-        /* (70) eopcode 0xcf, 71    */
+        /* (70) eopcode 0xcf, 71      */
 unused_71:  // 0xcf
         stop
         stop
@@ -2787,7 +2734,7 @@ unused_71:  // 0xcf
         stop
         stop
         stop
-        /* (71) eopcode 0xd0, 72    */
+        /* (71) eopcode 0xd0, 72      */
 unused_72:  // 0xd0
         stop
         stop
@@ -2796,7 +2743,7 @@ unused_72:  // 0xd0
         stop
         stop
         stop
-        /* (72) eopcode 0xd1, 73    */
+        /* (72) eopcode 0xd1, 73      */
 unused_73:  // 0xd1
         stop
         stop
@@ -2805,7 +2752,7 @@ unused_73:  // 0xd1
         stop
         stop
         stop
-        /* (73) eopcode 0xd2, 74    */
+        /* (73) eopcode 0xd2, 74      */
 unused_74:  // 0xd2
         stop
         stop
@@ -2814,7 +2761,7 @@ unused_74:  // 0xd2
         stop
         stop
         stop
-        /* (74) eopcode 0xd3, 75    */
+        /* (74) eopcode 0xd3, 75      */
 unused_75:  // 0xd3
         stop
         stop
@@ -2823,7 +2770,7 @@ unused_75:  // 0xd3
         stop
         stop
         stop
-        /* (75) eopcode 0xd4, 76    */
+        /* (75) eopcode 0xd4, 76      */
 unused_76:  // 0xd4
         stop
         stop
@@ -2832,7 +2779,7 @@ unused_76:  // 0xd4
         stop
         stop
         stop
-        /* (76) eopcode 0xd5, 77    */
+        /* (76) eopcode 0xd5, 77      */
 unused_77:  // 0xd5
         stop
         stop
@@ -2841,7 +2788,7 @@ unused_77:  // 0xd5
         stop
         stop
         stop
-        /* (77) eopcode 0xd6, 78    */
+        /* (77) eopcode 0xd6, 78      */
 unused_78:  // 0xd6
         stop
         stop
@@ -2850,7 +2797,7 @@ unused_78:  // 0xd6
         stop
         stop
         stop
-        /* (78) eopcode 0xd7, 79    */
+        /* (78) eopcode 0xd7, 79      */
 unused_79:  // 0xd7
         stop
         stop
@@ -2859,7 +2806,7 @@ unused_79:  // 0xd7
         stop
         stop
         stop
-        /* (79) eopcode 0xd8, 80    */
+        /* (79) eopcode 0xd8, 80      */
 unused_80:  // 0xd8
         stop
         stop
@@ -2868,7 +2815,7 @@ unused_80:  // 0xd8
         stop
         stop
         stop
-        /* (80) eopcode 0xd9, 81    */
+        /* (80) eopcode 0xd9, 81      */
 unused_81:  // 0xd9
         stop
         stop
@@ -2877,7 +2824,7 @@ unused_81:  // 0xd9
         stop
         stop
         stop
-        /* (81) eopcode 0xda, 82    */
+        /* (81) eopcode 0xda, 82      */
 unused_82:  // 0xda
         stop
         stop
@@ -2886,7 +2833,7 @@ unused_82:  // 0xda
         stop
         stop
         stop
-        /* (82) eopcode 0xdb, 83    */
+        /* (82) eopcode 0xdb, 83      */
 unused_83:  // 0xdb
         stop
         stop
@@ -2895,7 +2842,7 @@ unused_83:  // 0xdb
         stop
         stop
         stop
-        /* (83) eopcode 0xdc, 84    */
+        /* (83) eopcode 0xdc, 84      */
 unused_84:  // 0xdc
         stop
         stop
@@ -2904,7 +2851,7 @@ unused_84:  // 0xdc
         stop
         stop
         stop
-        /* (84) eopcode 0xdd, 85    */
+        /* (84) eopcode 0xdd, 85      */
 unused_85:  // 0xdd
         stop
         stop
@@ -2913,7 +2860,7 @@ unused_85:  // 0xdd
         stop
         stop
         stop
-        /* (85) eopcode 0xde, 86    */
+        /* (85) eopcode 0xde, 86      */
 unused_86:  // 0xde
         stop
         stop
@@ -2922,7 +2869,7 @@ unused_86:  // 0xde
         stop
         stop
         stop
-        /* (86) eopcode 0xdf, 87    */
+        /* (86) eopcode 0xdf, 87      */
 unused_87:  // 0xdf
         stop
         stop
@@ -2931,7 +2878,7 @@ unused_87:  // 0xdf
         stop
         stop
         stop
-        /* (87) eopcode 0xe0, 88    */
+        /* (87) eopcode 0xe0, 88      */
 unused_88:  // 0xe0
         stop
         stop
@@ -2940,7 +2887,7 @@ unused_88:  // 0xe0
         stop
         stop
         stop
-        /* (88) eopcode 0xe1, 89    */
+        /* (88) eopcode 0xe1, 89      */
 unused_89:  // 0xe1
         stop
         stop
@@ -2949,7 +2896,7 @@ unused_89:  // 0xe1
         stop
         stop
         stop
-        /* (89) eopcode 0xe2, 90    */
+        /* (89) eopcode 0xe2, 90      */
 unused_90:  // 0xe2
         stop
         stop
@@ -2958,7 +2905,7 @@ unused_90:  // 0xe2
         stop
         stop
         stop
-        /* (90) eopcode 0xe3, 91    */
+        /* (90) eopcode 0xe3, 91      */
 unused_91:  // 0xe3
         stop
         stop
@@ -2967,7 +2914,7 @@ unused_91:  // 0xe3
         stop
         stop
         stop
-        /* (91) eopcode 0xe4, 92    */
+        /* (91) eopcode 0xe4, 92      */
 unused_92:  // 0xe4
         stop
         stop
@@ -2976,7 +2923,7 @@ unused_92:  // 0xe4
         stop
         stop
         stop
-        /* (92) eopcode 0xe5, 93    */
+        /* (92) eopcode 0xe5, 93      */
 unused_93:  // 0xe5
         stop
         stop
@@ -2985,7 +2932,7 @@ unused_93:  // 0xe5
         stop
         stop
         stop
-        /* (93) eopcode 0xe6, 94    */
+        /* (93) eopcode 0xe6, 94      */
 unused_94:  // 0xe6
         stop
         stop
@@ -2994,7 +2941,7 @@ unused_94:  // 0xe6
         stop
         stop
         stop
-        /* (94) eopcode 0xe7, 95    */
+        /* (94) eopcode 0xe7, 95      */
 unused_95:  // 0xe7
         stop
         stop
@@ -3003,7 +2950,7 @@ unused_95:  // 0xe7
         stop
         stop
         stop
-        /* (95) eopcode 0xe8, 96    */
+        /* (95) eopcode 0xe8, 96      */
 unused_96:  // 0xe8
         stop
         stop
@@ -3012,7 +2959,7 @@ unused_96:  // 0xe8
         stop
         stop
         stop
-        /* (96) eopcode 0xe9, 97    */
+        /* (96) eopcode 0xe9, 97      */
 unused_97:  // 0xe9
         stop
         stop
@@ -3021,7 +2968,7 @@ unused_97:  // 0xe9
         stop
         stop
         stop
-        /* (97) eopcode 0xea, 98    */
+        /* (97) eopcode 0xea, 98      */
 unused_98:  // 0xea
         stop
         stop
@@ -3030,7 +2977,7 @@ unused_98:  // 0xea
         stop
         stop
         stop
-        /* (98) eopcode 0xeb, 99    */
+        /* (98) eopcode 0xeb, 99      */
 unused_99:  // 0xeb
         stop
         stop
@@ -3039,7 +2986,7 @@ unused_99:  // 0xeb
         stop
         stop
         stop
-        /* (99) eopcode 0xec, 100    */
+        /* (99) eopcode 0xec, 100      */
 unused_100:  // 0xec
         stop
         stop
@@ -3048,7 +2995,7 @@ unused_100:  // 0xec
         stop
         stop
         stop
-        /* (100) eopcode 0xed, 101    */
+        /* (100) eopcode 0xed, 101      */
 unused_101:  // 0xed
         stop
         stop
@@ -3057,7 +3004,7 @@ unused_101:  // 0xed
         stop
         stop
         stop
-        /* (101) eopcode 0xee, 102    */
+        /* (101) eopcode 0xee, 102      */
 unused_102:  // 0xee
         stop
         stop
@@ -3066,7 +3013,7 @@ unused_102:  // 0xee
         stop
         stop
         stop
-        /* (102) eopcode 0xef, 103    */
+        /* (102) eopcode 0xef, 103      */
 unused_103:  // 0xef
         stop
         stop
@@ -3075,7 +3022,7 @@ unused_103:  // 0xef
         stop
         stop
         stop
-        /* (65) wopcode 0xf0, create, create_31    */
+        /* (65) wopcode 0xf0, create, create_31      */
 create_31:  // 0xf0
         pop
         create
@@ -3084,7 +3031,7 @@ create_31:  // 0xf0
         mload
         jump
         stop
-        /* (66) wopcode 0xf1, call, call_71    */
+        /* (66) wopcode 0xf1, call, call_71      */
 call_71:  // 0xf1
         pop
         call
@@ -3093,7 +3040,7 @@ call_71:  // 0xf1
         mload
         jump
         stop
-        /* (67) wopcode 0xf2, callcode, callcode_71    */
+        /* (67) wopcode 0xf2, callcode, callcode_71      */
 callcode_71:  // 0xf2
         pop
         callcode
@@ -3102,7 +3049,7 @@ callcode_71:  // 0xf2
         mload
         jump
         stop
-        /* (68) wopcode 0xf3, return, return_20    */
+        /* (68) wopcode 0xf3, return, return_20      */
 return_20:  // 0xf3
         pop
         return
@@ -3111,7 +3058,7 @@ return_20:  // 0xf3
         mload
         jump
         stop
-        /* (69) wopcode 0xf4, delegatecall, delegatecall_61    */
+        /* (69) wopcode 0xf4, delegatecall, delegatecall_61      */
 delegatecall_61:  // 0xf4
         pop
         delegatecall
@@ -3120,7 +3067,7 @@ delegatecall_61:  // 0xf4
         mload
         jump
         stop
-        /* (70) wopcode 0xf5, create2, create2_41    */
+        /* (70) wopcode 0xf5, create2, create2_41      */
 create2_41:  // 0xf5
         pop
         create2
@@ -3129,7 +3076,7 @@ create2_41:  // 0xf5
         mload
         jump
         stop
-        /* (103) eopcode 0xf6, 104    */
+        /* (103) eopcode 0xf6, 104      */
 unused_104:  // 0xf6
         stop
         stop
@@ -3138,7 +3085,7 @@ unused_104:  // 0xf6
         stop
         stop
         stop
-        /* (104) eopcode 0xf7, 105    */
+        /* (104) eopcode 0xf7, 105      */
 unused_105:  // 0xf7
         stop
         stop
@@ -3147,7 +3094,7 @@ unused_105:  // 0xf7
         stop
         stop
         stop
-        /* (105) eopcode 0xf8, 106    */
+        /* (105) eopcode 0xf8, 106      */
 unused_106:  // 0xf8
         stop
         stop
@@ -3156,7 +3103,7 @@ unused_106:  // 0xf8
         stop
         stop
         stop
-        /* (106) eopcode 0xf9, 107    */
+        /* (106) eopcode 0xf9, 107      */
 unused_107:  // 0xf9
         stop
         stop
@@ -3165,7 +3112,7 @@ unused_107:  // 0xf9
         stop
         stop
         stop
-        /* (71) wopcode 0xfa, staticcall, staticcall_61    */
+        /* (71) wopcode 0xfa, staticcall, staticcall_61      */
 staticcall_61:  // 0xfa
         pop
         staticcall
@@ -3174,7 +3121,7 @@ staticcall_61:  // 0xfa
         mload
         jump
         stop
-        /* (107) eopcode 0xfb, 108    */
+        /* (107) eopcode 0xfb, 108      */
 unused_108:  // 0xfb
         stop
         stop
@@ -3183,7 +3130,7 @@ unused_108:  // 0xfb
         stop
         stop
         stop
-        /* (108) eopcode 0xfc, 109    */
+        /* (108) eopcode 0xfc, 109      */
 unused_109:  // 0xfc
         stop
         stop
@@ -3192,7 +3139,7 @@ unused_109:  // 0xfc
         stop
         stop
         stop
-        /* (72) wopcode 0xfd, revert, revert_20    */
+        /* (72) wopcode 0xfd, revert, revert_20      */
 revert_20:  // 0xfd
         pop
         revert
@@ -3201,7 +3148,7 @@ revert_20:  // 0xfd
         mload
         jump
         stop
-        /* (109) eopcode 0xfe, 110    */
+        /* (109) eopcode 0xfe, 110      */
 unused_110:  // 0xfe
         stop
         stop
@@ -3210,7 +3157,7 @@ unused_110:  // 0xfe
         stop
         stop
         stop
-        /* (73) wopcode 0xff, selfdestruct, selfdestruct_10    */
+        /* (73) wopcode 0xff, selfdestruct, selfdestruct_10      */
 selfdestruct_10:  // 0xff
         pop
         selfdestruct
@@ -3566,13 +3513,10 @@ selfdestruct_10:  // 0xff
             mload
             jump
         allocate_11_extra:
-            /* (5) allocate 0x40    */
-0x00
-    0x40
+            /* (7) allocate 0x40      */
+0x40
     mload
     swap1
-    pop
-    dup2
     dup2
     add
     0x40

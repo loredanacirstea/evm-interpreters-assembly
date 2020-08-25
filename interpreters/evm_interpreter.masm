@@ -1,4 +1,17 @@
 deployer {
+
+        %macro getfourb
+            mload
+            0xe0
+            shr
+        %endmacro
+
+        %macro geteightb
+            mload
+            0xc0
+            shr
+        %endmacro
+
         // freeMemPtr
         mmstore 0x40 0xe0
 
@@ -62,9 +75,7 @@ deployer {
       eq
       tag_11    // case 0 (unknown)
       jumpi
-      0xee00     // default
-      0x00
-      mstore
+      mmstore 0x00 0xee00  // error
       dup2
       0x20
       mstore
@@ -112,11 +123,8 @@ deployer {
       add
       swap4
       pop
-      tag_14
-      dup6
-      tag_15       // get4b
-      jump	// in
-    tag_14:
+      dup5
+      getfourb //
       tag_16
       dup2
       tag_17        // getFuncArity
@@ -177,13 +185,10 @@ deployer {
     tag_21:     // after for loop
       pop
       pop
-      tag_23
       0x04
-      dup10
+      dup9
       add
-      tag_15      // get4b
-      jump	// in
-    tag_23:
+      getfourb //
         swap3
         pop
         0x0400
@@ -196,12 +201,9 @@ deployer {
         jumpi
         tag_26   // end of case 3 function
         dup3
-        tag_27   // evalStoredFunc
-        dup12
-        tag_28   // get8b
-        jump	// in
-    tag_27:
-        tag_29
+        dup11
+        geteightb //
+        tag_29   // evalStoredFunc
         jump	// in
     tag_26:
         swap7
@@ -224,13 +226,10 @@ deployer {
         stop
         jump(tag_7)
     tag_10:   // case 4 (bytelike)
-        tag_32
         0x04
-        dup7
+        dup6
         add
-        tag_15    // get4b
-        jump	// in
-    tag_32:
+        getfourb //
         0x20
         dup2
         add
@@ -269,11 +268,8 @@ deployer {
         // stop
         jump(tag_7)
     tag_11:        // case 0 (unknown)
-        tag_36
-        dup6
-        tag_15   // get 4b
-        jump	// in
-    tag_36:
+        dup5
+        getfourb //
         dup1
         0x19
         shr
@@ -365,27 +361,11 @@ deployer {
         pop
         pop
         jump	// out
-    tag_15:     // get4b
-        0x00
-        dup2
-        mload
-        0xe0
-        shr
-        swap1
-        pop
     tag_44:
         swap2
         swap1
         pop
         jump	// out
-    tag_28:   // get8b
-        0x00
-        dup2
-        mload
-        0xc0
-        shr
-        swap1
-        pop
     tag_45:
         swap2
         swap1
@@ -449,15 +429,11 @@ deployer {
         jump	// out
     tag_31:   // if NATIVE FUNCTION
 
-        swap1
-        0x20
-        add
-        mload   // first arg ptr to bytelike
+        //swap1
         //0x20
         //add
-        //mload
-        //stop
-        swap1
+        //mload   // first arg ptr to bytelike
+        //swap1
 
         0x08  // instructions per opcode
         mul
@@ -587,11 +563,6 @@ deployer {
           pop
           jump	// out
         tag_69:   // storeData
-          // 0x04
-          // tag_71
-          // dup3
-          // tag_15   // get4b
-          // jump	// in
           0x20
           dup2
           mload
@@ -762,21 +733,14 @@ deployer {
           jump	// in
         tag_93:
           pop
-          // tag_94
-          // dup2
-          // tag_15    // get4b
-          // jump	// in
           dup1
           mload
         tag_94:
           0x20
-          tag_95
           0x20
-          dup4
+          dup3
           add
-          tag_2
-          jump	// in
-        tag_95:
+          allocate 0x40
           add
           swap2
           pop
@@ -799,11 +763,8 @@ deployer {
           jump	// out
         tag_90:
           0x00
-          tag_98
           0x40
-          tag_2
-          jump	// in
-        tag_98:
+          allocate 0x40
           dup4
           dup2
           mstore
@@ -825,29 +786,6 @@ deployer {
           pop
           jump	// out
         tag_5:
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
