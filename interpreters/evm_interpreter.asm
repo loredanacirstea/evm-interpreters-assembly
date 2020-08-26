@@ -16,9 +16,11 @@ dataSize(sub_0)
 
 
 
+        // keep 0xe0, 0x100, 0x120 for for loops & other
+
         // freeMemPtr
-        /* (0) mmstore 0x40, 0xe0      */
-0xe0
+        /* (0) mmstore 0x40, 0x140      */
+0x140
     0x40
     mstore
 
@@ -111,6 +113,13 @@ stop_00
       dup6
       add
       mload
+
+      //dup1
+      //0x03    // remove
+      //eq
+      //tag_88_
+      //jumpi
+
       swap3
       pop
       0x24
@@ -132,6 +141,8 @@ stop_00
     add
     0x40
     mstore
+    //tag_88_:   // remove
+    //    stop
     tag_13:
       0x20
       dup2
@@ -149,85 +160,108 @@ stop_00
       jump(tag_7)
     tag_9:        // case 3 (function)
       0x08
-      dup6
+      dup6        // end_ptr
       add
-      swap4
+      swap4       // replace end_ptr
       pop
-      dup5
+      dup5        // data_ptr
       /* (0) getfourb //   //   */
 mload
             0xe0
             shr
-      dup1
-      /* (0) getfuncarity //   //    */
+      /* (0) getfuncarity //   //   */
 0x3f
             and
-      swap1     // remove 4bsig
-      pop
       0x00
       0x20
       0x01
       dup4
       add
       mul
-      /* (2) allocate 0x40      */
-0x40
+      /* (2) allocate 0x40  // args_ptrs   // args_ptrs   */
+0x40  // args_ptrs
     mload
     swap1
     dup2
     add
-    0x40
+    0x40  // args_ptrs
     mstore
+      dup3
+      dup2
+      mstore   // arity in args_ptrs
+      0x20
+      dup2
+      add      // args_ptrs_now
+      // dup3
 
-    tag_18:
-      dup3
-      dup2
-      mstore
-      0x20
-      dup2
-      add
-      dup3
-    tag_19:    // for loop
-      dup5
-      dup2
-      lt
-      iszero
-      tag_21     // after for
-      jumpi     // for loop below
-      tag_22
-      dup5
-      dup13
-      dup12
-      tag_4  // eval()
-      jump	// in
-    tag_22:
-      dup1
-      dup5
-      mstore
-      pop
-      dup1
-      swap10
-      pop
-      pop
-      0x20
-      dup3
-      add
-      swap2
-      pop
-    tag_20:
-      0x01
-      dup2
-      add
-      swap1
-      pop
-      jump(tag_19)
+        tag_21
+        dup5   // end - arity
+        0x00   // start
+
+0xe0
+    mstore   // store start
+    0x100
+    mstore   // store end
+    0x120
+    mstore   // store tag
+
+    for_0:
+        0x100
+        mload
+        0xe0
+        mload
+        lt
+        forloop_0
+        jumpi
+        0x120
+        mload
+        jump
+    forloop_0:
+
+            tag_22
+            dup4    // new_value_to_ptr
+            dup12   // env_ptr
+            dup11  // end_ptr
+            tag_4  // eval()
+            jump	// in
+
+            tag_22:
+                //dup1    // remove
+                //0x03
+                //eq
+                //tag_22__
+                //jumpi
+
+
+                dup4
+                mstore
+                swap8
+                pop
+                pop
+                0x20
+                add
+                forloop_end_0
+                jump
+
+    forloop_end_0:
+        0xe0
+        mload
+        0x01
+        add
+        0xe0
+        mstore
+        for_0
+        jump
+
+    //tag_22__:   // remove
+    //    stop
     tag_21:     // after for loop
       pop
       pop
       0x04
       dup9
       add
-      /* (1) getfourb //   //    */
+      /* (1) getfourb //   //   */
 mload
             0xe0
             shr
@@ -274,7 +308,7 @@ mload
         0x04
         dup6
         add
-        /* (2) getfourb //   //    */
+        /* (2) getfourb //   //   */
 mload
             0xe0
             shr
@@ -303,7 +337,7 @@ mload
         0x20
         dup8
         add
-        tag_35
+        tag_35   // mmultistore
         jump	// in
     tag_34:
         dup1
@@ -338,7 +372,7 @@ mload
         tag_37
         jumpi
         dup2
-        /* (1) getfuncarity //   //    */
+        /* (1) getfuncarity //   //   */
 0x3f
             and
         0x20
@@ -421,7 +455,7 @@ mload
       swap1
       pop
       jump	// out
-    tag_35:
+    tag_35:   // mmultistore
       0x00
       0x20
       dup5

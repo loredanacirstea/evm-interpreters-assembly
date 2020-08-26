@@ -91,7 +91,8 @@
         mload
         jump
     forloop_%instance:
-        `${%content.replace(/%step/g, "%0 \n mload")}`
+        `${%content.replace(/%step/g, "%0 \n mload").replace(/%forloop_end/g, "forloop_end_%instance")}`
+    forloop_end_%instance:
         %0
         mload
         0x01
