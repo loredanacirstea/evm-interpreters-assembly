@@ -1,0 +1,59 @@
+deployer {
+
+    0x1111111111111111111111111111111111111111111111111111111111111111
+    0x40
+    mstore
+    0x2222222222222222222222222222222222222222222222222222222222222222
+    0x60
+    mstore
+    0x333333
+    0x80
+    mstore
+
+    tag_return
+    0x43
+    0x40
+    0x100
+    mmultistore
+    jump
+
+
+    mmultistore:  // _ptr_target, _ptr_source, sizeBytes
+        0x00
+        0x20
+        dup5   // sizeBytes
+        mod
+        gt
+        0x20
+        dup5   // sizeBytes
+        div
+        add
+        swap3  // remove sizeBytes
+        pop
+        swap3
+        swap1
+        swap2 // tag_return, slots
+        0x00
+        mfor 0x200 {
+            dup1  // _ptr_source
+            mload
+            dup3  // _ptr_target
+            mstore
+            dup2
+            0x20
+            add
+            swap2
+            pop
+            dup1
+            0x20
+            add
+            swap1
+            pop
+        }
+
+
+    tag_return:
+        0x60
+        0x100
+        return
+}

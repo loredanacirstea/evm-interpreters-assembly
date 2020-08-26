@@ -38,12 +38,76 @@
     mload
 %endmacro
 
+%macro mfor_hc
+    %1
+    %0
+    mstore
+    %2
+    `${'0x' + (%0 + 32).toString(16)}`
+    mstore
+     %3
+    `${'0x' + (%0 + 64).toString(16)}`
+    mstore
+    for_%instance:
+        `${'0x' + (%0 + 32).toString(16)}`
+        mload
+        %0
+        mload
+        lt
+        forloop_%instance
+        jumpi
+        `${'0x' + (%0 + 64).toString(16)}`
+        mload
+        jump
+    forloop_%instance:
+        `${%content.replace(/%step/g, "%0 \n mload")}`
+        %0
+        mload
+        0x01
+        add
+        %0
+        mstore
+        for_%instance
+        jump
+%endmacro
+
+%macro mfor
+    %0
+    mstore   // store start
+    `${'0x' + (%0 + 32).toString(16)}`
+    mstore   // store end
+    `${'0x' + (%0 + 64).toString(16)}`
+    mstore   // store tag
+
+    for_%instance:
+        `${'0x' + (%0 + 32).toString(16)}`
+        mload
+        %0
+        mload
+        lt
+        forloop_%instance
+        jumpi
+        `${'0x' + (%0 + 64).toString(16)}`
+        mload
+        jump
+    forloop_%instance:
+        `${%content.replace(/%step/g, "%0 \n mload")}`
+        %0
+        mload
+        0x01
+        add
+        %0
+        mstore
+        for_%instance
+        jump
+%endmacro
+
 %macrolist loadvals ","
     %x
     mload
 %endmacrolist
 
-%macro repeat
+%macro mrepeat
    ` ${%content.repeat(%0)}
    `
 %endmacro
