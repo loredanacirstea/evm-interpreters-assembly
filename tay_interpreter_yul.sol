@@ -24,7 +24,7 @@ object "Taylor" {
         mstore(0, response)
         return (0, 32)
 
-        function eval(data_ptr, env_ptr, value_to_ptr) -> end_ptr, result_ptr {
+        function eval(data_ptr, env_ptr) -> end_ptr, result_ptr {
             let rootid := shr(252, mload(data_ptr))
 
             switch rootid
@@ -34,14 +34,6 @@ object "Taylor" {
                 // eliminate 4byte sig
                 result_ptr := mload(add(data_ptr, 4))
                 end_ptr := add(data_ptr, 36)
-
-                // If we need to transform values into pointers (t2)
-                if value_to_ptr {
-                    let _ptr := allocate(64)
-                    mstore(_ptr, 32)
-                    mstore(add(_ptr, 32), result_ptr)
-                    result_ptr := _ptr
-                }
             }
 
             // function
@@ -50,10 +42,6 @@ object "Taylor" {
 
                 let sig4b := get4b(data_ptr)
                 let arity := getFuncArity(sig4b)
-                // let funcid := get4b(add(data_ptr, 4))
-
-                // If function is tuple___
-                let new_value_to_ptr := 0// eq(funcid, 0x4c)
 
                 // allocate arity number of slots for argument pointers
                 let args_ptrs := allocate(mul(add(arity, 1), 32))
@@ -64,7 +52,7 @@ object "Taylor" {
                 let args_ptrs_now := add(args_ptrs, 32)
 
                 for { let i := 0 } lt(i, arity) { i := add(i, 1) } {
-                    let _end_ptr, arg_ptr := eval(end_ptr, env_ptr, new_value_to_ptr)
+                    let _end_ptr, arg_ptr := eval(end_ptr, env_ptr)
 
                     // store pointer to argument value
                     mstore(args_ptrs_now, arg_ptr)

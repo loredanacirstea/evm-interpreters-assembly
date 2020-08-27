@@ -31,13 +31,6 @@ deployer {
             mload
         %endmacro
 
-        %macro writeoutput
-            // expects output ptr on stack, mem frame ptr
-            0x60
-            add
-            mstore
-        %endmacro
-
         // start tag value - native functions
         mmstore 0xa0 stop_00
 
@@ -57,21 +50,21 @@ deployer {
         mstore
 
         // prepare memory frame
+        // TODO alloc mem frame before anything else, so we can dealloc everything once
 
         // output_ptr, partials_ptr, input_ptr, prev_ptr
+        tag_return // returntag
+        0x00       // extra_ptr
         0x00       // output_ptr - final result at 0x00
+        0x00       // partials_ptr - we dont know yet
 
-        0x00       // empty partials   // TODO - maybe remove for efficiency there are no partials
-        0x01       // no of partials
-        t3__ 0x40  // partials_ptr
-
-        0x100     // data_ptr
+        0x100      // data_ptr
         0x00       // eval_ptr
         0x02       // arity
         t3__ 0x40  // input_ptr
 
         0x00    // prev_ptr
-        memframe_pre 0x40, 0xe0
+        memframe_pre 0x40, 0xe0, 0x06
 
     tag_eval:
         getframe  //
@@ -94,6 +87,40 @@ deployer {
         eval_is_fn
         jumpi
 
+    eval_end_processing:
+            // current_frame_ptr, result_ptr, end_ptr on stack
+            0x02       // arity
+            t3__ 0x40  // output_ptr
+            dup2      // memframe_ptr, output_ptr, memframe_ptr
+
+            0x60
+            add
+            mload     // load ptr to write output_ptr
+            mstore    // store output_ptr
+
+            dup1   // memframe_ptr
+
+            0xa0    // load tag to jump from current frame
+            add
+            mload
+
+            // swap1
+            // mload // prev_ptr
+            // 0xe0
+            // mstore
+
+            jump
+
+    tag_return:
+        0x00           // here is output_ptr
+        mload
+        t3item_ 0x01   // result_ptr
+        0x00
+        mstore
+        0x20
+        0x00
+        return
+
     eval_is_number:
             getframe //
             dup1
@@ -102,18 +129,18 @@ deployer {
             add
             mload
             t3item_ 0x01   // data_ptr
+
             dup1    // get value - this is result_ptr
-            0x04
+            0x04    // add 4bytes sig
             add
-            mload
+            mload   // result_ptr is value
+
+
             swap1       // data_ptr first
             0x24
             add        // end_ptr
-            0x02       // arity
-            t3__ 0x40  // output_ptr
-            swap1      // output_ptr, memframe_ptr
-            writeoutput //
-            eval_end
+
+            eval_end_processing   // current_frame_ptr, result_ptr, end_ptr on stack TODO should be macro
             jump
 
     eval_is_fn:
@@ -132,71 +159,170 @@ deployer {
         getfourb  //
         getfuncarity  //
 
-        dup1     // arity
-        t3_init__ 0x40   // args_ptrs - partial results
+        dup1       // arity - no of partials one for arity
+        0x01
+        add
+        t3_init__ 0x40   // partials_ptr
 
-        dup4    // frame ptr ?
+        dup1      // partials_ptr
+        0x20      // partial ptr to store new end_ptr and arity
+        add
+
+        dup3   // arity is result_ptr
+        dup5   // end_ptr
+        0x02
+        t3__ 0x40  // partial1
+        swap1
+        mstore     // store partial1
+
+
+        dup5    // frame ptr ?
         0x40
         add
         mstore  // store args_ptrs as partials
 
+        // remove stack except arity
+        swap1
+        pop
+        swap1
+        pop
+        swap1
+        pop
 
         eval_function_for_end
-        dup2   // end - arity
+        swap1   // end - arity
         0x00   // start
-        // 0xe0 + 0x80
-        mfor_mem 0x0160 {
+
+        mfor_mem 0xe0, 0x80, 0x40 {
             // create new memory frame
+            // on stack: current_frame_ptr, data_ptr, end_ptr, arity
+            // TODO load current frame from mem
 
+            eval_function_for_content // returntag
+            0x00       // extra_ptr
 
-            0x100     // data_ptr
-            0x00       // eval_ptr
-            0x02       // arity
-            t3__ 0x40  // extra_ptr
+            getframe      // current_frame_ptr should be parent frame
+            0x40
+            add
+            mload       // partials_ptr
+            // should be %_step
+            getframe     // current_frame_ptr
+            0x80
+            add
+            mload   // looptag
+            mload   // step
+            0x02    // arity and first artificial partial
+            add
+            0x20
+            mul     // partial ptr offset
+            add     // partial ptr for this step -> output_ptr
 
-            // output_ptr, partials_ptr, input_ptr, prev_ptr
-            0x00       // output_ptr - final result at 0x00
+            0x00       // partials_ptr - we dont know yet
 
-            0x00       // empty partials   // TODO - maybe remove for efficiency there are no partials
-            0x01       // no of partials
-            t3__ 0x40  // partials_ptr
+            // take data ptr from previous partial
+            0x20
+            dup3      // partial for this step
+            sub       // previous partial
+            mload
+            t3item_ 0x00    // end_ptr is new data_ptr
 
-            0x100     // data_ptr
-            0x00       // eval_ptr
+            0x00       // env_ptr TODO
             0x02       // arity
             t3__ 0x40  // input_ptr
 
-            0x00    // prev_ptr
-            memframe_pre 0x40, 0xe0
+            getframe    // prev_frame_ptr
+            memframe_pre 0x40, 0xe0, 0x06
 
-
-            eval_function_for_content - where to jump?
             tag_eval
             jump
 
             eval_function_for_content:
-                dup4
+                getframe  //
+                mload     // get previous frame
+                0xe0
                 mstore
-                swap8
-                pop
-                pop
-                0x20
-                add
-                %forloop_end
-                jump
         }
 
-        eval_end
-        jump
-
     eval_function_for_end:
-        stop
+        getframe  //
 
+        0x20    // get input_ptr
+        add
+        mload
+        t3item_ 0x01   // data_ptr
+        0x04
+        add
+        getfourb  //  function id fid
 
-    eval_end:
-        0x20
+        // get partials
+        getframe      // current_frame_ptr should be parent frame
+        0x40
+        add
+        mload       // partials_ptr
+
+        dup1
+        0x40
+        add        // partials
+
+        swap1    // arity - 1
+        mload
+        0x01
+        swap1
+        sub
+
+        eval_native_function   // fid,  current_partial, arity, tag
+        swap1  // // fid, current_partial, tag, arity
         0x00
-        return
+        mfor_stack {
+            // fid, current_partial, tag, end, step
+            dup4
+            mload
+            t3item_ 0x01   // result_ptr
+            swap5
+            swap4
+            0x20
+            add
+            swap3
+            swap2
+            swap1
+        }
+
+    eval_native_function:
+        pop
+        // expects args, fid on stack
+
+        eval_native_function_post
+        0xc0
+        mstore
+
+        dup1  // native pop a value TODO better
+        0x08  // instructions per opcode
+        mul
+        0xa0
+        mload
+        add
+        jump
+    eval_native_function_post:
+        // save result in frame
+
+        getframe //
+        swap1
+
+        dup2    // frame - get last partial for end_ptr
+        0x40
+        add
+        mload       // partials_ptr
+        dup1
+        mload   // arity
+        0x20
+        mul     // offset to last partial
+        add
+        mload
+        t3item_ 0x00
+
+         // current_frame_ptr, result_ptr, end_ptr on stack
+        eval_end_processing
+        jump
 
 
 
