@@ -71,7 +71,7 @@
         jump
 %endmacro
 
-%macro mfor
+%macro mfor_mem
     %0
     mstore   // store start
     `${'0x' + (%0 + 32).toString(16)}`
@@ -100,6 +100,35 @@
         %0
         mstore
         for_%instance
+        jump
+%endmacro
+
+%macro mfor_stack
+    for_stack_%instance:
+        dup2   // end
+        dup2   // start
+        lt
+        forloop_stack_%instance
+        jumpi
+        pop    // pop end, step
+        pop
+        jump
+    forloop_stack_%instance:   // any content variables are kept after jumptag, end, step
+        `${%content.replace(/%forloop_end_stack/g, "forloop_end_stack_%instance")}`
+    forloop_end_stack_%instance:
+        0x01   // start/step first
+        add
+        for_stack_%instance
+        jump
+%endmacro
+
+%macro mif
+    // return tag, condition
+    mif_%instance
+    jumpi
+
+    mif_%instance:
+        %content    // anything left on stack is behind return tag
         jump
 %endmacro
 
@@ -181,4 +210,147 @@
     add
     %0
     mstore
+%endmacro
+
+%macro t3_init__
+    // expects on stack: arity
+    dup1   // arity
+    0x20
+    mul
+    0x20
+    add
+
+    // allocate %0    // freeMemPtr
+    %0
+    mload
+    swap1
+    dup2
+    add
+    %0
+    mstore
+
+    swap1    // ptr, arity
+    dup2     // ptr, arity, ptr
+    mstore   // store arity at pointer -> ptr
+%endmacro
+
+%macro t3__
+    // expects on stack: inputs, arity
+    dup1   // arity
+    0x20
+    mul
+    0x20
+    add
+
+
+    // allocate %0    // freeMemPtr
+    %0
+    mload
+    swap1
+    dup2
+    add
+    %0
+    mstore
+
+    dup2   // store arity
+    dup2   // ptr
+    mstore
+
+    swap1  // arity last
+
+    dup2   // initial pointer
+
+    0x20   // ptr increase
+    add
+
+    swap1  // arity last
+
+    t3__1_%instance    // store inputs at pointer ; inputs, iniptr, current_ptr, arity, tag
+    swap1     // inputs, iniptr, current_ptr, tag, arity
+    0x00
+    mfor_stack {
+        // inputs, iniptr, current_ptr, tag, end, step
+        dup6       // store first input
+        dup5       // current_ptr
+        mstore
+        dup4       // increase current_ptr with 32
+        0x20
+        add
+        swap4      // replace current_ptr
+        pop
+        swap1
+        swap2
+        swap3
+        swap4
+        swap5
+        pop      // inputs_rest, ptr, tag, end, step
+    }
+
+    t3__1_%instance:  // after for loop does nothing has ptr last on stack
+        pop      // pops increased ptr
+%endmacro
+
+%macro t3item_
+    // expects %0 = index and t3 pointer on stack
+    // TODO revert when out of bounds
+    %0
+    0x20
+    mul
+    0x20
+    add
+    add
+    mload
+%endmacro
+
+%macro t3arity
+    mload   // expects t3 pointer on stack
+%endmacro
+
+// %0 = freeMemPtr, %1 = current_frame_ptr
+// on stack: output_ptr, partials_ptr, input_ptr, prev_ptr
+%macro memframe_pre
+    0xa0   // alloc frame 5 slots above + extra_ptr
+
+
+    // allocate %0
+    %0
+    mload
+    swap1
+    dup2
+    add
+    %0
+    mstore
+
+    dup1    // store frame pointer
+    %1
+    mstore
+
+    swap1      // swap prev with current
+    dup2       // current
+    mstore     // store previous frame pointer on first slot
+    // now: output_ptr, partials_ptr, input_ptr, current_ptr
+
+    dup1       // current_ptr
+    swap4      // current_ptr, partials_ptr, input_ptr, current_ptr, output_ptr
+    swap1      // current_ptr, partials_ptr, input_ptr, output_ptr, current_ptr
+
+    0x60
+    add        // current_ptr, partials_ptr, input_ptr, output_ptr, current_ptr_now
+    mstore
+
+    dup3       // current_ptr, partials_ptr, input_ptr, current_ptr
+    0x20
+    add
+    mstore
+
+    dup2       // current_ptr, partials_ptr
+    0x40
+    add
+    mstore
+    pop        // current_ptr
+%endmacro
+
+%macro memframe_post
+    // handle partials and output in content
+    // deallocate
 %endmacro
