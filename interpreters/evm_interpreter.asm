@@ -2,10 +2,6 @@
 // on stack: return tag, extra_ptr, output_ptr, partials_ptr, input_ptr, prev_ptr
 
 
-// %0 = freeMemPtr, %1 = current_frame_ptr, %2 = number of frame slots
-// on stack: return tag, extra_ptr, output_ptr, partials_ptr, input_ptr, prev_ptr
-
-
 
 
 dataSize(sub_0)
@@ -307,17 +303,9 @@ for_stack_1:
             mload     // load ptr to write output_ptr
             mstore    // store output_ptr
 
-            dup1   // memframe_ptr
-
             0xa0    // load tag to jump from current frame
             add
             mload
-
-            // swap1
-            // mload // prev_ptr
-            // 0xe0
-            // mstore
-
             jump
 
     tag_return:
@@ -340,6 +328,7 @@ for_stack_1:
         return
 
     eval_is_number:
+            pop     // eval switch condition
             /* (1) getframe //   //   */
 0xe0
             mload

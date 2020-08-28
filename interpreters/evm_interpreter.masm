@@ -98,17 +98,9 @@ deployer {
             mload     // load ptr to write output_ptr
             mstore    // store output_ptr
 
-            dup1   // memframe_ptr
-
             0xa0    // load tag to jump from current frame
             add
             mload
-
-            // swap1
-            // mload // prev_ptr
-            // 0xe0
-            // mstore
-
             jump
 
     tag_return:
@@ -122,6 +114,7 @@ deployer {
         return
 
     eval_is_number:
+            pop     // eval switch condition
             getframe //
             dup1
 
