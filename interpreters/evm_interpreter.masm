@@ -31,6 +31,106 @@ deployer {
             mload
         %endmacro
 
+        // GETTERS  //
+
+        %macro getdataptr
+            0x20
+            add
+            mload
+        %endmacro
+
+        %macro getenvptr
+            0x40
+            add
+            mload
+        %endmacro
+
+        %macro getpartialsptr
+            0x80
+            add
+            mload
+        %endmacro
+
+        %macro getoutputptr
+            0xa0
+            add
+            mload
+        %endmacro
+
+        %macro getforstep
+            0xc0
+            add
+            mload
+        %endmacro
+
+        %macro getforend
+            0xe0
+            add
+            mload
+        %endmacro
+
+        %macro getforreturn
+            0x100
+            add
+            mload
+        %endmacro
+
+        %macro getreturn
+            0x120
+            add
+            mload
+        %endmacro
+
+        // SETTERS  //
+
+        %macro setdataptr
+            0x20
+            add
+            mstore
+        %endmacro
+
+        %macro setenvptr
+            0x40
+            add
+            mstore
+        %endmacro
+
+        %macro setpartialsptr
+            0x80
+            add
+            mstore
+        %endmacro
+
+        %macro setoutputptr
+            0xa0
+            add
+            mstore
+        %endmacro
+
+        %macro setforstep
+            0xc0
+            add
+            mstore
+        %endmacro
+
+        %macro setforend
+            0xe0
+            add
+            mstore
+        %endmacro
+
+        %macro setforreturn
+            0x100
+            add
+            mstore
+        %endmacro
+
+        %macro setreturn
+            0x120
+            add
+            mstore
+        %endmacro
+
         // start tag value - native functions
         mmstore 0xa0 stop_00
 
@@ -52,27 +152,41 @@ deployer {
         // prepare memory frame
         // TODO alloc mem frame before anything else, so we can dealloc everything once
 
-        // output_ptr, partials_ptr, input_ptr, prev_ptr
-        tag_return // returntag
-        0x00       // extra_ptr
-        0x00       // output_ptr - final result at 0x00
-        0x00       // partials_ptr - we dont know yet
+        // MEMORY FRAME
+        // 0x00 previous pointer
+        // 0x20 data_ptr
+        // 0x40 env_ptr
+        // 0x60 placeholder
+        // 0x80 partials_ptr - t3 (depends on function arity)
+        // 0xa0 output_ptr - pointer where to write the outputs one after another
+        // 0xc0 for loop step number
+        // 0xe0 for loop end
+        // 0x100 for loop return tag
+        // 0x120 eval return tag
 
-        0x100      // data_ptr
-        0x00       // eval_ptr
-        0x02       // arity
-        t3__ 0x40  // input_ptr
+        // for stack we use: 0x00 - 0x40, 0xa0-0x120
 
-        0x00    // prev_ptr
-        memframe_init 0x40, 0xe0, 0x06
+        // MEMORY FRAME INIT
+        0x140
+        allocate 0x40
+
+        // store current_frame_ptr
+        dup1
+        0xe0
+        mstore
+
+        // everything is 0 except:
+        0x100   // data_ptr
+        dup2
+        setdataptr //
+
+        tag_return    // return tag
+        swap1
+        setreturn  //
 
     tag_eval:
         getframe  //
-
-        0x20    // get input_ptr
-        add
-        mload
-        t3item_ 0x01   // data_ptr
+        getdataptr //
         mload          // data
         getrootid      //
 
@@ -91,16 +205,12 @@ deployer {
             // current_frame_ptr, result_ptr, end_ptr on stack
             0x02       // arity
             t3__ 0x40  // output_ptr
-            dup2      // memframe_ptr, output_ptr, memframe_ptr
 
-            0x60
-            add
-            mload     // load ptr to write output_ptr
+            dup2      // memframe_ptr, output_ptr, memframe_ptr
+            getoutputptr  //
             mstore    // store output_ptr
 
-            0xa0    // load tag to jump from current frame
-            add
-            mload
+            getreturn  // load tag to jump from current frame
             jump
 
     tag_return:
@@ -116,18 +226,14 @@ deployer {
     eval_is_number:
             pop     // eval switch condition
             getframe //
-            dup1
 
-            0x20    // get input_ptr
-            add
-            mload
-            t3item_ 0x01   // data_ptr
+            dup1
+            getdataptr  //
 
             dup1    // get value - this is result_ptr
             0x04    // add 4bytes sig
             add
             mload   // result_ptr is value
-
 
             swap1       // data_ptr first
             0x24
@@ -136,14 +242,12 @@ deployer {
             eval_end_processing   // current_frame_ptr, result_ptr, end_ptr on stack TODO should be macro
             jump
 
-    eval_is_fn:    // step310
+    eval_is_fn:
         getframe //
-        dup1
 
-        0x20    // get input_ptr
-        add
-        mload
-        t3item_ 0x01   // data_ptr
+        dup1
+        getdataptr  //
+
         dup1
         0x08
         add      // end_ptr
@@ -158,7 +262,7 @@ deployer {
         t3_init__ 0x40   // partials_ptr
 
         dup1      // partials_ptr
-        0x20      // partial ptr to store new end_ptr and arity
+        0x20      // partial ptr to store new end_ptr and arity - fake partial
         add
 
         dup3   // arity is result_ptr
@@ -168,11 +272,8 @@ deployer {
         swap1
         mstore     // store partial1
 
-
-        dup5    // frame ptr ?
-        0x40
-        add
-        mstore  // store args_ptrs as partials
+        dup5    // frame ptr
+        setpartialsptr  //
 
         // remove stack except arity
         swap1
@@ -182,50 +283,67 @@ deployer {
         swap1
         pop
 
-        eval_function_for_end
-        swap1   // end - arity
+        eval_function_for_end   // arity, tag
+        swap1   // tag, arity
         0x00   // start
 
-        mfor_mem 0xe0, 0x80, 0x40 {      // step 457
+        mfor_mem 0xe0, 0xc0 {      // step 457
             // create new memory frame
             // nothing on stack
 
             // step 499
 
-            eval_function_for_content // returntag
-            0x00       // extra_ptr
+            // MEMORY FRAME INIT  //
+            0x140
+            allocate 0x40
 
-            getframe      // current_frame_ptr should be parent frame
-            0x40
-            add
-            mload       // partials_ptr
-            // should be %_step
-            getframe     // current_frame_ptr
-            0x80
-            add
-            mload   // looptag
-            mload   // step
+            getframe // prev_frame_ptr
+            dup1
+            dup3
+            mstore
+
+            // store current_frame_ptr
+            dup2
+            0xe0
+            mstore
+
+            dup1   // previous frame ptr is on stack
+            getenvptr  //
+            dup3    // new_frame_ptr
+            setenvptr  // TODO - more complex when we have let*
+
+            dup1
+            getpartialsptr  //
+
+            // new_frame_ptr, previous frame ptr, partials_ptr
+            swap1       // new_frame_ptr, partials_ptr, previous frame ptr
+            getforstep  // new_frame_ptr, partials_ptr, step
             0x02    // arity and first artificial partial
             add
             0x20
             mul     // partial ptr offset
             add     // partial ptr for this step -> output_ptr
 
-            0x00       // partials_ptr - we dont know yet
+            // new_frame_ptr, output_ptr
+            dup1    // new_frame_ptr, output_ptr, output_ptr
+            dup3    // new_frame_ptr, output_ptr, output_ptr, new_frame_ptr
+            setoutputptr //  new_frame_ptr, output_ptr
 
             // take data ptr from previous partial
-            0x20
-            dup3      // partial for this step
+            0x20       // new_frame_ptr, output_ptr, 0x20
+            swap1      // partial for this step
             sub       // previous partial
             mload
-            t3item_ 0x00    // end_ptr is new data_ptr
+            t3item_ 0x00    // end_ptr is new data_ptr // new_frame_ptr, data_ptr
 
-            0x00       // env_ptr TODO
-            0x02       // arity
-            t3__ 0x40  // input_ptr
+            dup2       // new_frame_ptr, data_ptr, new_frame_ptr
+            setdataptr //  new_frame_ptr
 
-            getframe    // prev_frame_ptr
-            memframe_init 0x40, 0xe0, 0x06
+            eval_function_for_content    // return tag
+            swap1
+            setreturn  //
+
+            // END - MEMORY FRAME INIT  //
 
             // step 794 (nothing on stack)
 
@@ -242,29 +360,25 @@ deployer {
     eval_function_for_end:
         getframe  //
 
-        0x20    // get input_ptr
-        add
-        mload
-        t3item_ 0x01   // data_ptr
+        dup1
+        getdataptr //
         0x04
         add
-        getfourb  //  function id fid
+        getfourb  //  function id fid  // frame_ptr, fid
 
         // get partials
-        getframe      // current_frame_ptr should be parent frame
-        0x40
-        add
-        mload       // partials_ptr
+        swap1   // current_frame_ptr should be parent frame
+        getpartialsptr  // fid, partials_ptr
 
-        dup1
-        0x40
-        add        // partials
+        dup1        // fid, partials_ptr, partials_ptr
+        0x40        // partials without arity and fake first partial
+        add         // fid, partials_ptr, actual_partials_start
 
-        swap1    // arity - 1
-        mload
-        0x01
+        swap1    // arity - 1   // fid, actual_partials_start, partials_ptr
+        mload    // fid, actual_partials_start, arity
+        0x01     // fid, actual_partials_start, arity, 0x01
         swap1
-        sub
+        sub      // fid, actual_partials_start, actual_arity
 
         // we need the last partial, going in reverse
         0x01
@@ -319,9 +433,8 @@ deployer {
         swap1
 
         dup2    // frame - get last partial for end_ptr
-        0x40
-        add
-        mload       // partials_ptr
+        getpartialsptr  //
+
         dup1
         mload   // arity
         0x20

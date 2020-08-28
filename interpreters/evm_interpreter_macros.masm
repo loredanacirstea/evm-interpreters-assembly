@@ -75,57 +75,38 @@
     // expects tag, end, start
     %0     // location of current frame ptr
     mload  // current frame ptr
-    %1     // adding the offset to extra_ptr
-    add    // the pointer at which the extra_ptr should be
+    %1     // adding the offset to for data - start_ptr
+    add    // the pointer at which the for data should be
 
-    0x60   // alloc tag, end, start
-    %2
-    mload
-    swap1
-    dup2
-    add
-    %2
-    mstore
+    // tag, end, start, start_ptr
 
-    dup1
-    swap2    // extra_ptr first
-    mstore   // we only remain with the ptr to save the data below
-
-    swap1   // start first
-    dup2    // ptr
-    mstore
-
-    swap1   // store end
-    dup2
-    0x20
-    add
-    mstore
-
+    swap3   // start_ptr, end, start, tag
+    dup4
     0x40
     add
-    mstore  // store tag
+    mstore   // store tag
+
+    dup3    // start_ptr, end, start, start_ptr
+    mstore  // store start
+
+    swap1   // end, start_ptr
+    0x20
+    add
+    mstore  // store end
 
     for_%instance:
         %0     // location of current frame ptr
         mload  // current frame ptr
         %1     // adding the offset to extra_ptr
         add
-        mload
 
         dup1    // load end
         0x20
         add
         mload
 
-        // dup2
         swap1
         mload   // load start
-
-        //dup1
-        //0x01
-        //eq
-        //ddddd
-        //jumpi
 
         lt
         forloop_%instance
@@ -135,7 +116,6 @@
         mload  // current frame ptr
         %1     // adding the offset to extra_ptr
         add
-        mload
 
         0x40   // load tag
         add
@@ -144,20 +124,15 @@
     forloop_%instance:
         `${%content.replace(/%forloop_end\W/g, "forloop_end_%instance")}`
     forloop_end_%instance:
-        // %0
-        // mload
 
         %0     // location of current frame ptr
         mload  // current frame ptr
         %1     // adding the offset to extra_ptr
         add    // the pointer at which the extra_ptr should be
-        mload  // pointer
+
         dup1
         mload  // load start
 
-
-        // dup1   // load start
-        // mload
         0x01   // increase start
         add
         swap1
