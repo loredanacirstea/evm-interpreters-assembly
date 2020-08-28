@@ -143,7 +143,7 @@ deployer {
             eval_end_processing   // current_frame_ptr, result_ptr, end_ptr on stack TODO should be macro
             jump
 
-    eval_is_fn:
+    eval_is_fn:    // step310
         getframe //
         dup1
 
@@ -193,10 +193,11 @@ deployer {
         swap1   // end - arity
         0x00   // start
 
-        mfor_mem 0xe0, 0x80, 0x40 {
+        mfor_mem 0xe0, 0x80, 0x40 {      // step 457
             // create new memory frame
-            // on stack: current_frame_ptr, data_ptr, end_ptr, arity
-            // TODO load current frame from mem
+            // nothing on stack
+
+            // step 499
 
             eval_function_for_content // returntag
             0x00       // extra_ptr
@@ -232,6 +233,8 @@ deployer {
 
             getframe    // prev_frame_ptr
             memframe_pre 0x40, 0xe0, 0x06
+
+            // step 794 (nothing on stack)
 
             tag_eval
             jump
@@ -270,6 +273,19 @@ deployer {
         swap1
         sub
 
+        // we need the last partial, going in reverse
+        0x01
+        dup2   // arity
+        sub
+        0x20
+        mul
+        dup3   // current_partial
+        add
+        swap2  // replace partial ptr
+        pop
+
+        // put arguments on the stack in reverse order
+
         eval_native_function   // fid,  current_partial, arity, tag
         swap1  // // fid, current_partial, tag, arity
         0x00
@@ -281,7 +297,8 @@ deployer {
             swap5
             swap4
             0x20
-            add
+            swap1
+            sub
             swap3
             swap2
             swap1

@@ -373,7 +373,7 @@ for_stack_2:
             eval_end_processing   // current_frame_ptr, result_ptr, end_ptr on stack TODO should be macro
             jump
 
-    eval_is_fn:
+    eval_is_fn:    // step310
         /* (2) getframe //   //   */
 0xe0
             mload
@@ -602,8 +602,9 @@ for_stack_3:
     forloop_0:
 
             // create new memory frame
-            // on stack: current_frame_ptr, data_ptr, end_ptr, arity
-            // TODO load current frame from mem
+            // nothing on stack
+
+            // step 499
 
             eval_function_for_content // returntag
             0x00       // extra_ptr
@@ -775,6 +776,8 @@ for_stack_5:
     memframe_pre_1_1:  // after for loop does nothing has ptr last on stack
         pop      // pops increased ptr
 
+            // step 794 (nothing on stack)
+
             tag_eval
             jump
 
@@ -853,6 +856,19 @@ for_stack_5:
         swap1
         sub
 
+        // we need the last partial, going in reverse
+        0x01
+        dup2   // arity
+        sub
+        0x20
+        mul
+        dup3   // current_partial
+        add
+        swap2  // replace partial ptr
+        pop
+
+        // put arguments on the stack in reverse order
+
         eval_native_function   // fid,  current_partial, arity, tag
         swap1  // // fid, current_partial, tag, arity
         0x00
@@ -884,7 +900,8 @@ for_stack_6:
             swap5
             swap4
             0x20
-            add
+            swap1
+            sub
             swap3
             swap2
             swap1
