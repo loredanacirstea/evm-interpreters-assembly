@@ -372,7 +372,7 @@
 
 // %0 = freeMemPtr, %1 = current_frame_ptr, %2 = number of frame slots
 // on stack: return tag, extra_ptr, output_ptr, partials_ptr, input_ptr, prev_ptr
-%macro memframe_pre
+%macro memframe_init
     `${"0x" + (%2 * 32).toString(16)}`    // alloc frame
     %0
     mload
@@ -386,31 +386,11 @@
     %1
     mstore
 
-    memframe_pre_1_%instance   // tag, end, start
-    %2    // end
-    0x00
-    mfor_stack {
-        // args, current_ptr, tag, end, step
-        dup5       // store first input
-        dup5       // current_ptr
-        mstore
-        dup4       // increase current_ptr with 32
-        0x20
-        add
-        swap4      // replace current_ptr
-        pop
-        swap1
-        swap2
-        swap3
-        swap4
-        pop      // args_rest, current_ptr, tag, end, step
-    }
+    // stack: args, current_ptr
 
-    memframe_pre_1_%instance:  // after for loop does nothing has ptr last on stack
-        pop      // pops increased ptr
-%endmacro
+    `${
+        [...new Array(%2).keys()].map((val, i) => "swap1  // args_rest, current_ptr, first arg \n   dup2   // ptr \n   mstore \n   0x20 \n   add \n").join('')
+    }`
 
-%macro memframe_post
-    // handle partials and output in content
-    // dealloca
+    pop    // remove current_ptr
 %endmacro

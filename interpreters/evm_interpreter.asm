@@ -2,6 +2,8 @@
 // on stack: return tag, extra_ptr, output_ptr, partials_ptr, input_ptr, prev_ptr
 
 
+// %0 = freeMemPtr, %1 = current_frame_ptr, %2 = number of frame slots
+// on stack: return tag, extra_ptr, output_ptr, partials_ptr, input_ptr, prev_ptr
 
 
 
@@ -140,7 +142,7 @@ for_stack_0:
         pop      // pops increased ptr
 
         0x00    // prev_ptr
-        /* (0) memframe_pre 0x40, 0xe0, 0x06      */
+        /* (0) memframe_init 0x40, 0xe0, 0x06      */
 0xc0    // alloc frame
     0x40
     mload
@@ -154,44 +156,41 @@ for_stack_0:
     0xe0
     mstore
 
-    memframe_pre_1_0   // tag, end, start
-    0x06    // end
-    0x00
+    // stack: args, current_ptr
 
-for_stack_1:
-        dup2   // end
-        dup2   // start
-        lt
-        forloop_stack_1
-        jumpi
-        pop    // pop end, step
-        pop
-        jump
-    forloop_stack_1:   // any content variables are kept after jumptag, end, step
+    swap1  // args_rest, current_ptr, first arg
+   dup2   // ptr
+   mstore
+   0x20
+   add
+swap1  // args_rest, current_ptr, first arg
+   dup2   // ptr
+   mstore
+   0x20
+   add
+swap1  // args_rest, current_ptr, first arg
+   dup2   // ptr
+   mstore
+   0x20
+   add
+swap1  // args_rest, current_ptr, first arg
+   dup2   // ptr
+   mstore
+   0x20
+   add
+swap1  // args_rest, current_ptr, first arg
+   dup2   // ptr
+   mstore
+   0x20
+   add
+swap1  // args_rest, current_ptr, first arg
+   dup2   // ptr
+   mstore
+   0x20
+   add
 
-        // args, current_ptr, tag, end, step
-        dup5       // store first input
-        dup5       // current_ptr
-        mstore
-        dup4       // increase current_ptr with 32
-        0x20
-        add
-        swap4      // replace current_ptr
-        pop
-        swap1
-        swap2
-        swap3
-        swap4
-        pop      // args_rest, current_ptr, tag, end, step
 
-    forloop_end_stack_1:
-        0x01   // start/step first
-        add
-        for_stack_1
-        jump
-
-    memframe_pre_1_0:  // after for loop does nothing has ptr last on stack
-        pop      // pops increased ptr
+    pop    // remove current_ptr
 
     tag_eval:
         /* (0) getframe //   //   */
@@ -266,16 +265,16 @@ for_stack_1:
     swap1     // inputs, iniptr, current_ptr, tag, arity
     0x00
 
-for_stack_2:
+for_stack_1:
         dup2   // end
         dup2   // start
         lt
-        forloop_stack_2
+        forloop_stack_1
         jumpi
         pop    // pop end, step
         pop
         jump
-    forloop_stack_2:   // any content variables are kept after jumptag, end, step
+    forloop_stack_1:   // any content variables are kept after jumptag, end, step
 
         // inputs, iniptr, current_ptr, tag, end, step
         dup6       // store first input
@@ -293,10 +292,10 @@ for_stack_2:
         swap5
         pop      // inputs_rest, ptr, tag, end, step
 
-    forloop_end_stack_2:
+    forloop_end_stack_1:
         0x01   // start/step first
         add
-        for_stack_2
+        for_stack_1
         jump
 
     t3__1_1:  // after for loop does nothing has ptr last on stack
@@ -473,16 +472,16 @@ for_stack_2:
     swap1     // inputs, iniptr, current_ptr, tag, arity
     0x00
 
-for_stack_3:
+for_stack_2:
         dup2   // end
         dup2   // start
         lt
-        forloop_stack_3
+        forloop_stack_2
         jumpi
         pop    // pop end, step
         pop
         jump
-    forloop_stack_3:   // any content variables are kept after jumptag, end, step
+    forloop_stack_2:   // any content variables are kept after jumptag, end, step
 
         // inputs, iniptr, current_ptr, tag, end, step
         dup6       // store first input
@@ -500,10 +499,10 @@ for_stack_3:
         swap5
         pop      // inputs_rest, ptr, tag, end, step
 
-    forloop_end_stack_3:
+    forloop_end_stack_2:
         0x01   // start/step first
         add
-        for_stack_3
+        for_stack_2
         jump
 
     t3__1_2:  // after for loop does nothing has ptr last on stack
@@ -684,16 +683,16 @@ for_stack_3:
     swap1     // inputs, iniptr, current_ptr, tag, arity
     0x00
 
-for_stack_4:
+for_stack_3:
         dup2   // end
         dup2   // start
         lt
-        forloop_stack_4
+        forloop_stack_3
         jumpi
         pop    // pop end, step
         pop
         jump
-    forloop_stack_4:   // any content variables are kept after jumptag, end, step
+    forloop_stack_3:   // any content variables are kept after jumptag, end, step
 
         // inputs, iniptr, current_ptr, tag, end, step
         dup6       // store first input
@@ -711,10 +710,10 @@ for_stack_4:
         swap5
         pop      // inputs_rest, ptr, tag, end, step
 
-    forloop_end_stack_4:
+    forloop_end_stack_3:
         0x01   // start/step first
         add
-        for_stack_4
+        for_stack_3
         jump
 
     t3__1_3:  // after for loop does nothing has ptr last on stack
@@ -723,7 +722,7 @@ for_stack_4:
             /* (5) getframe // prev_frame_ptr   // prev_frame_ptr   */
 0xe0
             mload
-            /* (1) memframe_pre 0x40, 0xe0, 0x06      */
+            /* (1) memframe_init 0x40, 0xe0, 0x06      */
 0xc0    // alloc frame
     0x40
     mload
@@ -737,44 +736,41 @@ for_stack_4:
     0xe0
     mstore
 
-    memframe_pre_1_1   // tag, end, start
-    0x06    // end
-    0x00
+    // stack: args, current_ptr
 
-for_stack_5:
-        dup2   // end
-        dup2   // start
-        lt
-        forloop_stack_5
-        jumpi
-        pop    // pop end, step
-        pop
-        jump
-    forloop_stack_5:   // any content variables are kept after jumptag, end, step
+    swap1  // args_rest, current_ptr, first arg
+   dup2   // ptr
+   mstore
+   0x20
+   add
+swap1  // args_rest, current_ptr, first arg
+   dup2   // ptr
+   mstore
+   0x20
+   add
+swap1  // args_rest, current_ptr, first arg
+   dup2   // ptr
+   mstore
+   0x20
+   add
+swap1  // args_rest, current_ptr, first arg
+   dup2   // ptr
+   mstore
+   0x20
+   add
+swap1  // args_rest, current_ptr, first arg
+   dup2   // ptr
+   mstore
+   0x20
+   add
+swap1  // args_rest, current_ptr, first arg
+   dup2   // ptr
+   mstore
+   0x20
+   add
 
-        // args, current_ptr, tag, end, step
-        dup5       // store first input
-        dup5       // current_ptr
-        mstore
-        dup4       // increase current_ptr with 32
-        0x20
-        add
-        swap4      // replace current_ptr
-        pop
-        swap1
-        swap2
-        swap3
-        swap4
-        pop      // args_rest, current_ptr, tag, end, step
 
-    forloop_end_stack_5:
-        0x01   // start/step first
-        add
-        for_stack_5
-        jump
-
-    memframe_pre_1_1:  // after for loop does nothing has ptr last on stack
-        pop      // pops increased ptr
+    pop    // remove current_ptr
 
             // step 794 (nothing on stack)
 
@@ -873,16 +869,16 @@ for_stack_5:
         swap1  // // fid, current_partial, tag, arity
         0x00
 
-for_stack_6:
+for_stack_4:
         dup2   // end
         dup2   // start
         lt
-        forloop_stack_6
+        forloop_stack_4
         jumpi
         pop    // pop end, step
         pop
         jump
-    forloop_stack_6:   // any content variables are kept after jumptag, end, step
+    forloop_stack_4:   // any content variables are kept after jumptag, end, step
 
             // fid, current_partial, tag, end, step
             dup4
@@ -906,10 +902,10 @@ for_stack_6:
             swap2
             swap1
 
-    forloop_end_stack_6:
+    forloop_end_stack_4:
         0x01   // start/step first
         add
-        for_stack_6
+        for_stack_4
         jump
 
     eval_native_function:

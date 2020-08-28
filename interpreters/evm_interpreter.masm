@@ -64,7 +64,7 @@ deployer {
         t3__ 0x40  // input_ptr
 
         0x00    // prev_ptr
-        memframe_pre 0x40, 0xe0, 0x06
+        memframe_init 0x40, 0xe0, 0x06
 
     tag_eval:
         getframe  //
@@ -232,7 +232,7 @@ deployer {
             t3__ 0x40  // input_ptr
 
             getframe    // prev_frame_ptr
-            memframe_pre 0x40, 0xe0, 0x06
+            memframe_init 0x40, 0xe0, 0x06
 
             // step 794 (nothing on stack)
 
