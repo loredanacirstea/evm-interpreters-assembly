@@ -231,25 +231,34 @@ deployer {
             eval_end_processing_mem
             jumpi
 
-            0x01       // arity
-            t3__ 0x40  // output_ptr
-
-            dup3      // memframe_ptr, output_ptr, memframe_ptr
+            dup3      // current_frame_ptr, result_ptr, end_ptr, memframe_ptr
             getoutputptr  //
-            mstore    // store output_ptr
+            mload  // actual output_ptr // current_frame_ptr, result_ptr, end_ptr, output_ptr
+
+            0x20
+            add
+            mstore   // current_frame_ptr, result_ptr
 
             swap1 // frame, result_ptr -> result_ptr, frame
 
             getreturn  // load tag to jump from current frame
             jump
     eval_end_processing_mem:
-            // current_frame_ptr, result_ptr, end_ptr on stack
-            0x02       // arity
-            t3__ 0x40  // output_ptr
 
-            dup2      // memframe_ptr, output_ptr, memframe_ptr
+            // current_frame_ptr, result_ptr, end_ptr on stack
+            dup3      // current_frame_ptr, result_ptr, end_ptr, memframe_ptr
             getoutputptr  //
-            mstore    // store output_ptr
+            mload  // actual output_ptr // current_frame_ptr, result_ptr, end_ptr, output_ptr
+
+            swap1   // current_frame_ptr, result_ptr, output_ptr, end_ptr
+            dup2
+            0x20
+            add
+            mstore   // current_frame_ptr, result_ptr, output_ptr
+
+            0x40
+            add
+            mstore   // current_frame_ptr
 
             getreturn  // load tag to jump from current frame
             jump
@@ -335,8 +344,34 @@ deployer {
         swap1
         mstore     // store partial1
 
-        dup5    // frame ptr
+        dup1
+        dup6    // frame ptr
         setpartialsptr  //
+
+        // prealloc all partials output, so we can dealloc mem later
+
+        // frame_ptr, data_ptr, end_ptr, arity, partial_ptr
+
+        eval_is_fn_rest
+        dup3
+        0x00
+        mfor_stack {
+            // frame_ptr, data_ptr, end_ptr, arity, partial_ptr, tag, end, step
+            0x02
+            t3_init__ 0x40  //partial
+
+            dup5   // partial_ptr
+            dup3   // step
+            0x20
+            mul
+            0x40
+            add
+            add
+            mstore
+
+        }
+    eval_is_fn_rest:
+        pop   // partial_ptr
 
         // remove stack except arity
         swap1
@@ -363,7 +398,7 @@ deployer {
             getframe // prev_frame_ptr
             dup1
             dup3
-            mstore
+            mstore  // PREV_PTR(0)
 
             // store current_frame_ptr
             dup2
@@ -373,15 +408,15 @@ deployer {
             dup1   // previous frame ptr is on stack
             getenvptr  //
             dup3    // new_frame_ptr
-            setenvptr  // TODO - more complex when we have let*
+            setenvptr // ENV_PTR(2)  // TODO - more complex when we have let*
 
             dup1     // get mem/stack location from parent
             getloco  //
             dup3
-            setloco  //   if next is a function, it will set the mem/stack location itself
+            setloco  // MEM/STACK(3) //   if next is a function, it will set the mem/stack location itself
 
             dup1
-            getpartialsptr  //
+            getpartialsptr  // from parent
 
             // new_frame_ptr, previous frame ptr, partials_ptr
             swap1       // new_frame_ptr, partials_ptr, previous frame ptr
@@ -395,7 +430,7 @@ deployer {
             // new_frame_ptr, output_ptr
             dup1    // new_frame_ptr, output_ptr, output_ptr
             dup3    // new_frame_ptr, output_ptr, output_ptr, new_frame_ptr
-            setoutputptr //  new_frame_ptr, output_ptr
+            setoutputptr // OUTPUT_PTR(5) //  new_frame_ptr, output_ptr
 
             // take data ptr from previous partial
             0x20       // new_frame_ptr, output_ptr, 0x20
@@ -405,11 +440,25 @@ deployer {
             t3item_ 0x00    // end_ptr is new data_ptr // new_frame_ptr, data_ptr
 
             dup2       // new_frame_ptr, data_ptr, new_frame_ptr
-            setdataptr //  new_frame_ptr
+            setdataptr // DATA_PTR(1) //   new_frame_ptr
+
+            0x00
+            dup2
+            setpartialsptr  // PARTIALS_PTR(4) empty
+            0x00
+            dup2
+            setforstep      // LOOP START (6) empty
+            0x00
+            dup2
+            setforend       // LOOP END (7) empty
+            0x00
+            dup2
+            setforreturn    // LOOP RETURN (8) empty
+
 
             eval_function_for_content    // return tag
             swap1
-            setreturn  //
+            setreturn  // EVAL RETURN TAG(9)
 
             // END - MEMORY FRAME INIT  //
 
@@ -420,8 +469,12 @@ deployer {
 
             eval_function_for_content:
                 getframe  //
+                dup1
                 mload     // get previous frame
                 0xe0
+                mstore
+
+                0x40    // change free mem ptr - dealloc
                 mstore
         }
 
