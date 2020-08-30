@@ -4,6 +4,12 @@
 
 
 
+
+
+
+
+
+
 dataSize(sub_0)
     dataOffset(sub_0)
     0x00
@@ -164,9 +170,15 @@ calldatasize
         eval_is_number
         jumpi
 
+        dup1
         0x03
         eq
         eval_is_fn
+        jumpi
+
+        0x04
+        eq
+        eval_is_bytelike
         jumpi
 
     eval_end_processing:
@@ -289,14 +301,144 @@ calldatasize
             eval_end_processing   // current_frame_ptr, result_ptr, end_ptr on stack TODO should be macro
             jump
 
-    eval_is_fn:
-
+    eval_is_bytelike:
         /* (3) getframe //   //   */
 0xe0
             mload
 
         dup1
-        /* (2) getdataptr //   //   */
+        /* (2) getdataptr // frame_ptr, data_ptr   // frame_ptr, data_ptr   */
+0x20
+            add
+            mload
+
+        dup1        // frame_ptr, data_ptr, data_ptr
+        0x04
+        add
+        /* (0) getfourb //  frame_ptr, data_ptr, bytes length   //  frame_ptr, data_ptr, bytes length   */
+// expects a pointer
+            mload
+            0xe0
+            shr
+
+        dup1        //frame_ptr,  data_ptr, length, length
+        0x20
+        add
+        /* (1) allocate 0x40  // frame_ptr, data_ptr, length, result_ptr   // frame_ptr, data_ptr, length, result_ptr   */
+0x40  // frame_ptr
+    mload
+    swap1
+    dup2
+    add
+    0x40  // frame_ptr
+    mstore
+
+        dup2    // frame_ptr, data_ptr, length, result_ptr, length
+        dup2    // result_ptr
+        mstore  // frame_ptr, data_ptr, length, result_ptr
+
+
+        dup2    // length
+        dup4     // source_ptr
+        0x08
+        add
+        dup3     // target_ptr/result_ptr
+        0x20
+        add
+
+        /* (0) mmultistore //   //   */
+// size_bytes, source_ptr, target_ptr
+            // slots
+            dup3
+
+            // calc slots
+            0x20
+            dup2
+            div
+
+            0x00
+            0x20
+            dup4
+            mod
+            gt
+            add
+
+            swap1
+            pop
+
+            // end calc slots
+
+            swap3            // slots, source_ptr, target_ptr ; replace length with slots
+            pop
+
+            mmultistore_end_0
+            dup4             // slots
+            0x00
+
+for_stack_0:
+        dup2   // end
+        dup2   // start
+        lt
+        forloop_stack_0
+        jumpi
+        pop    // pop end, step
+        pop
+        jump
+    forloop_stack_0:   // any content variables are kept after jumptag, end, step
+
+                // slots, source_ptr, target_ptr, tag, end, step
+                dup5
+                mload
+                dup5
+                mstore
+
+                dup5
+                0x20
+                add
+                swap5
+                pop
+
+                dup4
+                0x20
+                add
+                swap4
+                pop
+
+    forloop_end_stack_0:
+        0x01   // start/step first
+        add
+        for_stack_0
+        jump
+        mmultistore_end_0:
+            pop
+            pop
+            pop
+
+        dup3      // data_ptr
+        0x08
+        add
+        dup3      // length
+        add       // frame_ptr, data_ptr, length, result_ptr, data_ptr
+        swap2     // frame_ptr, data_ptr, data_ptr, result_ptr, length
+        pop       // frame_ptr, data_ptr, data_ptr, result_ptr
+        swap2     // frame_ptr, result_ptr, data_ptr, data_ptr
+        pop
+
+
+
+        // current_frame_ptr, result_ptr, end_ptr
+        eval_end_processing
+        jump
+
+
+    eval_is_fn:
+        pop  // pop above switch condition
+        /* (4) getframe //   //   */
+0xe0
+            mload
+
+        dup1
+        /* (3) getdataptr //   //   */
 0x20
             add
             mload
@@ -306,7 +448,7 @@ calldatasize
         add      // end_ptr
 
         dup2      // data_ptr
-        /* (0) getfourb //   //   */
+        /* (1) getfourb //   //   */
 // expects a pointer
             mload
             0xe0
@@ -396,16 +538,16 @@ calldatasize
     swap1     // inputs, iniptr, current_ptr, tag, arity
     0x00
 
-for_stack_0:
+for_stack_1:
         dup2   // end
         dup2   // start
         lt
-        forloop_stack_0
+        forloop_stack_1
         jumpi
         pop    // pop end, step
         pop
         jump
-    forloop_stack_0:   // any content variables are kept after jumptag, end, step
+    forloop_stack_1:   // any content variables are kept after jumptag, end, step
 
         // inputs, iniptr, current_ptr, tag, end, step
         dup6       // store first input
@@ -423,10 +565,10 @@ for_stack_0:
         swap5
         pop      // inputs_rest, ptr, tag, end, step
 
-    forloop_end_stack_0:
+    forloop_end_stack_1:
         0x01   // start/step first
         add
-        for_stack_0
+        for_stack_1
         jump
 
     t3__1_0:  // after for loop does nothing has ptr last on stack
@@ -449,16 +591,16 @@ for_stack_0:
         dup3
         0x00
 
-for_stack_1:
+for_stack_2:
         dup2   // end
         dup2   // start
         lt
-        forloop_stack_1
+        forloop_stack_2
         jumpi
         pop    // pop end, step
         pop
         jump
-    forloop_stack_1:   // any content variables are kept after jumptag, end, step
+    forloop_stack_2:   // any content variables are kept after jumptag, end, step
 
             // frame_ptr, data_ptr, end_ptr, arity, partial_ptr, tag, end, step
             0x02
@@ -493,10 +635,10 @@ for_stack_1:
             mstore
 
 
-    forloop_end_stack_1:
+    forloop_end_stack_2:
         0x01   // start/step first
         add
-        for_stack_1
+        for_stack_2
         jump
     eval_is_fn_rest:
         pop   // partial_ptr
@@ -572,7 +714,7 @@ for_stack_1:
 
             // MEMORY FRAME INIT  //
             0x140
-            /* (1) allocate 0x40      */
+            /* (2) allocate 0x40      */
 0x40
     mload
     swap1
@@ -581,7 +723,7 @@ for_stack_1:
     0x40
     mstore
 
-            /* (4) getframe // prev_frame_ptr   // prev_frame_ptr   */
+            /* (5) getframe // prev_frame_ptr   // prev_frame_ptr   */
 0xe0
             mload
             dup1
@@ -704,7 +846,7 @@ for_stack_1:
             jump
 
             eval_function_for_content:
-                /* (5) getframe //   //   */
+                /* (6) getframe //   //   */
 0xe0
             mload
                 dup1
@@ -734,7 +876,7 @@ for_stack_1:
         jump
 
     eval_function_for_end:
-        /* (6) getframe //   //   */
+        /* (7) getframe //   //   */
 0xe0
             mload
         /* (3) getloco //   //   */
@@ -747,16 +889,16 @@ for_stack_1:
         eval_function_for_end_mem
         jumpi
 
-        /* (7) getframe //   //   */
+        /* (8) getframe //   //   */
 0xe0
             mload
-        /* (3) getdataptr //   //   */
+        /* (4) getdataptr //   //   */
 0x20
             add
             mload
         0x04
         add
-        /* (1) getfourb //  function id fid   //  function id fid   */
+        /* (2) getfourb //  function id fid   //  function id fid   */
 // expects a pointer
             mload
             0xe0
@@ -771,18 +913,18 @@ for_stack_1:
         stop
 
     eval_function_for_end_mem:
-        /* (8) getframe //   //   */
+        /* (9) getframe //   //   */
 0xe0
             mload
 
         dup1
-        /* (4) getdataptr //   //   */
+        /* (5) getdataptr //   //   */
 0x20
             add
             mload
         0x04
         add
-        /* (2) getfourb //  function id fid  // frame_ptr, fid   //  function id fid  // frame_ptr, fid   */
+        /* (3) getfourb //  function id fid  // frame_ptr, fid   //  function id fid  // frame_ptr, fid   */
 // expects a pointer
             mload
             0xe0
@@ -822,16 +964,16 @@ for_stack_1:
         swap1  // fid, current_partial, tag, arity
         0x00
 
-for_stack_2:
+for_stack_3:
         dup2   // end
         dup2   // start
         lt
-        forloop_stack_2
+        forloop_stack_3
         jumpi
         pop    // pop end, step
         pop
         jump
-    forloop_stack_2:   // any content variables are kept after jumptag, end, step
+    forloop_stack_3:   // any content variables are kept after jumptag, end, step
 
             // fid, current_partial, tag, end, step
             dup4
@@ -855,10 +997,10 @@ for_stack_2:
             swap2
             swap1
 
-    forloop_end_stack_2:
+    forloop_end_stack_3:
         0x01   // start/step first
         add
-        for_stack_2
+        for_stack_3
         jump
 
     eval_native_function:
@@ -879,7 +1021,7 @@ for_stack_2:
     eval_native_function_post:
         // save result in frame
 
-        /* (9) getframe //   //   */
+        /* (10) getframe //   //   */
 0xe0
             mload
         swap1
@@ -3212,9 +3354,33 @@ selfdestruct_10:  // 0xff
         jump
         stop
         allocate_11: // 0x100
-            pop
             allocate_11_extra
+            //
+            // push
             jump
+            stop
+            stop
+            stop
+        return_10: // 0x101
+            pop
+            return_10_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        mmultistore_30: // 0x102
+            mmultistore_30_extra
+            jump
+            stop
+            stop
+            stop
+            stop
+            stop
+        unknown_11:   // 0x103
+            unknown_11_extra
+            jump
+            stop
             stop
             stop
             stop
@@ -3558,7 +3724,7 @@ selfdestruct_10:  // 0xff
             mload
             jump
         allocate_11_extra:
-            /* (2) allocate 0x40      */
+            /* (3) allocate 0x40      */
 0x40
     mload
     swap1
@@ -3570,5 +3736,84 @@ selfdestruct_10:  // 0xff
             // push
             mload
             jump
+        mmultistore_30_extra:
+            /* (1) mmultistore //   //   */
+// size_bytes, source_ptr, target_ptr
+            // slots
+            dup3
+
+            // calc slots
+            0x20
+            dup2
+            div
+
+            0x00
+            0x20
+            dup4
+            mod
+            gt
+            add
+
+            swap1
+            pop
+
+            // end calc slots
+
+            swap3            // slots, source_ptr, target_ptr ; replace length with slots
+            pop
+
+            mmultistore_end_1
+            dup4             // slots
+            0x00
+
+for_stack_4:
+        dup2   // end
+        dup2   // start
+        lt
+        forloop_stack_4
+        jumpi
+        pop    // pop end, step
+        pop
+        jump
+    forloop_stack_4:   // any content variables are kept after jumptag, end, step
+
+                // slots, source_ptr, target_ptr, tag, end, step
+                dup5
+                mload
+                dup5
+                mstore
+
+                dup5
+                0x20
+                add
+                swap5
+                pop
+
+                dup4
+                0x20
+                add
+                swap4
+                pop
+
+    forloop_end_stack_4:
+        0x01   // start/step first
+        add
+        for_stack_4
+        jump
+        mmultistore_end_1:
+            pop
+            pop
+            pop
+        return_10_extra:
+            dup1   // pointer
+            mload  // length
+            swap1
+            0x20
+            add
+            return
+        unknown_11_extra:
+            stop
+            jump
+            stop
 
     }

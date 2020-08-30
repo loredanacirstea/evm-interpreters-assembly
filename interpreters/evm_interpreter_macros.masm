@@ -369,3 +369,75 @@
 
     pop    // remove current_ptr
 %endmacro
+
+%macro slots_from_size:
+    // size
+    0x20
+    dup2
+    div
+
+    0x00
+    0x20
+    dup4
+    mod
+    gt
+    add
+
+    swap1
+    pop
+%endmacro
+
+%macro mmultistore
+            // size_bytes, source_ptr, target_ptr
+            // slots
+            dup3
+
+            // calc slots
+            0x20
+            dup2
+            div
+
+            0x00
+            0x20
+            dup4
+            mod
+            gt
+            add
+
+            swap1
+            pop
+
+            // end calc slots
+
+            swap3            // slots, source_ptr, target_ptr ; replace length with slots
+            pop
+
+            mmultistore_end_%instance
+            dup4             // slots
+            0x00
+            mfor_stack {
+                // slots, source_ptr, target_ptr, tag, end, step
+                dup5
+                mload
+                dup5
+                mstore
+
+                dup5
+                0x20
+                add
+                swap5
+                pop
+
+                dup4
+                0x20
+                add
+                swap4
+                pop
+            }
+        mmultistore_end_%instance:
+            pop
+            pop
+            pop
+%endmacro
+
+

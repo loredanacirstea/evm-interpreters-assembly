@@ -216,9 +216,15 @@ deployer {
         eval_is_number
         jumpi
 
+        dup1
         0x03
         eq
         eval_is_fn
+        jumpi
+
+        0x04
+        eq
+        eval_is_bytelike
         jumpi
 
     eval_end_processing:
@@ -307,8 +313,56 @@ deployer {
             eval_end_processing   // current_frame_ptr, result_ptr, end_ptr on stack TODO should be macro
             jump
 
-    eval_is_fn:
+    eval_is_bytelike:
+        getframe    //
 
+        dup1
+        getdataptr  // frame_ptr, data_ptr
+
+        dup1        // frame_ptr, data_ptr, data_ptr
+        0x04
+        add
+        getfourb    //  frame_ptr, data_ptr, bytes length
+
+        dup1        //frame_ptr,  data_ptr, length, length
+        0x20
+        add
+        allocate 0x40  // frame_ptr, data_ptr, length, result_ptr
+
+        dup2    // frame_ptr, data_ptr, length, result_ptr, length
+        dup2    // result_ptr
+        mstore  // frame_ptr, data_ptr, length, result_ptr
+
+
+        dup2    // length
+        dup4     // source_ptr
+        0x08
+        add
+        dup3     // target_ptr/result_ptr
+        0x20
+        add
+
+        mmultistore //
+
+        dup3      // data_ptr
+        0x08
+        add
+        dup3      // length
+        add       // frame_ptr, data_ptr, length, result_ptr, data_ptr
+        swap2     // frame_ptr, data_ptr, data_ptr, result_ptr, length
+        pop       // frame_ptr, data_ptr, data_ptr, result_ptr
+        swap2     // frame_ptr, result_ptr, data_ptr, data_ptr
+        pop
+
+
+
+        // current_frame_ptr, result_ptr, end_ptr
+        eval_end_processing
+        jump
+
+
+    eval_is_fn:
+        pop  // pop above switch condition
         getframe //
 
         dup1
@@ -908,9 +962,33 @@ deployer {
         eopcode 0xfe, 110
         wopcode 0xff, selfdestruct, selfdestruct_10
         allocate_11: // 0x100
-            pop
             allocate_11_extra
+            //
+            // push
             jump
+            stop
+            stop
+            stop
+        return_10: // 0x101
+            pop
+            return_10_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        mmultistore_30: // 0x102
+            mmultistore_30_extra
+            jump
+            stop
+            stop
+            stop
+            stop
+            stop
+        unknown_11:   // 0x103
+            unknown_11_extra
+            jump
+            stop
             stop
             stop
             stop
@@ -1259,4 +1337,17 @@ deployer {
             // push
             mload
             jump
+        mmultistore_30_extra:
+            mmultistore //
+        return_10_extra:
+            dup1   // pointer
+            mload  // length
+            swap1
+            0x20
+            add
+            return
+        unknown_11_extra:
+            stop
+            jump
+            stop
 }
