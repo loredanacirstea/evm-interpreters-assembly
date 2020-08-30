@@ -20,6 +20,14 @@ deployer {
             and
         %endmacro
 
+        %macro getfunclength
+            // expects a 4byte value
+            0xfffc00
+            and
+            0x0a
+            shr
+        %endmacro
+
         %macro getfuncloco
             // expects a 4byte value
             0x40
@@ -523,12 +531,8 @@ deployer {
 
             eval_function_for_content:
                 getframe  //
-                dup1
                 mload     // get previous frame
                 0xe0
-                mstore
-
-                0x40    // change free mem ptr - dealloc
                 mstore
         }
 
@@ -978,19 +982,35 @@ deployer {
             stop
             stop
         mmultistore_30: // 0x102
+            pop
             mmultistore_30_extra
+            //
+            // push
             jump
-            stop
-            stop
-            stop
             stop
             stop
         unknown_11:   // 0x103
+            pop
             unknown_11_extra
+            //
+            // push
             jump
             stop
             stop
+        lambda_xx:  // 0x104
             stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+        apply_xx:   // 0x105
+            pop
+            apply_xx_extra
+            //
+            // push
+            jump
             stop
             stop
         jump_10_extra:
@@ -1347,7 +1367,145 @@ deployer {
             add
             return
         unknown_11_extra:
-            stop
+            getframe //
+            dup1
+            getdataptr //
+            getfourb  //
+            getfunclength //
+
+            swap1   // index, frame_ptr
+            getenvptr //  index, env_ptr
+            0x20
+            add
+            dup2   // index, env_ptr, index
+            0x20
+            mul
+            add    // index, env_ptr
+            mload  // load env value
+
+            swap1   // pop index
+            pop
+            0xc0
+            // push
+            mload
             jump
-            stop
+        apply_xx_extra: // args, lambda_ptr
+            0x20
+            add   // after length lambda_ptr // args, lambda_ptr, lambda_ptr
+            dup1     // load lambda head todo: require id is lambda id
+            getfourb  // args, lambda_ptr, 4b
+
+            getfuncarity // lambda arity // args, lambda_ptr, lambda_arity
+
+            // move lambda pointer to lambda body
+            swap1   // args, lambda_arity, lambda_ptr
+            0x08
+            add     // lambda sig
+            dup2
+            0x02
+            mul     // unknowns offset
+            add     // move lambda ptr at body
+
+            swap1   // args, lambda_ptr, lambda_arity
+
+            // create new memory frame with new env
+            // TODO meld new env with old env
+
+            dup1            // lambda_arity
+            t22_init_ 0x40   // new_env_ptr
+            dup1
+            0x20
+            add    // current_env_ptr
+
+            swap1
+            swap2
+
+            apply_xx_extra_mfor_end    // args, lambda_ptr, lambda_arity, new_env_ptr, current_env_ptr
+            swap1  // args, lambda_ptr, new_env_ptr, current_env_ptr, tag, lambda_arity
+            0x00
+            mfor_stack {
+                // args, lambda_ptr, new_env_ptr, current_env_ptr, tag, end, step
+
+                // load env_ptr and write args
+                // call eval with lambda pointer and return back here
+
+                dup7   // first arg
+                dup5   // current_env_ptr
+                mstore
+
+                dup4   // current_env_ptr increase
+                0x20
+                add
+                swap4
+                pop
+
+                swap1
+                swap2
+                swap3
+                swap4
+                swap5
+                swap6
+                pop
+            }
+
+        apply_xx_extra_mfor_end:
+            // lambda_ptr, new_env_ptr, current_env_ptr
+            pop  // lambda_ptr, new_env_ptr
+
+            // MEMORY FRAME INIT  //
+            0x140
+            allocate 0x40  // lambda_ptr, new_env_ptr, new_frame_ptr
+
+            getframe // lambda_ptr, new_env_ptr, new_frame_ptr, prev_frame_ptr
+            dup1   // lambda_ptr, new_env_ptr, new_frame_ptr, prev_frame_ptr, prev_frame_ptr
+            dup3   // lambda_ptr, new_env_ptr, new_frame_ptr, prev_frame_ptr, prev_frame_ptr, new_frame_ptr
+            mstore  // PREV_PTR(0)  // lambda_ptr, new_env_ptr, new_frame_ptr, prev_frame_ptr
+
+            // store current_frame_ptr
+            dup2
+            0xe0
+            mstore
+
+            dup1     // get mem/stack location from parent
+            getloco  // lambda_ptr, new_env_ptr, new_frame_ptr, prev_frame_ptr, mem/stack
+            dup3     // lambda_ptr, new_env_ptr, new_frame_ptr, prev_frame_ptr, mem/stack, new_frame_ptr
+            setloco  // MEM/STACK(3) //   if next is a function, it will set the mem/stack location itself
+
+            // lambda_ptr, new_env_ptr, new_frame_ptr, prev_frame_ptr
+            pop  // lambda_ptr, new_env_ptr, new_frame_ptr
+
+            swap1  // lambda_ptr, new_frame_ptr, new_env_ptr
+            dup2
+            setenvptr // lambda_ptr, new_frame_ptr
+
+            swap1
+            dup2
+            setdataptr //
+
+            apply_xx_extra_eval_end    // return tag
+            swap1
+            setreturn  //
+
+            tag_eval
+            jump
+
+        apply_xx_extra_eval_end:
+            // just leave on the stack the result
+
+            // previous frame
+            getframe  //
+            dup1
+            mload     // get previous frame
+            0xe0
+            mstore
+
+            // TODO // DEALLOC
+            //0x40    // change free mem ptr - dealloc
+            //mstore
+            pop
+
+            0xc0
+            // push
+            mload
+            jump
 }

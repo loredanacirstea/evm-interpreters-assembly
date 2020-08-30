@@ -251,6 +251,49 @@
     mstore
 %endmacro
 
+%macro t2_init_
+    // expects length // %0 = freeMemPtr
+    dup1
+    0x20
+    add
+
+    // alloc %0    // freeMemPtr
+    %0
+    mload
+    swap1
+    dup2
+    add
+    %0
+    mstore
+
+    dup2       // store length first
+    dup2
+    mstore
+%endmacro
+
+%macro t22_init_
+    // expects arity // %0 = freeMemPtr
+    dup1
+    0x20
+    mul
+    0x20
+    add
+
+    // alloc %0    // freeMemPtr
+    %0
+    mload
+    swap1
+    dup2
+    add
+    %0
+    mstore
+
+    swap1       // store arity first
+    dup2
+    mstore
+%endmacro
+
+
 %macro t3_init__
     // expects on stack: arity
     dup1   // arity
@@ -388,9 +431,9 @@
 %endmacro
 
 %macro mmultistore
+            // alloc before using it
             // size_bytes, source_ptr, target_ptr
-            // slots
-            dup3
+            dup3   // size_bytes
 
             // calc slots
             0x20
