@@ -1429,6 +1429,7 @@ deployer {
 
             swap1   // pop index
             pop
+
             0xc0
             // push
             mload

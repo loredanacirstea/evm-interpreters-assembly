@@ -553,6 +553,8 @@
 
             sload  // key2, length
             dup1  // key2, length, length
+            0x20
+            add   // account for length
 
             // alloc
             %0

@@ -3885,6 +3885,7 @@ for_stack_4:
 
             swap1   // pop index
             pop
+
             0xc0
             // push
             mload
@@ -4222,6 +4223,8 @@ for_stack_6:
 
             sload  // key2, length
             dup1  // key2, length, length
+            0x20
+            add   // account for length
 
             // alloc
             0x40  //  ptr
