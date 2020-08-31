@@ -47,6 +47,34 @@ deployer {
             mload
         %endmacro
 
+        %macro getfncounter
+            0x01
+            sload
+        %endmacro
+
+        %macro addfncounter
+            0x01
+            sload
+            0x01
+            add
+            0x01
+            sstore
+        %endmacro
+
+        %macro getfnkey
+            // expects fsig
+            0x02    // seed
+            0x00
+            mstore
+
+            0x20
+            mstore
+
+            0x40
+            0x00
+            sha3
+        %endmacro
+
         // GETTERS  //
 
         %macro getdataptr
@@ -350,7 +378,7 @@ deployer {
         0x20
         add
 
-        mmultistore //
+        mmultimstore //
 
         dup3      // data_ptr
         0x08
@@ -981,9 +1009,9 @@ deployer {
             jump
             stop
             stop
-        mmultistore_30: // 0x102
+        mmultimstore_30: // 0x102
             pop
-            mmultistore_30_extra
+            mmultimstore_30_extra
             //
             // push
             jump
@@ -1008,6 +1036,22 @@ deployer {
         apply_xx:   // 0x105
             pop
             apply_xx_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        setfn_10:   // 0x106
+            pop
+            setfn_10_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        getfn_11:   // 0x107
+            pop
+            getfn_11_extra
             //
             // push
             jump
@@ -1357,8 +1401,8 @@ deployer {
             // push
             mload
             jump
-        mmultistore_30_extra:
-            mmultistore //
+        mmultimstore_30_extra:
+            mmultimstore //
         return_10_extra:
             dup1   // pointer
             mload  // length
@@ -1503,6 +1547,46 @@ deployer {
             //0x40    // change free mem ptr - dealloc
             //mstore
             pop
+
+            0xc0
+            // push
+            mload
+            jump
+        setfn_10_extra:  // pointer to lambda - length & lambda
+            // TODO: set correct arity
+            0x3400100000000000
+            getfncounter //
+            add
+            swap1  // fsig, ptr
+
+            dup2  // fsig, ptr, fsig
+            dup2  // fsig, ptr, fsig, ptr
+
+            mload  // fsig, ptr, fsig, length
+            0x20
+            add    // save with length
+            swap2  // fsig, length, fsig, ptr
+            swap1  // fsig, length, ptr, fsig
+
+            getfnkey   // fsig, length, ptr, key
+            mmultisstore // fsig
+
+            addfncounter //
+            0xc0
+            // push
+            mload
+            jump
+        getfn_11_extra:  // fsig pointer -> pointer
+            0x20
+            add
+            mload
+            0xc0
+            shr
+            0xfffffbffffffffff    // mem/stack -> 0
+            and
+
+            getfnkey   //  key
+            mmultisload 0x40  //  ptr
 
             0xc0
             // push

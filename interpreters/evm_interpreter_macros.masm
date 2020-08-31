@@ -430,7 +430,7 @@
     pop
 %endmacro
 
-%macro mmultistore
+%macro mmultimstore
             // alloc before using it
             // size_bytes, source_ptr, target_ptr
             dup3   // size_bytes
@@ -455,7 +455,7 @@
             swap3            // slots, source_ptr, target_ptr ; replace length with slots
             pop
 
-            mmultistore_end_%instance
+            mmultimstore_end_%instance
             dup4             // slots
             0x00
             mfor_stack {
@@ -477,10 +477,151 @@
                 swap4
                 pop
             }
-        mmultistore_end_%instance:
+        mmultimstore_end_%instance:
             pop
             pop
             pop
 %endmacro
 
+%macro mmultisstore
+            // alloc before using it
+            // size_bytes, source_ptr, key
+            dup3   // size_bytes
 
+            // calc slots
+            0x20
+            dup2
+            div
+
+            0x00
+            0x20
+            dup4
+            mod
+            gt
+            add
+
+            swap1
+            pop
+
+            // end calc slots
+
+            swap3            // slots, source_ptr, key ; replace length with slots
+            pop
+
+            swap1
+            swap2     // source_ptr, key, slots
+
+            mmultisstore_end_%instance
+            swap1             // source_ptr, key, tag, slots/end
+            0x00
+            mfor_stack {
+                // source_ptr, key, tag, end, step
+
+                dup5
+                mload
+                dup5
+                sstore
+
+                dup5
+                0x20
+                add
+                swap5
+                pop
+
+                dup4
+                0x01
+                add
+                swap4
+                pop
+            }
+        mmultisstore_end_%instance:
+            pop
+            pop
+%endmacro
+
+
+%macro mmultisload
+            // alloc before using it
+            // key
+            dup1  // key, key
+
+            dup1
+            0x01
+            add   // key, key, key2
+            swap2
+            pop  // key2, key
+
+            sload  // key2, length
+            dup1  // key2, length, length
+
+            // alloc
+            %0
+            mload
+            swap1
+            dup2
+            add
+            %0
+            mstore
+            // alloc - end
+
+            // key2, length, target_ptr
+
+            // save length at ptr
+            dup2
+            dup2
+            mstore  // key2, length, target_ptr
+
+            dup1     // key2, length, target_ptr, target_ptr
+            0x20
+            add     // key2, length, target_ptr, current_target_ptr
+            swap1   // key2, length, current_target_ptr, target_ptr
+            swap3    // target_ptr, length, current_target_ptr, key2
+            swap2    // target_ptr, key2, current_target_ptr, length
+
+            // calc slots
+            0x20
+            dup2
+            div
+
+            0x00
+            0x20
+            dup4
+            mod
+            gt
+            add
+
+            swap1
+            pop
+
+            // end calc slots
+
+            // target_ptr, key2, current_target_ptr, slots
+            swap2 // target_ptr, slots, current_target_ptr, key2
+
+            mmultisload_end_%instance
+            dup4             // slots
+            0x00
+            mfor_stack {
+                // target_ptr, slots, target_ptr, key2, tag, end, step
+                dup4
+                sload   // target_ptr, slots, current_target_ptr, key2, tag, end, step, value
+                dup6    // target_ptr, slots, current_target_ptr, key2, tag, end, step, value, current_target_ptr
+                mstore  // target_ptr, slots, current_target_ptr, key2, tag, end, step
+
+                dup5
+                0x20
+                add
+                swap5
+                pop
+
+                dup4
+                0x01
+                add
+                swap4
+                pop
+            }
+        mmultisload_end_%instance:
+            pop
+            pop
+            pop   // leave target_ptr on stack
+%endmacro
