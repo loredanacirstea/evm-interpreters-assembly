@@ -251,7 +251,7 @@
     mstore
 %endmacro
 
-%macro t2_init_
+%macro t2_init__
     // expects length // %0 = freeMemPtr
     dup1
     0x20
@@ -269,6 +269,17 @@
     dup2       // store length first
     dup2
     mstore
+%endmacro
+
+%macro t2_len_
+    // expects t2 pointer
+    mload
+%endmacro
+
+%macro t2_ptr_
+    // expects t2 pointer
+    0x20
+    add
 %endmacro
 
 %macro t22_init_

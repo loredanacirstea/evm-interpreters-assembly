@@ -44,6 +44,8 @@ dataSize(sub_0)
 
 
 
+
+
         // GETTERS  //
 
 
@@ -3423,6 +3425,22 @@ selfdestruct_10:  // 0xff
             jump
             stop
             stop
+        setalias_20:   // 0x108  // name pointer
+            pop
+            setalias_20_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        getalias_11:   // 0x109  // name pointer -> signature
+            pop
+            getalias_11_extra
+            //
+            // push
+            jump
+            stop
+            stop
         jump_10_extra:
             0xe0        // start of data data_ptr
             // push1
@@ -4178,6 +4196,33 @@ for_stack_6:
             pop
             pop
 
+            0x08            // fsig -> fsig pointer
+            /* (0) t2_init__ 0x40   // fsig, fsigptr   // fsig, fsigptr   */
+// expects length // 0x40   // fsig = freeMemPtr
+    dup1
+    0x20
+    add
+
+    // alloc 0x40   // fsig    // freeMemPtr
+    0x40   // fsig
+    mload
+    swap1
+    dup2
+    add
+    0x40   // fsig
+    mstore
+
+    dup2       // store length first
+    dup2
+    mstore
+            dup1            // fsig, fsigptr, fsigptr
+            swap2           // fsigptr, fsig, fsigptr
+            /* (0) t2_ptr_ //   //   */
+// expects t2 pointer
+    0x20
+    add
+            mstore    // fsigptr - this is returned
+
             /* (0) addfncounter //   //   */
 0x01
             sload
@@ -4312,6 +4357,89 @@ for_stack_7:
             pop
             pop
             pop   // leave target_ptr on stack
+
+            0xc0
+            // push
+            mload
+            jump
+        setalias_20_extra:  // name pointer, signature ptr TODO might be > 32 bytes save with length
+            swap1      // name_ptr, sig_ptr
+            /* (1) t2_ptr_ //   //   */
+// expects t2 pointer
+    0x20
+    add
+            mload          // name_ptr, sig
+            swap1          // sig, name_ptr
+            /* (0) getnamehash // sig, key   // sig, key   */
+// expects pointer to name (bytes)
+
+            0x03    // seed
+            0x00
+            mstore
+
+            // hash name first, so we don't need to copy the bytes
+            dup1
+            mload   // length
+            swap1   // length, ptr
+            sha3
+
+            0x20
+            mstore
+
+            0x40
+            0x00
+            sha3
+            sstore
+            0x01           // add a success result on stack
+            0xc0
+            // push
+            mload
+            jump
+        getalias_11_extra:  // name pointer -> signature pointer
+            /* (1) getnamehash //   //   */
+// expects pointer to name (bytes)
+
+            0x03    // seed
+            0x00
+            mstore
+
+            // hash name first, so we don't need to copy the bytes
+            dup1
+            mload   // length
+            swap1   // length, ptr
+            sha3
+
+            0x20
+            mstore
+
+            0x40
+            0x00
+            sha3
+            sload        // load signature
+
+            0x08          // TODO multi slots
+            /* (1) t2_init__ 0x40      */
+// expects length // 0x40 = freeMemPtr
+    dup1
+    0x20
+    add
+
+    // alloc 0x40    // freeMemPtr
+    0x40
+    mload
+    swap1
+    dup2
+    add
+    0x40
+    mstore
+
+    dup2       // store length first
+    dup2
+    mstore
+            dup1      // sig, sig_ptr, sig_ptr
+            swap2    // sig_ptr, sig, sig_ptr
+            t2_ptr_
+            mstore    // sig_ptr
 
             0xc0
             // push
