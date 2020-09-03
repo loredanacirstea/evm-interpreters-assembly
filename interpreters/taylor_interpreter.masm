@@ -1094,6 +1094,15 @@ deployer {
             jump
             stop
             stop
+        if_3x:   // 0x10a  // branch2_ptr, branch1_ptr, cond
+            pop
+            if_3x_extra
+            //
+            // push
+            jump
+            stop
+            stop
+
         jump_10_extra:
             0xe0        // start of data data_ptr
             // push1
@@ -1655,5 +1664,27 @@ deployer {
             0xc0
             // push
             mload
+            jump
+        if_3x_extra:   // 0x10a  // branch2_ptr, branch1_ptr, cond
+            iszero
+            if_3x_branch2
+            jumpi
+            swap1
+            pop     // remove branch2_ptr
+
+            t2_ptr_   // get actual pointer
+            getframe  // branch1_ptr, frame_ptr
+            setdataptr  //
+
+            tag_eval
+            jump
+        if_3x_branch2:
+            pop    // remove branch1_ptr
+
+            t2_ptr_   // get actual pointer
+            getframe  // branch2_ptr, frame_ptr
+            setdataptr  //
+
+            tag_eval
             jump
 }
