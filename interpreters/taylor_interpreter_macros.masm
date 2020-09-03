@@ -255,7 +255,7 @@
     // expects length // %0 = freeMemPtr
     dup1
     0x20
-    add
+    add           // length, fulllength
 
     // alloc %0    // freeMemPtr
     %0
@@ -264,11 +264,12 @@
     dup2
     add
     %0
-    mstore
+    mstore     // length, ptr
 
-    dup2       // store length first
-    dup2
-    mstore
+    dup1       // store length   // length, ptr, ptr
+    swap2      // ptr, ptr, length
+    swap1      // ptr, length, ptr
+    mstore     // ptr
 %endmacro
 
 %macro t2_len_

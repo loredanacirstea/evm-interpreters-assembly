@@ -66,7 +66,11 @@ dataSize(sub_0)
 
 
 
+
+
         // SETTERS  //
+
+
 
 
 
@@ -4096,8 +4100,8 @@ for_stack_5:
             mload
             jump
         setfn_10_extra:  // pointer to lambda - length & lambda
-            // TODO: set correct arity
-            0x3400100000000000
+            // TODO: build sig, set correct arity
+            0x3400100000000000000000000000000000000000000000000000000000000000
             /* (0) getfncounter //   //   */
 0x01
             sload
@@ -4196,33 +4200,6 @@ for_stack_6:
             pop
             pop
 
-            0x08            // fsig -> fsig pointer
-            /* (0) t2_init__ 0x40   // fsig, fsigptr   // fsig, fsigptr   */
-// expects length // 0x40   // fsig = freeMemPtr
-    dup1
-    0x20
-    add
-
-    // alloc 0x40   // fsig    // freeMemPtr
-    0x40   // fsig
-    mload
-    swap1
-    dup2
-    add
-    0x40   // fsig
-    mstore
-
-    dup2       // store length first
-    dup2
-    mstore
-            dup1            // fsig, fsigptr, fsigptr
-            swap2           // fsigptr, fsig, fsigptr
-            /* (0) t2_ptr_ //   //   */
-// expects t2 pointer
-    0x20
-    add
-            mstore    // fsigptr - this is returned
-
             /* (0) addfncounter //   //   */
 0x01
             sload
@@ -4230,6 +4207,7 @@ for_stack_6:
             add
             0x01
             sstore
+
             0xc0
             // push
             mload
@@ -4238,9 +4216,8 @@ for_stack_6:
             0x20
             add
             mload
-            0xc0
-            shr
-            0xfffffbffffffffff    // mem/stack -> 0
+
+            0xfffffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffff    // mem/stack -> 0
             and
 
             /* (1) getfnkey //  key   //  key   */
@@ -4363,13 +4340,7 @@ for_stack_7:
             mload
             jump
         setalias_20_extra:  // name pointer, signature ptr TODO might be > 32 bytes save with length
-            swap1      // name_ptr, sig_ptr
-            /* (1) t2_ptr_ //   //   */
-// expects t2 pointer
-    0x20
-    add
-            mload          // name_ptr, sig
-            swap1          // sig, name_ptr
+            // sig, name_ptr
             /* (0) getnamehash // sig, key   // sig, key   */
 // expects pointer to name (bytes)
 
@@ -4417,12 +4388,12 @@ for_stack_7:
             sha3
             sload        // load signature
 
-            0x08          // TODO multi slots
-            /* (1) t2_init__ 0x40      */
+            0x20          // TODO multi slots
+            /* (0) t2_init__ 0x40      */
 // expects length // 0x40 = freeMemPtr
     dup1
     0x20
-    add
+    add           // length, fulllength
 
     // alloc 0x40    // freeMemPtr
     0x40
@@ -4431,14 +4402,20 @@ for_stack_7:
     dup2
     add
     0x40
-    mstore
+    mstore     // length, ptr
 
-    dup2       // store length first
-    dup2
-    mstore
+    dup1       // store length   // length, ptr, ptr
+    swap2      // ptr, ptr, length
+    swap1      // ptr, length, ptr
+    mstore     // ptr
             dup1      // sig, sig_ptr, sig_ptr
-            swap2    // sig_ptr, sig, sig_ptr
-            t2_ptr_
+            swap2    // sig_ptr, sig_ptr, sig
+            swap1    // sig_ptr, sig, sig_ptr
+
+            /* (0) t2_ptr_ //   //    */
+// expects t2 pointer
+    0x20
+    add
             mstore    // sig_ptr
 
             0xc0

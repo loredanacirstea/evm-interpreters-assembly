@@ -1591,8 +1591,8 @@ deployer {
             mload
             jump
         setfn_10_extra:  // pointer to lambda - length & lambda
-            // TODO: set correct arity
-            0x3400100000000000
+            // TODO: build sig, set correct arity
+            0x3400100000000000000000000000000000000000000000000000000000000000
             getfncounter //
             add
             swap1  // fsig, ptr
@@ -1609,14 +1609,8 @@ deployer {
             getfnkey   // fsig, length, ptr, key
             mmultisstore // fsig
 
-            0x08            // fsig -> fsig pointer
-            t2_init__ 0x40   // fsig, fsigptr
-            dup1            // fsig, fsigptr, fsigptr
-            swap2           // fsigptr, fsig, fsigptr
-            t2_ptr_  //
-            mstore    // fsigptr - this is returned
-
             addfncounter //
+
             0xc0
             // push
             mload
@@ -1625,9 +1619,8 @@ deployer {
             0x20
             add
             mload
-            0xc0
-            shr
-            0xfffffbffffffffff    // mem/stack -> 0
+
+            0xfffffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffff    // mem/stack -> 0
             and
 
             getfnkey   //  key
@@ -1638,10 +1631,7 @@ deployer {
             mload
             jump
         setalias_20_extra:  // name pointer, signature ptr TODO might be > 32 bytes save with length
-            swap1      // name_ptr, sig_ptr
-            t2_ptr_    //
-            mload          // name_ptr, sig
-            swap1          // sig, name_ptr
+            // sig, name_ptr
             getnamehash    // sig, key
             sstore
             0x01           // add a success result on stack
@@ -1653,11 +1643,13 @@ deployer {
             getnamehash  //
             sload        // load signature
 
-            0x08          // TODO multi slots
+            0x20          // TODO multi slots
             t2_init__ 0x40
             dup1      // sig, sig_ptr, sig_ptr
-            swap2    // sig_ptr, sig, sig_ptr
-            t2_ptr_
+            swap2    // sig_ptr, sig_ptr, sig
+            swap1    // sig_ptr, sig, sig_ptr
+
+            t2_ptr_   //
             mstore    // sig_ptr
 
             0xc0
