@@ -152,6 +152,12 @@ deployer {
             mload
         %endmacro
 
+        %macro getdelmarker
+            0x140
+            add
+            mload
+        %endmacro
+
         // SETTERS  //
 
         %macro setdataptr
@@ -208,6 +214,47 @@ deployer {
             mstore
         %endmacro
 
+        %macro setdelmarker
+            0x140
+            add
+            mstore
+        %endmacro
+
+        %macro dealloc_frame
+            // expects frame ptr
+            dup1
+            0x140  // get del mark
+            add
+            mload
+            keep_frame_%instance
+            jumpi
+            dup1  // just to keep stack balanced
+            0x40
+            mstore
+            keep_frame_%instance:
+                pop
+        %endmacro
+
+        %macro getsuperenv
+            // frame_ptr, index
+            getsuperenv_%instance  // frame_ptr, index, tag
+            swap1                  // frame_ptr, tag, index
+            0x00
+            mfor_stack {
+                // frame_ptr, tag, end, step
+                dup4
+                mload    // prev_frame_ptr
+                swap4
+                pop     // replace with prev_frame_ptr
+            }
+            getsuperenv_%instance:
+                // last frame_ptr
+
+                0x40   // get ptr env
+                add
+                mload
+        %endmacro
+
         // start tag value - native functions
         mmstore 0xa0 stop_00
 
@@ -240,11 +287,12 @@ deployer {
         // 0xe0 for loop end
         // 0x100 for loop return tag
         // 0x120 eval return tag
+        // 0x140 0/1 delete/don't delete
 
         // for stack we use: 0x00 - 0x40, 0xa0-0x120
 
         // MEMORY FRAME INIT
-        0x140
+        0x160
         allocate 0x40
 
         // store current_frame_ptr
@@ -390,6 +438,9 @@ deployer {
         dup2    // result_ptr
         mstore  // frame_ptr, data_ptr, length, result_ptr
 
+        0x01
+        dup5
+        setdelmarker  // do not delete frame
 
         dup2    // length
         dup4     // source_ptr
@@ -503,7 +554,7 @@ deployer {
             // step 499
 
             // MEMORY FRAME INIT  //
-            0x140
+            0x160
             allocate 0x40
 
             getframe // prev_frame_ptr
@@ -580,6 +631,7 @@ deployer {
 
             eval_function_for_content:
                 getframe  //
+
                 mload     // get previous frame
                 0xe0
                 mstore
@@ -1458,25 +1510,33 @@ deployer {
             add
             return
         unknown_11_extra:
-            getframe //
-            dup1
-            getdataptr //
-            getfourb  //
-            getfunclength //
+            getframe    //  frame_ptr
+            dup1        //  frame_ptr, frame_ptr
+            getdataptr  //  frame_ptr, data_ptr
+            getfourb    //  frame_ptr, fourb
 
-            swap1   // index, frame_ptr
-            getenvptr //  index, env_ptr
+            dup1        //  frame_ptr, fourb, fourb
+            getfunclength  // frame_ptr, fourb, length
+
+            swap1       // frame_ptr, length, fourb
+            getfuncarity  // frame_ptr, length, arity // frame_ptr, index, superIndex
+
+            dup3        // frame_ptr, index, superIndex, frame_ptr
+            swap1       // frame_ptr, index, frame_ptr, superIndex
+            getsuperenv // frame_ptr, index, env_ptr
 
             0x40     // after arity and self
-            add
-            dup2   // index, env_ptr, index
+            add      // frame_ptr, index, env_ptr
+            dup2   // frame_ptr, index, env_ptr, index
             0x20
             mul
-            add    // index, env_ptr
+            add    // frame_ptr, index, env_ptr
             mload  // load env value
 
             swap1   // pop index
             pop
+            swap1
+            pop    // pop frame_ptr
 
             0xc0
             // push
@@ -1559,7 +1619,7 @@ deployer {
             pop  // lambda_ptr, new_env_ptr
 
             // MEMORY FRAME INIT  //
-            0x140
+            0x160
             allocate 0x40  // lambda_ptr, new_env_ptr, new_frame_ptr
 
             getframe // lambda_ptr, new_env_ptr, new_frame_ptr, prev_frame_ptr
@@ -1599,15 +1659,9 @@ deployer {
 
             // previous frame
             getframe  //
-            dup1
             mload     // get previous frame
             0xe0
             mstore
-
-            // TODO // DEALLOC
-            //0x40    // change free mem ptr - dealloc
-            //mstore
-            pop
 
             0xc0
             // push
@@ -1710,5 +1764,15 @@ deployer {
             apply_xx_extra
             jump
         super_1x_extra:
-            stop
+            // index
+            getframe  //
+            swap1     // frame_ptr, super index
+
+            getsuperenv //
+
+            0x20
+            add       // args, lambda_ptr
+            mload
+            apply_xx_extra
+            jump
 }
