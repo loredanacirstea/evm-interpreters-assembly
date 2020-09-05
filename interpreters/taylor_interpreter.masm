@@ -1161,6 +1161,73 @@ deployer {
             jump
             stop
             stop
+        eopcode 0x10d, 111
+        eopcode 0x10e, 112
+        eopcode 0x10f, 113
+        eopcode 0x110, 114
+        eopcode 0x111, 115
+        eopcode 0x112, 116
+        eopcode 0x113, 117
+        eopcode 0x114, 118
+        eopcode 0x115, 119
+        eopcode 0x116, 120
+        eopcode 0x117, 121
+        eopcode 0x118, 122
+        eopcode 0x119, 123
+        eopcode 0x11a, 124
+        eopcode 0x11b, 125
+        eopcode 0x11c, 126
+        eopcode 0x11d, 127
+        eopcode 0x11e, 128
+        eopcode 0x11f, 129
+        calldatacopy__21:     // 0x120
+            pop
+            calldatacopy__21_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        codecopy__21:     // 0x121
+            pop
+            codecopy__21_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        extcodecopy__31:     // 0x122
+            pop
+            extcodecopy__31_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        returndatacopy__21:     // 0x123
+            pop
+            returndatacopy__21_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        revert_10:     // 0x124
+            pop
+            revert_10_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        keccak256_11:     // 0x125
+            pop
+            keccak256_11_extra
+            //
+            // push
+            jump
+            stop
+            stop
         jump_10_extra:
             0xe0        // start of data data_ptr
             // push1
@@ -1507,13 +1574,6 @@ deployer {
             jump
         mmultimstore_30_extra:
             mmultimstore //
-        return_10_extra:
-            dup1   // pointer
-            mload  // length
-            swap1
-            0x20
-            add
-            return
         unknown_11_extra:
             getframe    //  frame_ptr
             dup1        //  frame_ptr, frame_ptr
@@ -1796,5 +1856,84 @@ deployer {
             add       // args, lambda_ptr
             mload
             apply_xx_extra
+            jump
+        return_10_extra:
+            dup1   // pointer
+            mload  // length
+            swap1
+            0x20
+            add
+            return
+        revert_10_extra:
+            dup1   // pointer
+            mload  // length
+            swap1
+            0x20
+            add
+            revert
+        calldatacopy__21_extra:
+                              // calld_length, calld_start
+            dup2              // calld_length, calld_start, calld_length
+            t2_init__ 0x40    // calld_length, calld_start, mem_ptr__
+            swap2             // mem_ptr__, calld_start, calld_length
+            swap1             // mem_ptr__, calld_length, calld_start
+            dup3
+            t2_ptr_           // mem_ptr__, calld_length, calld_start, ptr
+            calldatacopy      // mem_ptr__
+            0xc0
+            // push
+            mload
+            jump
+        codecopy__21_extra:
+                              // calld_length, calld_start
+            dup2              // calld_length, calld_start, calld_length
+            t2_init__ 0x40    // calld_length, calld_start, mem_ptr__
+            swap2             // mem_ptr__, calld_start, calld_length
+            swap1             // mem_ptr__, calld_length, calld_start
+            dup3
+            t2_ptr_           // mem_ptr__, calld_length, calld_start, ptr
+            codecopy          // mem_ptr__
+            0xc0
+            // push
+            mload
+            jump
+        extcodecopy__31_extra:
+                              // calld_length, calld_start, address
+            dup3              // calld_length, calld_start, address, calld_length
+            t2_init__ 0x40    // calld_length, calld_start, address, mem_ptr__
+            swap3             // mem_ptr__, calld_start, address, calld_length
+            swap2             // mem_ptr__, calld_length, address, calld_start
+            swap1             // mem_ptr__, calld_length, calld_start, address
+            dup4
+            t2_ptr_           // mem_ptr__, calld_length, calld_start, address, ptr
+            swap1             //  mem_ptr__, calld_length, calld_start, ptr, address
+            extcodecopy       // mem_ptr__
+            0xc0
+            // push
+            mload
+            jump
+        returndatacopy__21_extra:
+                              // calld_length, calld_start
+            dup2              // calld_length, calld_start, calld_length
+            t2_init__ 0x40    // calld_length, calld_start, mem_ptr__
+            swap2             // mem_ptr__, calld_start, calld_length
+            swap1             // mem_ptr__, calld_length, calld_start
+            dup3
+            t2_ptr_           // mem_ptr__, calld_length, calld_start, ptr
+            returndatacopy    // mem_ptr__
+            0xc0
+            // push
+            mload
+            jump
+        keccak256_11_extra:
+            // t2ptr__
+            dup1         // t2ptr__, t2ptr__
+            t2_len_      // t2ptr__, len
+            swap1
+            t2_ptr_      // len, ptr_
+            keccak256
+            0xc0
+            // push
+            mload
             jump
 }
