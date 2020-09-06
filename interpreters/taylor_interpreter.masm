@@ -1073,14 +1073,7 @@ deployer {
             jump
             stop
             stop
-        mmultimstore_30: // 0x102
-            pop
-            mmultimstore_30_extra
-            //
-            // push
-            jump
-            stop
-            stop
+        eopcode 0x102, 110
         unknown_11:   // 0x103
             pop
             unknown_11_extra
@@ -1223,6 +1216,78 @@ deployer {
         keccak256_11:     // 0x125
             pop
             keccak256_11_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        mmstore__x1: // 0x126
+            pop
+            mmstore__x1_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        mmstore8__x1: // 0x127
+            pop
+            mmstore8__x1_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        mmload__21: // 0x128
+            pop
+            mmload__21_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        msload__21: // 0x129
+            pop
+            msload__21_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        msstore_20: // 0x12a
+            pop
+            msstore_20_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        call__21:       // 0x12b
+            pop
+            call__21_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        call_bang__31:  // 0x12c
+            pop
+            call_bang__31_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        callcode__31:
+            pop
+            callcode__31_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        delegatecall__21:
+            pop
+            delegatecall__21_extra
             //
             // push
             jump
@@ -1572,8 +1637,6 @@ deployer {
             // push
             mload
             jump
-        mmultimstore_30_extra:
-            mmultimstore //
         unknown_11_extra:
             getframe    //  frame_ptr
             dup1        //  frame_ptr, frame_ptr
@@ -1936,4 +1999,113 @@ deployer {
             // push
             mload
             jump
+                mmstore__x1_extra:
+            // multiple 32byte args
+
+            getframe        //
+            getdataptr      //
+            getfourb        //
+            getfuncarity    //
+        mmstore8__x1_extra:
+            0xc0
+            // push
+            mload
+            jump
+        mmload__21_extra:
+            0xc0
+            // push
+            mload
+            jump
+        msstore_20_extra:
+            0xc0
+            // push
+            mload
+            jump
+        msload__21_extra:
+            0xc0
+            // push
+            mload
+            jump
+        call__21_extra:
+            // data_ptr, addr
+            0x00
+            0x00
+            dup4
+            t2_len_    //
+            dup5
+            t2_ptr_    // data_ptr, addr, out_size, out_ptr, in_size, in_ptr
+            dup5       // data_ptr, addr, out_size, out_ptr, in_size, in_ptr, addr
+            gas
+            staticcall
+            call__common
+            jump
+        call_bang__31_extra:
+            // data_ptr, value, addr
+            0x00
+            0x00       // data_ptr, value, addr, out_size, out_ptr
+            dup5       // data_ptr, value, addr, out_size, out_ptr, data_ptr
+            t2_len_    //
+            dup6
+            t2_ptr_    // data_ptr, value, addr, out_size, out_ptr, in_size, in_ptr
+            dup6       // data_ptr, value, addr, out_size, out_ptr, in_size, in_ptr, value
+            dup6       // data_ptr, value, addr, out_size, out_ptr, in_size, in_ptr, value, addr
+            gas
+            call
+            call__common
+            jump
+        callcode__31_extra:
+            // data_ptr, value, addr
+            0x00
+            0x00       // data_ptr, value, addr, out_size, out_ptr
+            dup5       // data_ptr, value, addr, out_size, out_ptr, data_ptr
+            t2_len_    //
+            dup6
+            t2_ptr_    // data_ptr, value, addr, out_size, out_ptr, in_size, in_ptr
+            dup6       // data_ptr, value, addr, out_size, out_ptr, in_size, in_ptr, value
+            dup6       // data_ptr, value, addr, out_size, out_ptr, in_size, in_ptr, value, addr
+            gas
+            callcode
+            call__common
+            jump
+        delegatecall__21_extra:
+            // data_ptr, addr
+            0x00
+            0x00
+            dup4
+            t2_len_    //
+            dup5
+            t2_ptr_    // data_ptr, addr, out_size, out_ptr, in_size, in_ptr
+            dup5       // data_ptr, addr, out_size, out_ptr, in_size, in_ptr, addr
+            gas
+            delegatecall
+            call__common
+            jump
+        call__common:
+            // if failed
+            iszero
+            revert_internal
+            jumpi
+
+            // success
+            returndatasize
+            t2_init__ 0x40       // ptr__
+            returndatasize
+            0x00                 // ptr__, size, rptr
+            dup3                 // ptr__, size, rptr, ptr__
+            t2_ptr_              // ptr__, size, rptr, ptr
+            returndatacopy       // ptr__
+
+            0xc0
+            // push
+            mload
+            jump
+        revert_internal:
+            // error data, error code
+            0x00
+            mstore
+            0x20
+            mstore
+            0x40
+            0x00
+            revert
 }
