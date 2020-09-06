@@ -255,6 +255,8 @@ deployer {
                 mload
         %endmacro
 
+        // 0x60, 0x80 - kept for mstack loops
+
         // start tag value - native functions
         mmstore 0xa0 stop_00
 
@@ -513,28 +515,25 @@ deployer {
 
         // prealloc all partials output, so we can dealloc mem later
 
-        // frame_ptr, data_ptr, end_ptr, arity, partial_ptr
+        // frame_ptr, data_ptr, end_ptr, arity, current_partial_ptr
+        0x40  // after first fake partial
+        add
 
-        eval_is_fn_rest
-        dup3
+        dup2
         0x00
-        mfor_stack {
-            // frame_ptr, data_ptr, end_ptr, arity, partial_ptr, tag, end, step
+        mfor_mstack 0x60 {
+            // frame_ptr, data_ptr, end_ptr, arity, current_partial_ptr
             0x02
-            t3_init__ 0x40  //partial
+            t3_init__ 0x40  // frame_ptr, data_ptr, end_ptr, arity, current_partial_ptr, partial_data_ptr
 
-            dup5   // partial_ptr
-            dup3   // step
+            dup2   // frame_ptr, data_ptr, end_ptr, arity, current_partial_ptr, partial_data_ptr, current_partial_ptr
+            mstore  // frame_ptr, data_ptr, end_ptr, arity, current_partial_ptr
+
             0x20
-            mul
-            0x40
-            add
-            add
-            mstore
-
+            add     // frame_ptr, data_ptr, end_ptr, arity, current_partial_ptr
         }
-    eval_is_fn_rest:
-        pop   // partial_ptr
+
+        pop   // current_partial_ptr
 
         // remove stack except arity
         swap1
@@ -690,25 +689,21 @@ deployer {
         swap1
         sub      // fid, actual_partials_start, actual_arity
 
-        eval_native_function   // fid,  current_partial, arity, tag
-        swap1  // fid, current_partial, tag, arity
-        0x00
-        mfor_stack {
-            // fid, current_partial, tag, end, step
-            dup4
+        0x00   // fid,  current_partial, arity, start
+        mfor_mstack 0x60 {
+            // fid, current_partial
+            dup1
             mload
-            t3item_ 0x01   // result_ptr
-            swap5
-            swap4
+            t3item_ 0x01   // fid, current_partial, result_ptr
+
+            swap2    // result_ptr, current_partial, fid
+            swap1    // result_ptr, fid, current_partial
             0x20
-            add
-            swap3
-            swap2
-            swap1
+            add      // result_ptr, fid, current_partial
         }
 
     eval_native_function:
-        pop
+        pop    // args, fid
         // expects args, fid on stack
 
         eval_native_function_post
@@ -1073,14 +1068,7 @@ deployer {
             jump
             stop
             stop
-        mmultimstore_30: // 0x102
-            pop
-            mmultimstore_30_extra
-            //
-            // push
-            jump
-            stop
-            stop
+        eopcode 0x102, 110
         unknown_11:   // 0x103
             pop
             unknown_11_extra
@@ -1223,6 +1211,46 @@ deployer {
         keccak256_11:     // 0x125
             pop
             keccak256_11_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        mmstore__x1: // 0x126
+            pop
+            mmstore__x1_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        mmstore8__x1: // 0x127
+            pop
+            mmstore8__x1_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        mmload__21: // 0x128
+            pop
+            mmload__21_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        msload__21: // 0x129
+            pop
+            msload__21_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        msstore_20: // 0x12a
+            pop
+            msstore_20_extra
             //
             // push
             jump
@@ -1572,8 +1600,6 @@ deployer {
             // push
             mload
             jump
-        mmultimstore_30_extra:
-            mmultimstore //
         unknown_11_extra:
             getframe    //  frame_ptr
             dup1        //  frame_ptr, frame_ptr
@@ -1646,40 +1672,30 @@ deployer {
 
             dup1
             0x40
-            add    // current_env_ptr
+            add    // args, lambda_ptr, lambda_arity, new_env_ptr, current_env_ptr
 
-            swap1
-            swap2
-
-            apply_xx_extra_mfor_end    // args, lambda_ptr, lambda_arity, new_env_ptr, current_env_ptr
-            swap1  // args, lambda_ptr, new_env_ptr, current_env_ptr, tag, lambda_arity
+            swap1    // args, lambda_ptr, lambda_arity, current_env_ptr, new_env_ptr
+            swap2     // args, lambda_ptr, new_env_ptr, current_env_ptr, lambda_arity
             0x00
-            mfor_stack {
-                // args, lambda_ptr, new_env_ptr, current_env_ptr, tag, end, step
+            mfor_mstack 0x60 {
+                // args, lambda_ptr, new_env_ptr, current_env_ptr
 
                 // load env_ptr and write args
                 // call eval with lambda pointer and return back here
 
-                dup7   // first arg
-                dup5   // current_env_ptr
+                dup4   // first arg
+                dup2   // current_env_ptr
                 mstore
 
-                dup4   // current_env_ptr increase
-                0x20
+                0x20   // current_env_ptr increase
                 add
-                swap4
-                pop
 
                 swap1
                 swap2
                 swap3
-                swap4
-                swap5
-                swap6
                 pop
             }
 
-        apply_xx_extra_mfor_end:
             // lambda_ptr, new_env_ptr, current_env_ptr
             pop  // lambda_ptr, new_env_ptr
 
@@ -1936,4 +1952,16 @@ deployer {
             // push
             mload
             jump
+        mmstore__x1_extra:
+            // multiple 32byte args
+
+            getframe        //
+            getdataptr      //
+            getfourb        //
+            getfuncarity    //
+
+        mmstore8__x1_extra:
+        mmload__21_extra:
+        msstore_20_extra:
+        msload__21_extra:
 }

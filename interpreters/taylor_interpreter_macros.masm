@@ -161,6 +161,43 @@
         jump
 %endmacro
 
+%macro mfor_mstack
+    // %0 - hardcoded runtime for lean iterations without jumps
+    // only needs two slots - !usually dirty
+    // arity, start
+    %0        // step
+    mstore
+
+    0x01
+    swap1
+    sub
+    `${'0x' + (%0 + 0x20).toString(16)}`
+    mstore   // arity
+
+    forloop_mstack_%instance:
+        `${'0x' + (%0 + 0x20).toString(16)}`
+        mload    // end
+
+        %0       // end, step
+        mload
+        gt
+        for_end_mstack_%instance
+        jumpi
+
+        `${%content.replace(/%step/g, "%0 \n mload")}`
+
+        0x01     // increase step
+        %0
+        mload
+        add
+        %0
+        mstore
+        forloop_mstack_%instance
+        jump
+    for_end_mstack_%instance:
+        // nothing to do, just exit
+%endmacro
+
 %macro mif
     // return tag, condition
     mif_%instance
@@ -639,3 +676,40 @@
             pop
             pop   // leave target_ptr on stack
 %endmacro
+
+
+
+%macro stack_to_mem__
+    // expects arity
+    dup1
+    0x20
+    mul
+    t2_init__ 0x40   // arity, ptr
+
+    dup1            // arity, ptr, ptr
+    t2_ptr_         // arity, ptr, real_ptr
+    swap1           // arity, real_ptr, ptr
+    swap2           // ptr, real_ptr, arity
+
+    stack_to_mem__%instance
+    swap1           // ptr, real_ptr, tag, arity
+    0x00
+    mfor_stack {
+        // ptr, real_ptr, tag, end, step
+        dup6
+        dup5    // ptr, real_ptr, tag, end, step, arg, real_ptr
+        mstore  // ptr, real_ptr, tag, end, step
+        dup4
+        0x20
+        add     // ptr, real_ptr, tag, end, step, real_ptr
+        swap4
+        pop     // ptr, real_ptr, tag, end, step
+
+
+    }
+    stack_to_mem__%instance:
+
+%endmacro
+
+
+
