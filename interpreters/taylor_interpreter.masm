@@ -1277,7 +1277,7 @@ deployer {
             jump
             stop
             stop
-        callcode__31:
+        callcode__31:    // 0x12d
             pop
             callcode__31_extra
             //
@@ -1285,9 +1285,33 @@ deployer {
             jump
             stop
             stop
-        delegatecall__21:
+        delegatecall__21:     // 0x12e
             pop
             delegatecall__21_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        log__x0:     // 0x12f
+            pop
+            log__x0_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        t2_ptr_11:            // 0x130
+            pop
+            t2_ptr_11_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        t2_len_11:            // 0x131
+            pop
+            t2_len_11_extra
             //
             // push
             jump
@@ -1999,14 +2023,66 @@ deployer {
             // push
             mload
             jump
-                mmstore__x1_extra:
-            // multiple 32byte args
+        mmstore__x1_extra:
+            // multiple 32byte items
 
             getframe        //
             getdataptr      //
             getfourb        //
-            getfuncarity    //
+            getfuncarity    // items, arity
+            dup1            // items, arity, arity
+            0x20
+            mul
+            t2_init__ 0x40  // items, arity, ptr
+            dup1
+            t2_ptr_         // items, arity, ptr, current ptr
+            swap1           // items, arity, current_ptr, ptr
+            swap2           // items, ptr, current_ptr, arity
+            mmstore__x1_extra_1
+            swap1           // items, ptr, current_ptr, tag, arity
+            0x00            // items, ptr, current_ptr, tag, arity, start
+            mfor_stack {
+                // items, ptr, current_ptr, tag, end, step
+                dup6     // items, ptr, current_ptr tag, end, step, item
+                dup5     // items, ptr, current_ptr, tag, end, step, item, current_ptr
+                mstore   // items, ptr, current_ptr, tag, end, step
+
+                swap1    // items, ptr, current_ptr, tag, step, end
+                swap2    // items, ptr, current_ptr, end, step, tag
+                swap3    // items, ptr, tag, end, step, current_ptr
+                0x20     // current_ptr increase
+                add
+                swap4    // items, current_ptr, tag, end, step, ptr
+                swap5
+                pop      // rest_items, ptr, current, tag, end, step
+            }
+        mmstore__x1_extra_1:
+            pop
+            0xc0
+            // push
+            mload
+            jump
         mmstore8__x1_extra:
+            // multiple 32byte items
+
+            getframe        //
+            getdataptr      //
+            getfourb        //
+            getfuncarity    // items, arity
+            dup1            // items, arity, arity
+            0x20
+            mul
+            t2_init__ 0x40  // items, arity, ptr
+            dup1
+            t2_ptr_         // items, arity, ptr, current ptr
+            swap1           // items, arity, current_ptr, ptr
+            swap2           // items, ptr, current_ptr, arity
+            mmstore8__x1_extra_1
+            swap1           // items, ptr, current_ptr, tag, arity
+            0x00            // items, ptr, current_ptr, tag, arity, start
+
+        mmstore8__x1_extra_1:
+            pop
             0xc0
             // push
             mload
@@ -2098,6 +2174,57 @@ deployer {
             0xc0
             // push
             mload
+            jump
+        t2_ptr_11_extra:
+            t2_ptr_     //
+            0xc0
+            // push
+            mload
+            jump
+        t2_len_11_extra:
+            t2_len_    //
+            0xc0
+            // push
+            mload
+            jump
+        log__x0_extra:
+            // topics, data_ptr__
+            dup1
+            t2_len_         //
+            t2_ptr_         // topics, data_len, data_ptr
+            getframe        //
+            getdataptr      //
+            getfourb        //
+            getfuncarity    // topics, data_len, data_ptr, arity
+            0x01
+            swap1
+            sub
+
+            dup1
+            0x04
+            eq
+            log4_60
+            jumpi
+
+            dup1
+            0x03
+            eq
+            log3_50
+            jumpi
+
+            dup1
+            0x02
+            eq
+            log2_40
+            jumpi
+
+            dup1
+            0x01
+            eq
+            log1_30
+            jumpi
+
+            log0_20
             jump
         revert_internal:
             // error data, error code

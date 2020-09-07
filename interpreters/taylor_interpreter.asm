@@ -3749,7 +3749,7 @@ unused_129:  // 0x11f
             jump
             stop
             stop
-        callcode__31:
+        callcode__31:    // 0x12d
             pop
             callcode__31_extra
             //
@@ -3757,9 +3757,33 @@ unused_129:  // 0x11f
             jump
             stop
             stop
-        delegatecall__21:
+        delegatecall__21:     // 0x12e
             pop
             delegatecall__21_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        log__x0:     // 0x12f
+            pop
+            log__x0_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        t2_ptr_11:            // 0x130
+            pop
+            t2_ptr_11_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        t2_len_11:            // 0x131
+            pop
+            t2_len_11_extra
             //
             // push
             jump
@@ -5014,8 +5038,8 @@ for_stack_8:
             // push
             mload
             jump
-                mmstore__x1_extra:
-            // multiple 32byte args
+        mmstore__x1_extra:
+            // multiple 32byte items
 
             /* (20) getframe //   //   */
 0xe0
@@ -5029,11 +5053,133 @@ for_stack_8:
             mload
             0xe0
             shr
-            /* (3) getfuncarity //   //   */
+            /* (3) getfuncarity // items, arity   // items, arity   */
 // expects a 4byte value
             0x3f
             and
+            dup1            // items, arity, arity
+            0x20
+            mul
+            /* (5) t2_init__ 0x40  // items, arity, ptr   // items, arity, ptr   */
+// expects length // 0x40  // items = freeMemPtr
+    dup1
+    0x20
+    add           // length, fulllength
+
+    // alloc 0x40  // items    // freeMemPtr
+    0x40  // items
+    mload
+    swap1
+    dup2
+    add
+    0x40  // items
+    mstore     // length, ptr
+
+    dup1       // store length   // length, ptr, ptr
+    swap2      // ptr, ptr, length
+    swap1      // ptr, length, ptr
+    mstore     // ptr
+            dup1
+            /* (8) t2_ptr_ // items, arity, ptr, current ptr   // items, arity, ptr, current ptr   */
+// expects t2 pointer
+    0x20
+    add
+            swap1           // items, arity, current_ptr, ptr
+            swap2           // items, ptr, current_ptr, arity
+            mmstore__x1_extra_1
+            swap1           // items, ptr, current_ptr, tag, arity
+            0x00            // items, ptr, current_ptr, tag, arity, start
+
+for_stack_9:
+        dup2   // end
+        dup2   // start
+        lt
+        forloop_stack_9
+        jumpi
+        pop    // pop end, step
+        pop
+        jump
+    forloop_stack_9:   // any content variables are kept after jumptag, end, step
+
+                // items, ptr, current_ptr, tag, end, step
+                dup6     // items, ptr, current_ptr tag, end, step, item
+                dup5     // items, ptr, current_ptr, tag, end, step, item, current_ptr
+                mstore   // items, ptr, current_ptr, tag, end, step
+
+                swap1    // items, ptr, current_ptr, tag, step, end
+                swap2    // items, ptr, current_ptr, end, step, tag
+                swap3    // items, ptr, tag, end, step, current_ptr
+                0x20     // current_ptr increase
+                add
+                swap4    // items, current_ptr, tag, end, step, ptr
+                swap5
+                pop      // rest_items, ptr, current, tag, end, step
+
+    forloop_end_stack_9:
+        0x01   // start/step first
+        add
+        for_stack_9
+        jump
+        mmstore__x1_extra_1:
+            pop
+            0xc0
+            // push
+            mload
+            jump
         mmstore8__x1_extra:
+            // multiple 32byte items
+
+            /* (21) getframe //   //   */
+0xe0
+            mload
+            /* (8) getdataptr //   //   */
+0x20
+            add
+            mload
+            /* (7) getfourb //   //   */
+// expects a pointer
+            mload
+            0xe0
+            shr
+            /* (4) getfuncarity // items, arity   // items, arity   */
+// expects a 4byte value
+            0x3f
+            and
+            dup1            // items, arity, arity
+            0x20
+            mul
+            /* (6) t2_init__ 0x40  // items, arity, ptr   // items, arity, ptr   */
+// expects length // 0x40  // items = freeMemPtr
+    dup1
+    0x20
+    add           // length, fulllength
+
+    // alloc 0x40  // items    // freeMemPtr
+    0x40  // items
+    mload
+    swap1
+    dup2
+    add
+    0x40  // items
+    mstore     // length, ptr
+
+    dup1       // store length   // length, ptr, ptr
+    swap2      // ptr, ptr, length
+    swap1      // ptr, length, ptr
+    mstore     // ptr
+            dup1
+            /* (9) t2_ptr_ // items, arity, ptr, current ptr   // items, arity, ptr, current ptr   */
+// expects t2 pointer
+    0x20
+    add
+            swap1           // items, arity, current_ptr, ptr
+            swap2           // items, ptr, current_ptr, arity
+            mmstore8__x1_extra_1
+            swap1           // items, ptr, current_ptr, tag, arity
+            0x00            // items, ptr, current_ptr, tag, arity, start
+
+        mmstore8__x1_extra_1:
+            pop
             0xc0
             // push
             mload
@@ -5062,7 +5208,7 @@ for_stack_8:
 // expects t2 pointer
     mload
             dup5
-            /* (8) t2_ptr_ // data_ptr, addr, out_size, out_ptr, in_size, in_ptr   // data_ptr, addr, out_size, out_ptr, in_size, in_ptr   */
+            /* (10) t2_ptr_ // data_ptr, addr, out_size, out_ptr, in_size, in_ptr   // data_ptr, addr, out_size, out_ptr, in_size, in_ptr   */
 // expects t2 pointer
     0x20
     add
@@ -5080,7 +5226,7 @@ for_stack_8:
 // expects t2 pointer
     mload
             dup6
-            /* (9) t2_ptr_ // data_ptr, value, addr, out_size, out_ptr, in_size, in_ptr   // data_ptr, value, addr, out_size, out_ptr, in_size, in_ptr   */
+            /* (11) t2_ptr_ // data_ptr, value, addr, out_size, out_ptr, in_size, in_ptr   // data_ptr, value, addr, out_size, out_ptr, in_size, in_ptr   */
 // expects t2 pointer
     0x20
     add
@@ -5095,11 +5241,11 @@ for_stack_8:
             0x00
             0x00       // data_ptr, value, addr, out_size, out_ptr
             dup5       // data_ptr, value, addr, out_size, out_ptr, data_ptr
-            /* (3) t2_len_ //   //    */
+            /* (3) t2_len_ //   //   */
 // expects t2 pointer
     mload
             dup6
-            /* (10) t2_ptr_ // data_ptr, value, addr, out_size, out_ptr, in_size, in_ptr   // data_ptr, value, addr, out_size, out_ptr, in_size, in_ptr   */
+            /* (12) t2_ptr_ // data_ptr, value, addr, out_size, out_ptr, in_size, in_ptr   // data_ptr, value, addr, out_size, out_ptr, in_size, in_ptr   */
 // expects t2 pointer
     0x20
     add
@@ -5118,7 +5264,7 @@ for_stack_8:
 // expects t2 pointer
     mload
             dup5
-            /* (11) t2_ptr_ // data_ptr, addr, out_size, out_ptr, in_size, in_ptr   // data_ptr, addr, out_size, out_ptr, in_size, in_ptr   */
+            /* (13) t2_ptr_ // data_ptr, addr, out_size, out_ptr, in_size, in_ptr   // data_ptr, addr, out_size, out_ptr, in_size, in_ptr   */
 // expects t2 pointer
     0x20
     add
@@ -5135,7 +5281,7 @@ for_stack_8:
 
             // success
             returndatasize
-            /* (5) t2_init__ 0x40       // ptr__   // ptr__   */
+            /* (7) t2_init__ 0x40       // ptr__   // ptr__   */
 // expects length // 0x40       // ptr__ = freeMemPtr
     dup1
     0x20
@@ -5157,7 +5303,7 @@ for_stack_8:
             returndatasize
             0x00                 // ptr__, size, rptr
             dup3                 // ptr__, size, rptr, ptr__
-            /* (12) t2_ptr_ // ptr__, size, rptr, ptr   // ptr__, size, rptr, ptr   */
+            /* (14) t2_ptr_ // ptr__, size, rptr, ptr   // ptr__, size, rptr, ptr   */
 // expects t2 pointer
     0x20
     add
@@ -5166,6 +5312,79 @@ for_stack_8:
             0xc0
             // push
             mload
+            jump
+        t2_ptr_11_extra:
+            /* (15) t2_ptr_ //   //   */
+// expects t2 pointer
+    0x20
+    add
+            0xc0
+            // push
+            mload
+            jump
+        t2_len_11_extra:
+            /* (5) t2_len_ //   //   */
+// expects t2 pointer
+    mload
+            0xc0
+            // push
+            mload
+            jump
+        log__x0_extra:
+            // topics, data_ptr__
+            dup1
+            /* (6) t2_len_ //   //    */
+// expects t2 pointer
+    mload
+            /* (16) t2_ptr_ // topics, data_len, data_ptr   // topics, data_len, data_ptr   */
+// expects t2 pointer
+    0x20
+    add
+            /* (22) getframe //   //   */
+0xe0
+            mload
+            /* (9) getdataptr //   //   */
+0x20
+            add
+            mload
+            /* (8) getfourb //   //   */
+// expects a pointer
+            mload
+            0xe0
+            shr
+            /* (5) getfuncarity // topics, data_len, data_ptr, arity   // topics, data_len, data_ptr, arity   */
+// expects a 4byte value
+            0x3f
+            and
+            0x01
+            swap1
+            sub
+
+            dup1
+            0x04
+            eq
+            log4_60
+            jumpi
+
+            dup1
+            0x03
+            eq
+            log3_50
+            jumpi
+
+            dup1
+            0x02
+            eq
+            log2_40
+            jumpi
+
+            dup1
+            0x01
+            eq
+            log1_30
+            jumpi
+
+            log0_20
             jump
         revert_internal:
             // error data, error code
