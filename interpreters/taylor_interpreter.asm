@@ -1,4 +1,4 @@
-// %0 = freeMemPtr, %1 = current_frame_ptr, %2 = number of frame slots
+emPtr, %1 = current_frame_ptr, %2 = number of frame slots
 // on stack: return tag, extra_ptr, output_ptr, partials_ptr, input_ptr, prev_ptr
 
 
@@ -3789,6 +3789,140 @@ unused_129:  // 0x11f
             jump
             stop
             stop
+        /* (130) eopcode 0x132, 130      */
+unused_130:  // 0x132
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        /* (131) eopcode 0x133, 131      */
+unused_131:  // 0x133
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        /* (132) eopcode 0x134, 132      */
+unused_132:  // 0x134
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        /* (133) eopcode 0x135, 133      */
+unused_133:  // 0x135
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        /* (134) eopcode 0x136, 134      */
+unused_134:  // 0x136
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        /* (135) eopcode 0x137, 135      */
+unused_135:  // 0x137
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        /* (136) eopcode 0x138, 136      */
+unused_136:  // 0x138
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        /* (137) eopcode 0x139, 137      */
+unused_137:  // 0x139
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        /* (138) eopcode 0x13a, 138      */
+unused_138:  // 0x13a
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        /* (139) eopcode 0x13b, 139      */
+unused_139:  // 0x13b
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        /* (140) eopcode 0x13c, 140      */
+unused_140:  // 0x13c
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        /* (141) eopcode 0x13d, 141      */
+unused_141:  // 0x13d
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        /* (142) eopcode 0x13e, 142      */
+unused_142:  // 0x13e
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        /* (143) eopcode 0x13f, 143      */
+unused_143:  // 0x13f
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        join__x1:       // 0x140
+            pop
+            join__x1_extra
+            //
+            // push
+            jump
+            stop
+            stop
         jump_10_extra:
             0xe0        // start of data data_ptr
             // push1
@@ -5385,6 +5519,211 @@ for_stack_9:
             jumpi
 
             log0_20
+            jump
+        join__x1_extra:
+            // t2__1, t2__2
+            dup2
+            /* (7) t2_len_ // t2__1, t2__2, t2__1_len   // t2__1, t2__2, t2__1_len   */
+// expects t2 pointer
+    mload
+            dup2
+            /* (8) t2_len_ // t2__1, t2__2, t2__1_len, t2__2_len   // t2__1, t2__2, t2__1_len, t2__2_len   */
+// expects t2 pointer
+    mload
+            add              // t2__1, t2__2, len
+            dup1             // t2__1, t2__2, len, len
+
+            /* (8) t2_init__ 0x40   // t2__1, t2__2, len, t2__3   // t2__1, t2__2, len, t2__3   */
+// expects length // 0x40   // t2__1 = freeMemPtr
+    dup1
+    0x20
+    add           // length, fulllength
+
+    // alloc 0x40   // t2__1    // freeMemPtr
+    0x40   // t2__1
+    mload
+    swap1
+    dup2
+    add
+    0x40   // t2__1
+    mstore     // length, ptr
+
+    dup1       // store length   // length, ptr, ptr
+    swap2      // ptr, ptr, length
+    swap1      // ptr, length, ptr
+    mstore     // ptr
+
+            dup1
+            /* (17) t2_ptr_ // t2__1, t2__2, len, t2__3, t2__3_current   // t2__1, t2__2, len, t2__3, t2__3_current   */
+// expects t2 pointer
+    0x20
+    add
+
+            dup3             // t2__1, t2__2, len, t2__3, t2__3_current, len
+            dup6
+            /* (18) t2_ptr_ // t2__1, t2__2, len, t2__3, t2__3_current, len, t2__1_ptr   // t2__1, t2__2, len, t2__3, t2__3_current, len, t2__1_ptr   */
+// expects t2 pointer
+    0x20
+    add
+            dup3             // t2__1, t2__2, len, t2__3, t2__3_current, len, t2__1_ptr, t2__3_current
+            /* (1) mmultimstore // size_bytes, source_ptr, target_ptr   // size_bytes, source_ptr, target_ptr   */
+// alloc before using it
+            // size_bytes, source_ptr, target_ptr
+            dup3   // size_bytes
+
+            // calc slots
+            0x20
+            dup2
+            div
+
+            0x00
+            0x20
+            dup4
+            mod
+            gt
+            add
+
+            swap1
+            pop
+
+            // end calc slots
+
+            swap3            // slots, source_ptr, target_ptr ; replace length with slots
+            pop
+
+            mmultimstore_end_1
+            dup4             // slots
+            0x00
+
+for_stack_10:
+        dup2   // end
+        dup2   // start
+        lt
+        forloop_stack_10
+        jumpi
+        pop    // pop end, step
+        pop
+        jump
+    forloop_stack_10:   // any content variables are kept after jumptag, end, step
+
+                // slots, source_ptr, target_ptr, tag, end, step
+                dup5
+                mload
+                dup5
+                mstore
+
+                dup5
+                0x20
+                add
+                swap5
+                pop
+
+                dup4
+                0x20
+                add
+                swap4
+                pop
+
+    forloop_end_stack_10:
+        0x01   // start/step first
+        add
+        for_stack_10
+        jump
+        mmultimstore_end_1:
+            pop
+            pop
+            pop
+            // t2__1, t2__2, len, t2__3, t2__3_current
+
+            dup5
+            t2_len_
+            add              // t2__1, t2__2, len, t2__3, t2__3_current
+
+            dup3             // t2__1, t2__2, len, t2__3, t2__3_current, len
+            dup5
+            /* (19) t2_ptr_ // t2__1, t2__2, len, t2__3, t2__3_current, len, t2__2_ptr   // t2__1, t2__2, len, t2__3, t2__3_current, len, t2__2_ptr   */
+// expects t2 pointer
+    0x20
+    add
+            dup3
+            /* (2) mmultimstore // t2__1, t2__2, len, t2__3, t2__3_current   // t2__1, t2__2, len, t2__3, t2__3_current   */
+// alloc before using it
+            // size_bytes, source_ptr, target_ptr
+            dup3   // size_bytes
+
+            // calc slots
+            0x20
+            dup2
+            div
+
+            0x00
+            0x20
+            dup4
+            mod
+            gt
+            add
+
+            swap1
+            pop
+
+            // end calc slots
+
+            swap3            // slots, source_ptr, target_ptr ; replace length with slots
+            pop
+
+            mmultimstore_end_2
+            dup4             // slots
+            0x00
+
+for_stack_11:
+        dup2   // end
+        dup2   // start
+        lt
+        forloop_stack_11
+        jumpi
+        pop    // pop end, step
+        pop
+        jump
+    forloop_stack_11:   // any content variables are kept after jumptag, end, step
+
+                // slots, source_ptr, target_ptr, tag, end, step
+                dup5
+                mload
+                dup5
+                mstore
+
+                dup5
+                0x20
+                add
+                swap5
+                pop
+
+                dup4
+                0x20
+                add
+                swap4
+                pop
+
+    forloop_end_stack_11:
+        0x01   // start/step first
+        add
+        for_stack_11
+        jump
+        mmultimstore_end_2:
+            pop
+            pop
+            pop
+            pop              // t2__1, t2__2, len, t2__3
+            swap1
+            pop              // t2__1, t2__2, t2__3
+            swap1
+            pop              // t2__1, t2__3
+            swap1
+            pop              // t2__3
+
+            0xc0
+            // push
+            mload
             jump
         revert_internal:
             // error data, error code

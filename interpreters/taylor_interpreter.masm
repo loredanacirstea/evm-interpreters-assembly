@@ -1317,6 +1317,51 @@ deployer {
             jump
             stop
             stop
+        eopcode 0x132, 130
+        eopcode 0x133, 131
+        eopcode 0x134, 132
+        eopcode 0x135, 133
+        eopcode 0x136, 134
+        eopcode 0x137, 135
+        eopcode 0x138, 136
+        eopcode 0x139, 137
+        eopcode 0x13a, 138
+        eopcode 0x13b, 139
+        eopcode 0x13c, 140
+        eopcode 0x13d, 141
+        eopcode 0x13e, 142
+        eopcode 0x13f, 143
+        join__x1:       // 0x140
+            pop
+            join__x1_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        eopcode 0x141, 144
+        eopcode 0x142, 145
+        eopcode 0x143, 146
+        eopcode 0x144, 147
+        eopcode 0x145, 148
+        eopcode 0x146, 149
+        eopcode 0x147, 150
+        eopcode 0x148, 151
+        eopcode 0x149, 152
+        eopcode 0x14a, 153
+        eopcode 0x14b, 154
+        eopcode 0x14c, 155
+        eopcode 0x14d, 156
+        eopcode 0x14e, 157
+        eopcode 0x14f, 158
+        map_xx:         // 0x150
+            pop
+            map_xx_extra
+            //
+            // push
+            jump
+            stop
+            stop
         jump_10_extra:
             0xe0        // start of data data_ptr
             // push1
@@ -2225,6 +2270,87 @@ deployer {
             jumpi
 
             log0_20
+            jump
+        join__x1_extra:
+            0xc0
+            // push
+            mload
+            jump
+        map_xx_extra:
+            // args on stack, lambda_ptr
+
+            getframe        //
+            getdataptr      //
+            getfourb        //
+            getfuncarity    //
+
+            0xe0
+            mload
+            0xc0
+            add
+            dup1
+
+            0x00
+            swap1
+            mstore
+
+            0x20
+            add
+            mstore
+
+            map_xx_extra_loop
+            getframe //
+            setreturn  //
+
+
+        map_xx_extra_loop:
+
+
+
+            0xe0
+            mload
+            0xe0
+            add
+            mload    // end
+
+            0xe0
+            mload
+            0xc0
+            add     // step
+            mload
+
+            lt
+            iszero
+            map_xx_extra_end
+            jumpi
+
+            0xe0
+            mload
+            0xc0
+            add     // step
+            mload
+            0x01
+            add
+            0xe0
+            mload
+            0xc0
+            add
+            mstore
+
+
+
+            dup2
+            dup2      // args, lambda_ptr, arg, lambda_ptr
+            apply_xx_extra
+            jump
+
+
+        map_xx_extra_end:
+            stop
+            tag_eval
+            0xc0
+            mstore
+            tag_eval
             jump
         revert_internal:
             // error data, error code
