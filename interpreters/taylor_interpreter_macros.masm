@@ -161,6 +161,25 @@
         jump
 %endmacro
 
+%macro mfor_stack_cpy
+    for_stack_%instance:
+        dup2   // end
+        dup2   // start
+        lt
+        forloop_stack_%instance
+        jumpi
+        pop    // pop end, step
+        pop
+        jump
+    forloop_stack_%instance:   // any content variables are kept after jumptag, end, step
+        `${%content.replace(/%forloop_end_stack\W/g, "forloop_end_stack_%instance")}`
+    forloop_end_stack_%instance:
+        0x01   // start/step first
+        add
+        for_stack_%instance
+        jump
+%endmacro
+
 %macro mif
     // return tag, condition
     mif_%instance
@@ -283,29 +302,6 @@
     add
 %endmacro
 
-%macro t22_init_
-    // expects arity // %0 = freeMemPtr
-    dup1
-    0x20
-    mul
-    0x20
-    add
-
-    // alloc %0    // freeMemPtr
-    %0
-    mload
-    swap1
-    dup2
-    add
-    %0
-    mstore
-
-    swap1       // store arity first
-    dup2
-    mstore
-%endmacro
-
-
 %macro t3_init__
     // expects on stack: arity
     dup1   // arity
@@ -399,6 +395,27 @@
 %macro t3arity
     mload   // expects t3 pointer on stack
 %endmacro
+
+%macro t3_item_
+    // expects t3 pointer, index on stack
+    0x20
+    mul
+    0x20
+    add
+    add
+    mload
+%endmacro
+
+%macro t3_setitem
+    // expects result, t3 pointer, index on stack
+    0x20
+    mul
+    0x20
+    add
+    add
+    mstore
+%endmacro
+
 
 // %0 = freeMemPtr, %1 = current_frame_ptr, %2 = number of frame slots
 // on stack: return tag, extra_ptr, output_ptr, partials_ptr, input_ptr, prev_ptr

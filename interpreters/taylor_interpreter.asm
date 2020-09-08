@@ -1,4 +1,4 @@
-emPtr, %1 = current_frame_ptr, %2 = number of frame slots
+// %0 = freeMemPtr, %1 = current_frame_ptr, %2 = number of frame slots
 // on stack: return tag, extra_ptr, output_ptr, partials_ptr, input_ptr, prev_ptr
 
 
@@ -3923,6 +3923,147 @@ unused_143:  // 0x13f
             jump
             stop
             stop
+        /* (144) eopcode 0x141, 144      */
+unused_144:  // 0x141
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        /* (145) eopcode 0x142, 145      */
+unused_145:  // 0x142
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        /* (146) eopcode 0x143, 146      */
+unused_146:  // 0x143
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        /* (147) eopcode 0x144, 147      */
+unused_147:  // 0x144
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        /* (148) eopcode 0x145, 148      */
+unused_148:  // 0x145
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        /* (149) eopcode 0x146, 149      */
+unused_149:  // 0x146
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        /* (150) eopcode 0x147, 150      */
+unused_150:  // 0x147
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        /* (151) eopcode 0x148, 151      */
+unused_151:  // 0x148
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        /* (152) eopcode 0x149, 152      */
+unused_152:  // 0x149
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        tuple___x1:         // 0x14a
+            pop
+            tuple___x1_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        return___10: // 0x14b
+            pop
+            return___10_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        /* (153) eopcode 0x14c, 155      */
+unused_155:  // 0x14c
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        /* (154) eopcode 0x14d, 156      */
+unused_156:  // 0x14d
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        /* (155) eopcode 0x14e, 157      */
+unused_157:  // 0x14e
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        /* (156) eopcode 0x14f, 158      */
+unused_158:  // 0x14f
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        stop
+        map_xx:         // 0x150
+            pop
+            map_xx_extra
+            //
+            // push
+            jump
+            stop
+            stop
         jump_10_extra:
             0xe0        // start of data data_ptr
             // push1
@@ -4390,9 +4531,9 @@ for_stack_4:
             dup1             // args, lambda_ptr__, lambda_ptr, lambda_arity, lambda_arity
             0x01
             add              // self
-            /* (0) t22_init_ 0x40   // args, lambda_ptr__, lambda_ptr, lambda_arity, new_env_ptr   // args, lambda_ptr__, lambda_ptr, lambda_arity, new_env_ptr   */
-// expects arity // 0x40   // args = freeMemPtr
-    dup1
+            /* (2) t3_init__ 0x40   // args, lambda_ptr__, lambda_ptr, lambda_arity, new_env_ptr   // args, lambda_ptr__, lambda_ptr, lambda_arity, new_env_ptr   */
+// expects on stack: arity
+    dup1   // arity
     0x20
     mul
     0x20
@@ -4407,9 +4548,9 @@ for_stack_4:
     0x40   // args
     mstore
 
-    swap1       // store arity first
-    dup2
-    mstore
+    swap1    // ptr, arity
+    dup2     // ptr, arity, ptr
+    mstore   // store arity at pointer -> ptr
 
             // storing reference to self
             swap1   // args, lambda_ptr__, lambda_ptr, new_env_ptr, lambda_arity
@@ -4521,6 +4662,7 @@ for_stack_5:
             mstore
 
             // pop  // lambda_ptr, new_env_ptr, new_frame_ptr
+
 
             swap1  // lambda_ptr, new_frame_ptr, new_env_ptr
             dup2
@@ -5521,78 +5663,57 @@ for_stack_9:
             log0_20
             jump
         join__x1_extra:
-            // t2__1, t2__2
-            dup2
-            /* (7) t2_len_ // t2__1, t2__2, t2__1_len   // t2__1, t2__2, t2__1_len   */
-// expects t2 pointer
-    mload
-            dup2
-            /* (8) t2_len_ // t2__1, t2__2, t2__1_len, t2__2_len   // t2__1, t2__2, t2__1_len, t2__2_len   */
-// expects t2 pointer
-    mload
-            add              // t2__1, t2__2, len
-            dup1             // t2__1, t2__2, len, len
+            0xc0
+            // push
+            mload
+            jump
+        tuple___x1_extra:
+            /* (23) getframe //   //   */
+0xe0
+            mload
+            /* (10) getdataptr //   //   */
+0x20
+            add
+            mload
+            /* (9) getfourb //   //   */
+// expects a pointer
+            mload
+            0xe0
+            shr
+            /* (6) getfuncarity //   //   */
+// expects a 4byte value
+            0x3f
+            and
 
-            /* (8) t2_init__ 0x40   // t2__1, t2__2, len, t2__3   // t2__1, t2__2, len, t2__3   */
-// expects length // 0x40   // t2__1 = freeMemPtr
-    dup1
+            dup1
+            /* (3) t3_init__ 0x40  // args, arity, ptr   // args, arity, ptr   */
+// expects on stack: arity
+    dup1   // arity
     0x20
-    add           // length, fulllength
+    mul
+    0x20
+    add
 
-    // alloc 0x40   // t2__1    // freeMemPtr
-    0x40   // t2__1
+    // alloc 0x40  // args    // freeMemPtr
+    0x40  // args
     mload
     swap1
     dup2
     add
-    0x40   // t2__1
-    mstore     // length, ptr
+    0x40  // args
+    mstore
 
-    dup1       // store length   // length, ptr, ptr
-    swap2      // ptr, ptr, length
-    swap1      // ptr, length, ptr
-    mstore     // ptr
-
-            dup1
-            /* (17) t2_ptr_ // t2__1, t2__2, len, t2__3, t2__3_current   // t2__1, t2__2, len, t2__3, t2__3_current   */
-// expects t2 pointer
-    0x20
-    add
-
-            dup3             // t2__1, t2__2, len, t2__3, t2__3_current, len
-            dup6
-            /* (18) t2_ptr_ // t2__1, t2__2, len, t2__3, t2__3_current, len, t2__1_ptr   // t2__1, t2__2, len, t2__3, t2__3_current, len, t2__1_ptr   */
-// expects t2 pointer
-    0x20
-    add
-            dup3             // t2__1, t2__2, len, t2__3, t2__3_current, len, t2__1_ptr, t2__3_current
-            /* (1) mmultimstore // size_bytes, source_ptr, target_ptr   // size_bytes, source_ptr, target_ptr   */
-// alloc before using it
-            // size_bytes, source_ptr, target_ptr
-            dup3   // size_bytes
-
-            // calc slots
+    swap1    // ptr, arity
+    dup2     // ptr, arity, ptr
+    mstore   // store arity at pointer -> ptr
+            dup1            // args, arity, ptr, ptr
             0x20
-            dup2
-            div
+            add             // args, arity, ptr, current_ptr
+            swap1           // args, arity, current_ptr, ptr
+            swap2           // args, ptr, current_ptr, arity
 
-            0x00
-            0x20
-            dup4
-            mod
-            gt
-            add
-
+            tuple___x1_extra_
             swap1
-            pop
-
-            // end calc slots
-
-            swap3            // slots, source_ptr, target_ptr ; replace length with slots
-            pop
-
-            mmultimstore_end_1
-            dup4             // slots
             0x00
 
 for_stack_10:
@@ -5606,22 +5727,20 @@ for_stack_10:
         jump
     forloop_stack_10:   // any content variables are kept after jumptag, end, step
 
-                // slots, source_ptr, target_ptr, tag, end, step
-                dup5
-                mload
-                dup5
-                mstore
-
-                dup5
-                0x20
-                add
-                swap5
-                pop
-
-                dup4
+                // args, ptr, current_ptr, tag, end, start
+                dup6        // args, ptr, current_ptr, tag, end, start, arg
+                dup5        // args, ptr, current_ptr, tag, end, start, arg, current_ptr
+                mstore      // args, ptr, current_ptr, tag, end, start
+                dup4        // args, ptr, current_ptr, tag, end, start, current_ptr
                 0x20
                 add
                 swap4
+                pop         // args, ptr, current_ptr, tag, end, start
+                swap1
+                swap2
+                swap3
+                swap4
+                swap5
                 pop
 
     forloop_end_stack_10:
@@ -5629,102 +5748,252 @@ for_stack_10:
         add
         for_stack_10
         jump
-        mmultimstore_end_1:
+        tuple___x1_extra_:
             pop
-            pop
-            pop
-            // t2__1, t2__2, len, t2__3, t2__3_current
-
-            dup5
-            t2_len_
-            add              // t2__1, t2__2, len, t2__3, t2__3_current
-
-            dup3             // t2__1, t2__2, len, t2__3, t2__3_current, len
-            dup5
-            /* (19) t2_ptr_ // t2__1, t2__2, len, t2__3, t2__3_current, len, t2__2_ptr   // t2__1, t2__2, len, t2__3, t2__3_current, len, t2__2_ptr   */
-// expects t2 pointer
-    0x20
-    add
-            dup3
-            /* (2) mmultimstore // t2__1, t2__2, len, t2__3, t2__3_current   // t2__1, t2__2, len, t2__3, t2__3_current   */
-// alloc before using it
-            // size_bytes, source_ptr, target_ptr
-            dup3   // size_bytes
-
-            // calc slots
-            0x20
-            dup2
-            div
-
-            0x00
-            0x20
-            dup4
-            mod
-            gt
-            add
-
-            swap1
-            pop
-
-            // end calc slots
-
-            swap3            // slots, source_ptr, target_ptr ; replace length with slots
-            pop
-
-            mmultimstore_end_2
-            dup4             // slots
-            0x00
-
-for_stack_11:
-        dup2   // end
-        dup2   // start
-        lt
-        forloop_stack_11
-        jumpi
-        pop    // pop end, step
-        pop
-        jump
-    forloop_stack_11:   // any content variables are kept after jumptag, end, step
-
-                // slots, source_ptr, target_ptr, tag, end, step
-                dup5
-                mload
-                dup5
-                mstore
-
-                dup5
-                0x20
-                add
-                swap5
-                pop
-
-                dup4
-                0x20
-                add
-                swap4
-                pop
-
-    forloop_end_stack_11:
-        0x01   // start/step first
-        add
-        for_stack_11
-        jump
-        mmultimstore_end_2:
-            pop
-            pop
-            pop
-            pop              // t2__1, t2__2, len, t2__3
-            swap1
-            pop              // t2__1, t2__2, t2__3
-            swap1
-            pop              // t2__1, t2__3
-            swap1
-            pop              // t2__3
-
             0xc0
             // push
             mload
             jump
+        map_xx_extra:
+            // t3___ptr, lambda_ptr
+
+
+
+            dup2
+            mload     // arity
+            /* (4) t3_init__ 0x40    // t3___ptr, lambda_ptr, result_ptr   // t3___ptr, lambda_ptr, result_ptr   */
+// expects on stack: arity
+    dup1   // arity
+    0x20
+    mul
+    0x20
+    add
+
+    // alloc 0x40    // t3___ptr    // freeMemPtr
+    0x40    // t3___ptr
+    mload
+    swap1
+    dup2
+    add
+    0x40    // t3___ptr
+    mstore
+
+    swap1    // ptr, arity
+    dup2     // ptr, arity, ptr
+    mstore   // store arity at pointer -> ptr
+
+            0x03
+            /* (5) t3_init__ 0x40  // t3___ptr, lambda_ptr, result_ptr, output_ptr   // t3___ptr, lambda_ptr, result_ptr, output_ptr   */
+// expects on stack: arity
+    dup1   // arity
+    0x20
+    mul
+    0x20
+    add
+
+    // alloc 0x40  // t3___ptr    // freeMemPtr
+    0x40  // t3___ptr
+    mload
+    swap1
+    dup2
+    add
+    0x40  // t3___ptr
+    mstore
+
+    swap1    // ptr, arity
+    dup2     // ptr, arity, ptr
+    mstore   // store arity at pointer -> ptr
+
+            dup1     // t3___ptr, lambda_ptr, result_ptr, output_ptr, output_ptr
+            swap2
+            swap1    // t3___ptr, lambda_ptr, output_ptr, result_ptr, output_ptr
+            0x02
+            /* (0) t3_setitem //  t3___ptr, lambda_ptr, output_ptr   //  t3___ptr, lambda_ptr, output_ptr   */
+// expects result, t3 pointer, index on stack
+    0x20
+    mul
+    0x20
+    add
+    add
+    mstore
+
+            0x20
+            /* (5) allocate 0x40   // t3___ptr, lambda_ptr, result_ptr, newptr   // t3___ptr, lambda_ptr, result_ptr, newptr   */
+0x40   // t3___ptr
+    mload
+    swap1
+    dup2
+    add
+    0x40   // t3___ptr
+    mstore
+            dup1            // t3___ptr, lambda_ptr, result_ptr, newptr, newptr
+            swap2           // t3___ptr, lambda_ptr, newptr, newptr, result_ptr
+            swap1           // t3___ptr, lambda_ptr, newptr, result_ptr, newptr
+            mstore
+
+            map_xx_extra_loop
+            /* (24) getframe //   //   */
+0xe0
+            mload
+            /* (3) setreturn //   //   */
+0x120
+            add
+            mstore
+
+            /* (25) getframe //   //   */
+0xe0
+            mload
+            /* (2) setoutputptr // t3___ptr, lambda_ptr   // t3___ptr, lambda_ptr   */
+0xa0
+            add
+            mstore
+
+            0x00
+            /* (26) getframe //   //   */
+0xe0
+            mload
+            /* (1) setforstep //   //   */
+0xc0
+            add
+            mstore
+
+            dup2
+            /* (4) t3item_ 0x00      */
+// expects 0x00 = index and t3 pointer on stack
+    // TODO revert when out of bounds
+    0x00
+    0x20
+    mul
+    0x20
+    add
+    add
+    mload
+            dup2      // arg_ptr, lambda_ptr, arg, lambda_ptr
+            apply_xx_extra
+            jump
+
+        map_xx_extra_loop:
+            // arg_ptr, lambda_ptr, result
+            /* (27) getframe //   //   */
+0xe0
+            mload
+            /* (4) getoutputptr // arg_ptr, lambda_ptr, result, ptr   // arg_ptr, lambda_ptr, result, ptr   */
+0xa0
+            add
+            mload
+            mload
+            0x02
+            /* (0) t3_item_ //   //    */
+// expects t3 pointer, index on stack
+    0x20
+    mul
+    0x20
+    add
+    add
+    mload
+
+            0xe0
+            mload
+            0xc0
+            add
+            mload   // step
+
+            /* (1) t3_setitem // arg_ptr, lambda_ptr   // arg_ptr, lambda_ptr   */
+// expects result, t3 pointer, index on stack
+    0x20
+    mul
+    0x20
+    add
+    add
+    mstore
+
+
+            dup2    // arg_ptr, lambda_ptr, arg_ptr
+            mload   // arg_ptr, lambda_ptr, arity
+
+            0xe0
+            mload
+            0xc0
+            add
+            mload   // arg_ptr, lambda_ptr, arity, step
+            lt
+            map_xx_extra_loop_
+            jumpi
+
+            pop
+            pop
+            /* (28) getframe //   //   */
+0xe0
+            mload
+            /* (5) getoutputptr //   //   */
+0xa0
+            add
+            mload
+            mload
+
+            0x02
+            /* (1) t3_item_ //   //    */
+// expects t3 pointer, index on stack
+    0x20
+    mul
+    0x20
+    add
+    add
+    mload
+
+            eval_function_for_content
+            /* (29) getframe //   //   */
+0xe0
+            mload
+            /* (4) setreturn //   //   */
+0x120
+            add
+            mstore
+
+            eval_native_function_post
+            0xc0
+            mstore
+            eval_native_function_post
+            jump
+        map_xx_extra_loop_:
+            0xe0
+            mload
+            0xc0
+            add
+            mload   // step
+
+            0x01
+            add    // step, step incr
+            dup1    // step, step
+
+            0xe0
+            mload
+            0xc0
+            add     // step, step incr, ptr
+            mstore   // arg_ptr, lambda_ptr, step
+
+            dup3
+            swap1       // arg_ptr, lambda_ptr, arg_ptr, step
+            /* (2) t3_item_ // arg_ptr, lambda_ptr, arg   // arg_ptr, lambda_ptr, arg   */
+// expects t3 pointer, index on stack
+    0x20
+    mul
+    0x20
+    add
+    add
+    mload
+            dup2      // arg_ptr, lambda_ptr, arg, lambda_ptr
+            apply_xx_extra
+            jump
+        return___10_extra:
+            dup1   // pointer
+            mload  // arity
+            0x20
+            mul
+            0x20
+            add
+            swap1   // size, pointer
+            return
         revert_internal:
             // error data, error code
             0x00
