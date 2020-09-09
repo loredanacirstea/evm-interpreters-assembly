@@ -882,6 +882,7 @@ for_stack_2:
                 mload     // get previous frame
                 0xe0
                 mstore
+            eval_function_for_content_post:
 
     forloop_end_0:
 
@@ -1037,10 +1038,10 @@ for_stack_3:
         add
         jump
     eval_native_function_post:
-        /* (10) getframe //   //   */
+        /* (10) getframe // result_ptr, frame_ptr   // result_ptr, frame_ptr   */
 0xe0
             mload
-        swap1
+        swap1        // frame_ptr, result_ptr
 
         dup2    // frame - get last partial for end_ptr
         /* (2) getpartialsptr //   //   */
@@ -5757,8 +5758,6 @@ for_stack_10:
         map_xx_extra:
             // t3___ptr, lambda_ptr
 
-
-
             dup2
             mload     // arity
             /* (4) t3_init__ 0x40    // t3___ptr, lambda_ptr, result_ptr   // t3___ptr, lambda_ptr, result_ptr   */
@@ -5782,33 +5781,16 @@ for_stack_10:
     dup2     // ptr, arity, ptr
     mstore   // store arity at pointer -> ptr
 
-            0x03
-            /* (5) t3_init__ 0x40  // t3___ptr, lambda_ptr, result_ptr, output_ptr   // t3___ptr, lambda_ptr, result_ptr, output_ptr   */
-// expects on stack: arity
-    dup1   // arity
-    0x20
-    mul
-    0x20
-    add
-
-    // alloc 0x40  // t3___ptr    // freeMemPtr
-    0x40  // t3___ptr
-    mload
-    swap1
-    dup2
-    add
-    0x40  // t3___ptr
-    mstore
-
-    swap1    // ptr, arity
-    dup2     // ptr, arity, ptr
-    mstore   // store arity at pointer -> ptr
-
-            dup1     // t3___ptr, lambda_ptr, result_ptr, output_ptr, output_ptr
-            swap2
-            swap1    // t3___ptr, lambda_ptr, output_ptr, result_ptr, output_ptr
-            0x02
-            /* (0) t3_setitem //  t3___ptr, lambda_ptr, output_ptr   //  t3___ptr, lambda_ptr, output_ptr   */
+            /* (24) getframe //   //   */
+0xe0
+            mload
+            /* (4) getoutputptr //   //   */
+0xa0
+            add
+            mload
+            mload           // t3___ptr, lambda_ptr, result_ptr, output_ptr
+            0x01
+            /* (0) t3_setitem // t3___ptr, lambda_ptr   // t3___ptr, lambda_ptr   */
 // expects result, t3 pointer, index on stack
     0x20
     mul
@@ -5817,34 +5799,12 @@ for_stack_10:
     add
     mstore
 
-            0x20
-            /* (5) allocate 0x40   // t3___ptr, lambda_ptr, result_ptr, newptr   // t3___ptr, lambda_ptr, result_ptr, newptr   */
-0x40   // t3___ptr
-    mload
-    swap1
-    dup2
-    add
-    0x40   // t3___ptr
-    mstore
-            dup1            // t3___ptr, lambda_ptr, result_ptr, newptr, newptr
-            swap2           // t3___ptr, lambda_ptr, newptr, newptr, result_ptr
-            swap1           // t3___ptr, lambda_ptr, newptr, result_ptr, newptr
-            mstore
-
             map_xx_extra_loop
-            /* (24) getframe //   //   */
+            /* (25) getframe //   //   */
 0xe0
             mload
             /* (3) setreturn //   //   */
 0x120
-            add
-            mstore
-
-            /* (25) getframe //   //   */
-0xe0
-            mload
-            /* (2) setoutputptr // t3___ptr, lambda_ptr   // t3___ptr, lambda_ptr   */
-0xa0
             add
             mstore
 
@@ -5877,12 +5837,12 @@ for_stack_10:
             /* (27) getframe //   //   */
 0xe0
             mload
-            /* (4) getoutputptr // arg_ptr, lambda_ptr, result, ptr   // arg_ptr, lambda_ptr, result, ptr   */
+            /* (5) getoutputptr // arg_ptr, lambda_ptr, result, ptr   // arg_ptr, lambda_ptr, result, ptr   */
 0xa0
             add
             mload
             mload
-            0x02
+            0x01
             /* (0) t3_item_ //   //    */
 // expects t3 pointer, index on stack
     0x20
@@ -5925,13 +5885,13 @@ for_stack_10:
             /* (28) getframe //   //   */
 0xe0
             mload
-            /* (5) getoutputptr //   //   */
+            /* (6) getoutputptr //   //   */
 0xa0
             add
             mload
             mload
 
-            0x02
+            0x01
             /* (1) t3_item_ //   //    */
 // expects t3 pointer, index on stack
     0x20
@@ -5941,7 +5901,7 @@ for_stack_10:
     add
     mload
 
-            eval_function_for_content
+            eval_function_for_content     // usual return after a list item is processed
             /* (29) getframe //   //   */
 0xe0
             mload
@@ -5950,10 +5910,35 @@ for_stack_10:
             add
             mstore
 
-            eval_native_function_post
+            /* (30) getframe // result_ptr, frame_ptr   // result_ptr, frame_ptr   */
+0xe0
+            mload
+            swap1     // frame_ptr, result_ptr
+
+            /* (31) getframe //   //   */
+0xe0
+            mload
+            /* (7) getoutputptr //   //   */
+0xa0
+            add
+            mload
+            mload
+            0x00
+            /* (2) t3_item_ // frame_ptr, result_ptr, end_ptr   // frame_ptr, result_ptr, end_ptr   */
+// expects t3 pointer, index on stack
+    0x20
+    mul
+    0x20
+    add
+    add
+    mload
+
+
+            eval_native_function     // this is the usual value
             0xc0
             mstore
-            eval_native_function_post
+
+            eval_end_processing        // go directly to processing end; expects frame_ptr, result_ptr, end_ptr
             jump
         map_xx_extra_loop_:
             0xe0
@@ -5974,7 +5959,7 @@ for_stack_10:
 
             dup3
             swap1       // arg_ptr, lambda_ptr, arg_ptr, step
-            /* (2) t3_item_ // arg_ptr, lambda_ptr, arg   // arg_ptr, lambda_ptr, arg   */
+            /* (3) t3_item_ // arg_ptr, lambda_ptr, arg   // arg_ptr, lambda_ptr, arg   */
 // expects t3 pointer, index on stack
     0x20
     mul

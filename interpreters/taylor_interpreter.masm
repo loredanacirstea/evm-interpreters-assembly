@@ -636,6 +636,7 @@ deployer {
                 mload     // get previous frame
                 0xe0
                 mstore
+            eval_function_for_content_post:
         }
 
     eval_function_for_end:
@@ -723,8 +724,8 @@ deployer {
         add
         jump
     eval_native_function_post:
-        getframe //
-        swap1
+        getframe     // result_ptr, frame_ptr
+        swap1        // frame_ptr, result_ptr
 
         dup2    // frame - get last partial for end_ptr
         getpartialsptr  //
@@ -2334,34 +2335,19 @@ deployer {
         map_xx_extra:
             // t3___ptr, lambda_ptr
 
-
-
             dup2
             mload     // arity
             t3_init__ 0x40    // t3___ptr, lambda_ptr, result_ptr
 
-            0x03
-            t3_init__ 0x40  // t3___ptr, lambda_ptr, result_ptr, output_ptr
-
-            dup1     // t3___ptr, lambda_ptr, result_ptr, output_ptr, output_ptr
-            swap2
-            swap1    // t3___ptr, lambda_ptr, output_ptr, result_ptr, output_ptr
-            0x02
-            t3_setitem //  t3___ptr, lambda_ptr, output_ptr
-
-            0x20
-            allocate 0x40   // t3___ptr, lambda_ptr, result_ptr, newptr
-            dup1            // t3___ptr, lambda_ptr, result_ptr, newptr, newptr
-            swap2           // t3___ptr, lambda_ptr, newptr, newptr, result_ptr
-            swap1           // t3___ptr, lambda_ptr, newptr, result_ptr, newptr
-            mstore
+            getframe   //
+            getoutputptr   //
+            mload           // t3___ptr, lambda_ptr, result_ptr, output_ptr
+            0x01
+            t3_setitem          // t3___ptr, lambda_ptr
 
             map_xx_extra_loop
             getframe //
             setreturn  //
-
-            getframe //
-            setoutputptr  // t3___ptr, lambda_ptr
 
             0x00
             getframe //
@@ -2378,7 +2364,7 @@ deployer {
             getframe //
             getoutputptr // arg_ptr, lambda_ptr, result, ptr
             mload
-            0x02
+            0x01
             t3_item_    //
 
             0xe0
@@ -2408,17 +2394,28 @@ deployer {
             getoutputptr //
             mload
 
-            0x02
+            0x01
             t3_item_    //
 
-            eval_function_for_content
+            eval_function_for_content     // usual return after a list item is processed
             getframe //
             setreturn  //
 
-            eval_native_function_post
+            getframe  // result_ptr, frame_ptr
+            swap1     // frame_ptr, result_ptr
+
+            getframe //
+            getoutputptr //
+            mload
+            0x00
+            t3_item_    // frame_ptr, result_ptr, end_ptr
+
+
+            eval_native_function     // this is the usual value
             0xc0
             mstore
-            eval_native_function_post
+
+            eval_end_processing        // go directly to processing end; expects frame_ptr, result_ptr, end_ptr
             jump
         map_xx_extra_loop_:
             0xe0
