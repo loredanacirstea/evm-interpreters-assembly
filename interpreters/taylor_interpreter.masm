@@ -2341,6 +2341,43 @@ deployer {
             log0_20
             jump
         join__x1_extra:
+            // t2_2, t2_1
+            swap1     // t2_1, t2_2
+            dup2      // t2_1, t2_2, t2_1
+            t2_len_   // t2_1, t2_2, t2_len
+            dup2      //
+            t2_len_    // t2_1, t2_2, t2_1_len, t2_2_len
+            dup2
+            dup2
+            add       // t2_1, t2_2, t2_1_len, t2_2_len, len
+
+            t2_init__ 0x40  // t2_1, t2_2, t2_1_len, t2_2_len, t2_3__
+
+            swap2     // t2_1, t2_2, t2_3__, t2_2_len, t2_1_len
+            dup1      // t2_1, t2_2, t2_3__, t2_2_len, t2_1_len, t2_1_len
+            dup6      // t2_1, t2_2, t2_3__, t2_2_len, t2_1_len, t2_1_len, t2_1
+            t2_ptr_   // t2_1, t2_2, t2_3__, t2_2_len, t2_1_len, t2_1_len, t2_1_ptr
+            dup5      // t2_1, t2_2, t2_3__, t2_2_len, t2_1_len, t2_1_len, t2_1_ptr, t2_3__
+            t2_ptr_   // t2_1, t2_2, t2_3__, t2_2_len, t2_1_len, t2_1_len, t2_1_ptr, t2_3_ptr
+            mmultimstore // size_bytes, source_ptr, target_ptr // t2_1, t2_2, t2_3__, t2_2_len, t2_1_len
+
+
+            dup2      // t2_1, t2_2, t2_3__, t2_2_len, t2_1_len, t2_2_len
+            dup5      // t2_1, t2_2, t2_3__, t2_2_len, t2_1_len, t2_2_len, t2_2
+            t2_ptr_   // t2_1, t2_2, t2_3__, t2_2_len, t2_1_len, t2_2_len, t2_2_ptr
+            dup5      // t2_1, t2_2, t2_3__, t2_2_len, t2_1_len, t2_2_len, t2_2_ptr, t2_3__
+            t2_ptr_   // t2_1, t2_2, t2_3__, t2_2_len, t2_1_len, t2_2_len, t2_2_ptr, t2_3__ptr
+            dup4
+            add       // t2_1, t2_2, t2_3__, t2_2_len, t2_1_len, t2_2_len, t2_2_ptr, t2_3__ptr
+            mmultimstore // t2_1, t2_2, t2_3__, t2_2_len, t2_1_len
+
+
+            pop
+            pop
+            swap1
+            pop
+            swap1
+            pop
 
             0x01
             getframe //

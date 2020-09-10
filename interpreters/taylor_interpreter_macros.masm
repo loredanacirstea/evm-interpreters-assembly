@@ -271,12 +271,12 @@
 %endmacro
 
 %macro t2_init__
-    // expects length // %0 = freeMemPtr
+    // expects length; 0 = freeMemPtr
     dup1
     0x20
     add           // length, fulllength
 
-    // alloc %0    // freeMemPtr
+    // alloc
     %0
     mload
     swap1
@@ -284,6 +284,7 @@
     add
     %0
     mstore     // length, ptr
+    // end alloc
 
     dup1       // store length   // length, ptr, ptr
     swap2      // ptr, ptr, length
@@ -310,7 +311,7 @@
     0x20
     add
 
-    // alloc %0    // freeMemPtr
+    // alloc
     %0
     mload
     swap1
@@ -318,6 +319,7 @@
     add
     %0
     mstore
+    // end alloc
 
     swap1    // ptr, arity
     dup2     // ptr, arity, ptr
@@ -333,7 +335,7 @@
     add
 
 
-    // alloc %0    // freeMemPtr
+    // alloc
     %0
     mload
     swap1
@@ -341,6 +343,7 @@
     add
     %0
     mstore
+    // end alloc
 
     dup2   // store arity
     dup2   // ptr
@@ -381,7 +384,7 @@
 %endmacro
 
 %macro t3item_
-    // expects %0 = index and t3 pointer on stack
+    // expects t3 pointer on stack ; 0 = index
     // TODO revert when out of bounds
     %0
     0x20
@@ -417,9 +420,10 @@
 %endmacro
 
 
-// %0 = freeMemPtr, %1 = current_frame_ptr, %2 = number of frame slots
-// on stack: return tag, extra_ptr, output_ptr, partials_ptr, input_ptr, prev_ptr
 %macro memframe_init
+    // 0 = freeMemPtr, 1 = current_frame_ptr, 2 = number of frame slots
+    // on stack: return tag, extra_ptr, output_ptr, partials_ptr, input_ptr, prev_ptr
+
     `${"0x" + (%2 * 32).toString(16)}`    // alloc frame
     %0
     mload
