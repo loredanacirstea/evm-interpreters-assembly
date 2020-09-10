@@ -3865,16 +3865,15 @@ unused_137:  // 0x139
         stop
         stop
         stop
-        /* (138) eopcode 0x13a, 138      */
-unused_138:  // 0x13a
-        stop
-        stop
-        stop
-        stop
-        stop
-        stop
-        stop
-        /* (139) eopcode 0x13b, 139      */
+        sstore_21:            // 0x13a
+            pop
+            sstore_21_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        /* (138) eopcode 0x13b, 139      */
 unused_139:  // 0x13b
         stop
         stop
@@ -3883,7 +3882,7 @@ unused_139:  // 0x13b
         stop
         stop
         stop
-        /* (140) eopcode 0x13c, 140      */
+        /* (139) eopcode 0x13c, 140      */
 unused_140:  // 0x13c
         stop
         stop
@@ -3892,7 +3891,7 @@ unused_140:  // 0x13c
         stop
         stop
         stop
-        /* (141) eopcode 0x13d, 141      */
+        /* (140) eopcode 0x13d, 141      */
 unused_141:  // 0x13d
         stop
         stop
@@ -3901,7 +3900,7 @@ unused_141:  // 0x13d
         stop
         stop
         stop
-        /* (142) eopcode 0x13e, 142      */
+        /* (141) eopcode 0x13e, 142      */
 unused_142:  // 0x13e
         stop
         stop
@@ -3910,7 +3909,7 @@ unused_142:  // 0x13e
         stop
         stop
         stop
-        /* (143) eopcode 0x13f, 143      */
+        /* (142) eopcode 0x13f, 143      */
 unused_143:  // 0x13f
         stop
         stop
@@ -3927,7 +3926,7 @@ unused_143:  // 0x13f
             jump
             stop
             stop
-        /* (144) eopcode 0x141, 144      */
+        /* (143) eopcode 0x141, 144      */
 unused_144:  // 0x141
         stop
         stop
@@ -3936,7 +3935,7 @@ unused_144:  // 0x141
         stop
         stop
         stop
-        /* (145) eopcode 0x142, 145      */
+        /* (144) eopcode 0x142, 145      */
 unused_145:  // 0x142
         stop
         stop
@@ -3945,7 +3944,7 @@ unused_145:  // 0x142
         stop
         stop
         stop
-        /* (146) eopcode 0x143, 146      */
+        /* (145) eopcode 0x143, 146      */
 unused_146:  // 0x143
         stop
         stop
@@ -3954,7 +3953,7 @@ unused_146:  // 0x143
         stop
         stop
         stop
-        /* (147) eopcode 0x144, 147      */
+        /* (146) eopcode 0x144, 147      */
 unused_147:  // 0x144
         stop
         stop
@@ -3963,7 +3962,7 @@ unused_147:  // 0x144
         stop
         stop
         stop
-        /* (148) eopcode 0x145, 148      */
+        /* (147) eopcode 0x145, 148      */
 unused_148:  // 0x145
         stop
         stop
@@ -3972,7 +3971,7 @@ unused_148:  // 0x145
         stop
         stop
         stop
-        /* (149) eopcode 0x146, 149      */
+        /* (148) eopcode 0x146, 149      */
 unused_149:  // 0x146
         stop
         stop
@@ -3981,7 +3980,7 @@ unused_149:  // 0x146
         stop
         stop
         stop
-        /* (150) eopcode 0x147, 150      */
+        /* (149) eopcode 0x147, 150      */
 unused_150:  // 0x147
         stop
         stop
@@ -3990,7 +3989,7 @@ unused_150:  // 0x147
         stop
         stop
         stop
-        /* (151) eopcode 0x148, 151      */
+        /* (150) eopcode 0x148, 151      */
 unused_151:  // 0x148
         stop
         stop
@@ -3999,7 +3998,7 @@ unused_151:  // 0x148
         stop
         stop
         stop
-        /* (152) eopcode 0x149, 152      */
+        /* (151) eopcode 0x149, 152      */
 unused_152:  // 0x149
         stop
         stop
@@ -4024,7 +4023,7 @@ unused_152:  // 0x149
             jump
             stop
             stop
-        /* (153) eopcode 0x14c, 155      */
+        /* (152) eopcode 0x14c, 155      */
 unused_155:  // 0x14c
         stop
         stop
@@ -4033,7 +4032,7 @@ unused_155:  // 0x14c
         stop
         stop
         stop
-        /* (154) eopcode 0x14d, 156      */
+        /* (153) eopcode 0x14d, 156      */
 unused_156:  // 0x14d
         stop
         stop
@@ -4042,7 +4041,7 @@ unused_156:  // 0x14d
         stop
         stop
         stop
-        /* (155) eopcode 0x14e, 157      */
+        /* (154) eopcode 0x14e, 157      */
 unused_157:  // 0x14e
         stop
         stop
@@ -4051,7 +4050,7 @@ unused_157:  // 0x14e
         stop
         stop
         stop
-        /* (156) eopcode 0x14f, 158      */
+        /* (155) eopcode 0x14f, 158      */
 unused_158:  // 0x14f
         stop
         stop
@@ -6321,6 +6320,15 @@ for_stack_12:
     mload
             dup2      // arg_ptr, lambda_ptr, arg, lambda_ptr
             apply_xx_extra
+            jump
+        sstore_21_extra:
+            dup1     // value, key, key
+            swap2    // key, key, value
+            swap1    // key, value, key
+            sstore   // key
+            0xc0
+            // push
+            mload
             jump
         return___10_extra:
             dup1   // pointer

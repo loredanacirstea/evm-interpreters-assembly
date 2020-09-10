@@ -1329,7 +1329,14 @@ deployer {
         eopcode 0x137, 135
         eopcode 0x138, 136
         eopcode 0x139, 137
-        eopcode 0x13a, 138
+        sstore_21:            // 0x13a
+            pop
+            sstore_21_extra
+            //
+            // push
+            jump
+            stop
+            stop
         eopcode 0x13b, 139
         eopcode 0x13c, 140
         eopcode 0x13d, 141
@@ -2543,6 +2550,15 @@ deployer {
             t3_item_   // arg_ptr, lambda_ptr, arg
             dup2      // arg_ptr, lambda_ptr, arg, lambda_ptr
             apply_xx_extra
+            jump
+        sstore_21_extra:
+            dup1     // value, key, key
+            swap2    // key, key, value
+            swap1    // key, value, key
+            sstore   // key
+            0xc0
+            // push
+            mload
             jump
         return___10_extra:
             dup1   // pointer
