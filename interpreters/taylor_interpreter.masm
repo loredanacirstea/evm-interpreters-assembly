@@ -28,6 +28,15 @@ deployer {
             shr
         %endmacro
 
+        %macro getfunctype
+            // expects a 4byte value
+            // 00000111000000000000000000000000 mask
+            0x7000000
+            and
+            0x18
+            shr
+        %endmacro
+
         %macro getfuncloco
             // expects a 4byte value
             0x40
@@ -63,7 +72,7 @@ deployer {
 
         %macro getfnkey
             // expects fsig
-            0x02    // seed
+            0x03    // seed
             0x00
             mstore
 
@@ -94,6 +103,16 @@ deployer {
             0x40
             0x00
             sha3
+        %endmacro
+
+        %macro getroot
+            0x04
+            sload
+        %endmacro
+
+        %macro getleaf
+            0x05
+            sload
         %endmacro
 
         // GETTERS  //
@@ -1321,7 +1340,14 @@ deployer {
             jump
             stop
             stop
-        eopcode 0x132, 130
+        create_21:            // 0x132
+            pop
+            create_21_extra
+            //
+            // push
+            jump
+            stop
+            stop
         eopcode 0x133, 131
         eopcode 0x134, 132
         eopcode 0x135, 133
@@ -1382,6 +1408,61 @@ deployer {
         map_xx:         // 0x150
             pop
             map_xx_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        eopcode 0x151, 159
+        eopcode 0x152, 160
+        eopcode 0x153, 161
+        eopcode 0x154, 162
+        eopcode 0x155, 163
+        eopcode 0x156, 164
+        eopcode 0x157, 165
+        eopcode 0x158, 166
+        eopcode 0x159, 167
+        eopcode 0x15a, 168
+        eopcode 0x15b, 169
+        eopcode 0x15c, 170
+        eopcode 0x15d, 171
+        eopcode 0x15e, 172
+        eopcode 0x15f, 173
+        setroot_11:         // 0x160
+            pop
+            setroot_11_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        setleaf_11:         // 0x161
+            pop
+            setleaf_11_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        apply_compiled_x1:     // 0x162
+            pop
+            apply_compiled_x1_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        apply_stored_x1:     // 0x163
+            pop
+            apply_stored_x1_extra
+            //
+            // push
+            jump
+            stop
+            stop
+        apply_lambda_x1:     // 0x164
+            pop
+            apply_lambda_x1_extra
             //
             // push
             jump
@@ -1767,152 +1848,9 @@ deployer {
             // push
             mload
             jump
-        apply_xx_extra: // args, lambda_ptr__
-            dup1  // args, lambda_ptr__, lambda_ptr__
-            0x20
-            add   // after length lambda_ptr // args, lambda_ptr__, lambda_ptr, lambda_ptr
-            dup1     // load lambda head todo: require id is lambda id
-            getfourb  // args, lambda_ptr__, lambda_ptr, 4b
-
-            getfuncarity // lambda arity // args, lambda_ptr__, lambda_ptr, lambda_arity
-
-            // move lambda pointer to lambda body
-            swap1   // args, lambda_ptr__, lambda_arity, lambda_ptr
-            0x08
-            add     // lambda sig
-            dup2
-            0x02
-            mul     // unknowns offset
-            add     // move lambda ptr at body
-
-            swap1   // args, lambda_ptr__, lambda_ptr, lambda_arity
-
-            // create new memory frame with new env
-            // TODO meld new env with old env
-
-            dup1             // args, lambda_ptr__, lambda_ptr, lambda_arity, lambda_arity
-            0x01
-            add              // self
-            t3_init__ 0x40   // args, lambda_ptr__, lambda_ptr, lambda_arity, new_env_ptr
-
-            // storing reference to self
-            swap1   // args, lambda_ptr__, lambda_ptr, new_env_ptr, lambda_arity
-            swap2   // args, lambda_ptr__, lambda_arity, new_env_ptr, lambda_ptr
-            swap3   // args, lambda_ptr, lambda_arity, new_env_ptr, lambda_ptr__
-            dup2    // args, lambda_ptr, lambda_arity, new_env_ptr, lambda_ptr__, new_env_ptr
-            0x20
-            add
-            mstore  // args, lambda_ptr, lambda_arity, new_env_ptr
-
-            dup1
-            0x40
-            add    // current_env_ptr
-
-            swap1
-            swap2
-
-            apply_xx_extra_mfor_end    // args, lambda_ptr, lambda_arity, new_env_ptr, current_env_ptr
-            swap1  // args, lambda_ptr, new_env_ptr, current_env_ptr, tag, lambda_arity
-            0x00
-            mfor_stack {
-                // args, lambda_ptr, new_env_ptr, current_env_ptr, tag, end, step
-
-                // load env_ptr and write args
-                // call eval with lambda pointer and return back here
-
-                dup7   // first arg
-                dup5   // current_env_ptr
-                mstore
-
-                dup4   // current_env_ptr increase
-                0x20
-                add
-                swap4
-                pop
-
-                swap1
-                swap2
-                swap3
-                swap4
-                swap5
-                swap6
-                pop
-            }
-
-        apply_xx_extra_mfor_end:
-            // lambda_ptr, new_env_ptr, current_env_ptr
-            pop  // lambda_ptr, new_env_ptr
-
-            // MEMORY FRAME INIT  //
-            0x160
-            allocate 0x40  // lambda_ptr, new_env_ptr, new_frame_ptr
-
-            getframe // lambda_ptr, new_env_ptr, new_frame_ptr, prev_frame_ptr
-            dup1   // lambda_ptr, new_env_ptr, new_frame_ptr, prev_frame_ptr, prev_frame_ptr
-            dup3   // lambda_ptr, new_env_ptr, new_frame_ptr, prev_frame_ptr, prev_frame_ptr, new_frame_ptr
-            mstore  // PREV_PTR(0)  // lambda_ptr, new_env_ptr, new_frame_ptr, prev_frame_ptr
-
-            // store current_frame_ptr
-            dup2
-            0xe0
-            mstore
-
-            dup1     // get mem/stack location from parent
-            getloco  // lambda_ptr, new_env_ptr, new_frame_ptr, prev_frame_ptr, mem/stack
-            dup3     // lambda_ptr, new_env_ptr, new_frame_ptr, prev_frame_ptr, mem/stack, new_frame_ptr
-            setloco  // MEM/STACK(3) //   if next is a function, it will set the mem/stack location itself
-
-            // lambda_ptr, new_env_ptr, new_frame_ptr, prev_frame_ptr
-            getoutputptr // lambda_ptr, new_env_ptr, new_frame_ptr, output_ptr
-            dup2         // lambda_ptr, new_env_ptr, new_frame_ptr, output_ptr, new_frame_ptr
-            setoutputptr  // lambda_ptr, new_env_ptr, new_frame_ptr
-
-            // pop  // lambda_ptr, new_env_ptr, new_frame_ptr
-
-
-            swap1  // lambda_ptr, new_frame_ptr, new_env_ptr
-            dup2
-            setenvptr // lambda_ptr, new_frame_ptr
-
-            swap1      // new_frame_ptr, lambda_ptr
-            dup2       // new_frame_ptr, lambda_ptr, new_frame_ptr
-            setdataptr // new_frame_ptr
-
-            apply_xx_extra_eval_end    // return tag
-            swap1
-            setreturn  //
-            tag_eval
-            jump
-
-        apply_xx_extra_eval_end:
-            getframe  //
-            getloco  //
-            iszero   // jump if stack
-            apply_xx_extra_eval_end_both
-            jumpi
-
-            // mem - put result on stack
-            getframe  //
-            getoutputptr //
-
-            mload   // output_ptr - arity
-            0x40    // result_ptr ; end_ptr is at 0x20
-            add
-            mload
-        apply_xx_extra_eval_end_both:
-            // previous frame
-            getframe  //
-            mload     // get previous frame
-            0xe0
-            mstore
-
-            0xc0
-            // push
-            mload
-            jump
         setfn_10_extra:  // pointer to lambda - length & lambda
             // TODO: build sig, set correct arity
-            0x3400100000000000000000000000000000000000000000000000000000000000
+            0x3100004200000000000000000000000000000000000000000000000000000000
             getfncounter //
             add
             swap1  // fsig, ptr
@@ -2012,7 +1950,7 @@ deployer {
             0x20
             add       // args, lambda_ptr
             mload
-            apply_xx_extra
+            apply_lambda_x1_extra
             jump
         super_1x_extra:
             // index
@@ -2024,7 +1962,7 @@ deployer {
             0x20
             add       // args, lambda_ptr
             mload
-            apply_xx_extra
+            apply_lambda_x1_extra
             jump
         return_10_extra:
             dup1   // pointer
@@ -2308,6 +2246,18 @@ deployer {
             // push
             mload
             jump
+        create_21_extra:
+            // t2__, value
+            dup2
+            t2_len_      // t2__, value, len
+            swap2        // len, value, t2__
+            t2_ptr_      //
+            swap1        // len, ptr, value
+            create       // address
+            0xc0
+            // push
+            mload
+            jump
         log__x0_extra:
             // topics, data_ptr__
             dup1
@@ -2463,7 +2413,7 @@ deployer {
             dup2
             t3item_ 0x00
             dup2      // arg_ptr, lambda_ptr, arg, lambda_ptr
-            apply_xx_extra
+            apply_xx_extra        // lambda_ptr can be signature_ptr for compiled fn
             jump
 
         map_xx_extra_loop:
@@ -2578,4 +2528,265 @@ deployer {
             0x40
             0x00
             revert
+        setroot_11_extra:
+            // address
+            dup1
+            0x04    // seed
+            sstore
+            0xc0
+            // push
+            mload
+            jump
+        setleaf_11_extra:
+            // address
+            dup1
+            0x05   // seed
+            sstore
+            0xc0
+            // push
+            mload
+            jump
+        apply_xx_extra: // args, lambda_ptr__ or signature_ptr__ for compiled/stored
+            // get ftype - compiled, stored, lambda
+            dup1         // args, ptr__, ptr__
+            t2_ptr_      //
+            getfourb     //
+            getfunctype  // args, ptr__, ftype
+            dup1
+            0x08
+            mul
+            apply_compiled_x1
+            add
+            jump
+        apply_compiled_x1_extra:
+            0xc0
+            // push
+            mload
+            jump
+        apply_stored_x1_extra:     // args, signature_ptr__ lookup in storage or forward to registered contract
+            // args, sig_ptr__
+            0xc0
+            mload    // args, sig_ptr__, tag
+
+            dup2    // args, sig_ptr__, tag, sig_ptr__
+
+            apply_stored_x1_extra_1
+            0xc0
+            mstore
+
+            getfn_11_extra
+            jump
+        apply_stored_x1_extra_1:
+            // args, sig_ptr__, tag, lambda_ptr__
+            swap1    // args, sig_ptr__, lambda_ptr__, tag
+
+            0xc0
+            mstore   // put back tag
+
+            dup1
+            t2_ptr_     //
+            mload
+            0x00
+            eq
+            apply_external_x1_extra
+            jumpi
+
+            swap1     // args, lambda_ptr__, sig_ptr__
+            pop
+            // continue with lambda
+        apply_lambda_x1_extra:
+            dup1  // args, lambda_ptr__, lambda_ptr__
+            0x20
+            add   // after length lambda_ptr // args, lambda_ptr__, lambda_ptr, lambda_ptr
+            dup1     // load lambda head todo: require id is lambda id
+            getfourb  // args, lambda_ptr__, lambda_ptr, 4b
+
+            getfuncarity // lambda arity // args, lambda_ptr__, lambda_ptr, lambda_arity
+
+            // move lambda pointer to lambda body
+            swap1   // args, lambda_ptr__, lambda_arity, lambda_ptr
+            0x08
+            add     // lambda sig
+            dup2
+            0x02
+            mul     // unknowns offset
+            add     // move lambda ptr at body
+
+            swap1   // args, lambda_ptr__, lambda_ptr, lambda_arity
+
+            // create new memory frame with new env
+            // TODO meld new env with old env
+
+            dup1             // args, lambda_ptr__, lambda_ptr, lambda_arity, lambda_arity
+            0x01
+            add              // self
+            t3_init__ 0x40   // args, lambda_ptr__, lambda_ptr, lambda_arity, new_env_ptr
+
+            // storing reference to self
+            swap1   // args, lambda_ptr__, lambda_ptr, new_env_ptr, lambda_arity
+            swap2   // args, lambda_ptr__, lambda_arity, new_env_ptr, lambda_ptr
+            swap3   // args, lambda_ptr, lambda_arity, new_env_ptr, lambda_ptr__
+            dup2    // args, lambda_ptr, lambda_arity, new_env_ptr, lambda_ptr__, new_env_ptr
+            0x20
+            add
+            mstore  // args, lambda_ptr, lambda_arity, new_env_ptr
+
+            dup1
+            0x40
+            add    // current_env_ptr
+
+            swap1
+            swap2
+
+            apply_xx_extra_mfor_end    // args, lambda_ptr, lambda_arity, new_env_ptr, current_env_ptr
+            swap1  // args, lambda_ptr, new_env_ptr, current_env_ptr, tag, lambda_arity
+            0x00
+            mfor_stack {
+                // args, lambda_ptr, new_env_ptr, current_env_ptr, tag, end, step
+
+                // load env_ptr and write args
+                // call eval with lambda pointer and return back here
+
+                dup7   // first arg
+                dup5   // current_env_ptr
+                mstore
+
+                dup4   // current_env_ptr increase
+                0x20
+                add
+                swap4
+                pop
+
+                swap1
+                swap2
+                swap3
+                swap4
+                swap5
+                swap6
+                pop
+            }
+
+        apply_xx_extra_mfor_end:
+            // lambda_ptr, new_env_ptr, current_env_ptr
+            pop  // lambda_ptr, new_env_ptr
+
+            // MEMORY FRAME INIT  //
+            0x160
+            allocate 0x40  // lambda_ptr, new_env_ptr, new_frame_ptr
+
+            getframe // lambda_ptr, new_env_ptr, new_frame_ptr, prev_frame_ptr
+            dup1   // lambda_ptr, new_env_ptr, new_frame_ptr, prev_frame_ptr, prev_frame_ptr
+            dup3   // lambda_ptr, new_env_ptr, new_frame_ptr, prev_frame_ptr, prev_frame_ptr, new_frame_ptr
+            mstore  // PREV_PTR(0)  // lambda_ptr, new_env_ptr, new_frame_ptr, prev_frame_ptr
+
+            // store current_frame_ptr
+            dup2
+            0xe0
+            mstore
+
+            dup1     // get mem/stack location from parent
+            getloco  // lambda_ptr, new_env_ptr, new_frame_ptr, prev_frame_ptr, mem/stack
+            dup3     // lambda_ptr, new_env_ptr, new_frame_ptr, prev_frame_ptr, mem/stack, new_frame_ptr
+            setloco  // MEM/STACK(3) //   if next is a function, it will set the mem/stack location itself
+
+            // lambda_ptr, new_env_ptr, new_frame_ptr, prev_frame_ptr
+            getoutputptr // lambda_ptr, new_env_ptr, new_frame_ptr, output_ptr
+            dup2         // lambda_ptr, new_env_ptr, new_frame_ptr, output_ptr, new_frame_ptr
+            setoutputptr  // lambda_ptr, new_env_ptr, new_frame_ptr
+
+            // pop  // lambda_ptr, new_env_ptr, new_frame_ptr
+
+
+            swap1  // lambda_ptr, new_frame_ptr, new_env_ptr
+            dup2
+            setenvptr // lambda_ptr, new_frame_ptr
+
+            swap1      // new_frame_ptr, lambda_ptr
+            dup2       // new_frame_ptr, lambda_ptr, new_frame_ptr
+            setdataptr // new_frame_ptr
+
+            apply_xx_extra_eval_end    // return tag
+            swap1
+            setreturn  //
+            tag_eval
+            jump
+
+        apply_xx_extra_eval_end:
+            getframe  //
+            getloco  //
+            iszero   // jump if stack
+            apply_xx_extra_eval_end_both
+            jumpi
+
+            // mem - put result on stack
+            getframe  //
+            getoutputptr //
+
+            mload   // output_ptr - arity
+            0x40    // result_ptr ; end_ptr is at 0x20
+            add
+            mload
+        apply_xx_extra_eval_end_both:
+            // previous frame
+            getframe  //
+            mload     // get previous frame
+            0xe0
+            mstore
+
+            0xc0
+            // push
+            mload
+            jump
+
+        apply_external_x1_extra:
+            // args, sig_ptr__, lambda_ptr__
+            pop   //  args, sig_ptr__
+
+            0xc0
+            mload  // args, sig_ptr__, tag
+
+            apply_external_x1_extra_1
+            0xc0
+            mstore
+
+            getframe       //
+            getdataptr     //
+            dup1
+            getfourb       //
+            getfunclength  //  args, sig_ptr__, tag, code_ptr, length
+            0x08
+            add    // add apply sig length
+
+            0x00
+            0x00      // args, sig_ptr__, tag, code_ptr, length, 0x00, 0x00
+            swap2      // args, sig_ptr__, tag, code_ptr, 0x00, 0x00, length
+            swap1      // args, sig_ptr__, tag, code_ptr, 0x00, length, 0x00
+            swap3     // args, sig_ptr__, tag, 0x00, 0x00, length, code_ptr
+            0x00      // value
+            getleaf   // leaf address
+            gas
+            call
+
+            call__common
+            jump
+
+        apply_external_x1_extra_1:
+            // args, sig_ptr__, tag, result_ptr
+
+            t2_ptr_    //
+            mload      // todo: proper processing of result - value, bytelike - what is it
+
+            swap1
+            0xc0
+            mstore   // args, sig_ptr__, result
+
+            swap1
+            pop
+            swap1
+            pop
+
+            0xc0
+            // push
+            mload
+            jump
 }
