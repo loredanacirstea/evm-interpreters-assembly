@@ -274,6 +274,19 @@ deployer {
                 mload
         %endmacro
 
+        // 0x60 free
+        // 0x80 cache for tags
+        // 0xa0 stop tag
+        // 0xc0 return tag from compiled fns
+        // 0xe0 current mem frame
+        // 0x100 ptr to bytecode for evm interpreter
+        // 0x120 ptr to calldata for evm interpreter
+        // 0x140 mem offset for evm interpreter
+        // 0x160 current data_ptr for evm interpreter - maybe this should be in the mem frame
+        // 0x180 ptr to entire calldata - data_ptr
+
+
+
         // start tag value - native functions
         mmstore 0xa0 stop_00
 
@@ -283,10 +296,10 @@ deployer {
         // 0xe0 - current memory frame
 
         // copy input data in memory
-        calld 0x100     // data_ptr
+        calld 0x180     // data_ptr
 
         // freeMemPtr
-        0x100
+        0x180
         calldatasize
         add
         0x40
@@ -320,7 +333,7 @@ deployer {
         mstore
 
         // everything is 0 except:
-        0x100   // data_ptr
+        0x180   // data_ptr
         dup2
         setdataptr //
 
@@ -828,16 +841,65 @@ deployer {
         wopcode 0x32, origin, origin_01
         wopcode 0x33, caller, caller_01
         wopcode 0x34, callvalue, callvalue_01
-        wopcode 0x35, calldataload, calldataload_11
-        wopcode 0x36, calldatasize, calldatasize_01
-        wopcode 0x37, calldatacopy, calldatacopy_30
-        wopcode 0x38, codesize, codesize_01
-        wopcode 0x39, codecopy, codecopy_30
+        calldataload_11:  // 0x35
+            pop
+            calldataload_11_extra
+            //
+            // push2 ?
+            jump
+            stop
+            stop
+        calldatasize_01:  // 0x36
+            pop
+            calldatasize_01_extra
+            //
+            // push2 ?
+            jump
+            stop
+            stop
+        calldatacopy_30:  // 0x37
+            pop
+            calldatacopy_30_extra
+            //
+            // push2 ?
+            jump
+            stop
+            stop
+        codesize_01:  // 0x38
+            pop
+            codesize_01_extra
+            //
+            // push2 ?
+            jump
+            stop
+            stop
+        codecopy_30:  // 0x39
+            pop
+            codecopy_30_extra
+            //
+            // push2 ?
+            jump
+            stop
+            stop
         wopcode 0x3a, gasprice, gasprice_01
         wopcode 0x3b, extcodesize, extcodesize_11
-        wopcode 0x3c, extcodecopy, extcodecopy_40
+        extcodecopy_40:  // 0x3c
+            pop
+            extcodecopy_40_extra
+            //
+            // push2 ?
+            jump
+            stop
+            stop
         wopcode 0x3d, returndatasize, returndatasize_01
-        wopcode 0x3e, returndatacopy, returndatacopy_30
+        returndatacopy_30:  // 0x3e
+            pop
+            returndatacopy_30_extra
+            //
+            // push2 ?
+            jump
+            stop
+            stop
         wopcode 0x3f, extcodehash, extcodehash_11
         wopcode 0x40, blockhash, blockhash_11
         wopcode 0x41, coinbase, coinbase_01
@@ -856,9 +918,30 @@ deployer {
         eopcode 0x4e, 28
         eopcode 0x4f, 29
         wopcode 0x50, pop, pop_00
-        wopcode 0x51, mload, mload_11
-        wopcode 0x52, mstore, mstore_20
-        wopcode 0x53, mstore8, mstore8_20
+        mload_11:  // 0x51
+            pop
+            mload_11_extra
+            //
+            // push2
+            jump
+            stop
+            stop
+        mstore_20:  // 0x52
+            pop
+            mstore_20_extra
+            //
+            // push2
+            jump
+            stop
+            stop
+        mstore8_20:  // 0x53
+            pop
+            mstore8_20_extra
+            //
+            // push2
+            jump
+            stop
+            stop
         wopcode 0x54, sload, sload_11
         wopcode 0x55, sstore, sstore_20
         jump_10:  // 0x56
@@ -869,12 +952,12 @@ deployer {
             jump
             stop
             stop
-        jumpi_20:    // 0x57  // cond, new data_ptr, v0 -> dest, v0, cond, jump_10
+        jumpi_20:    // 0x57  // cond, tag
+            pop
             jumpi_20_extra
             //
             // push?
             jump
-            stop
             stop
             stop
         wopcode 0x58, pc, pc_01
@@ -1067,7 +1150,14 @@ deployer {
         wopcode 0xf0, create, create_31
         wopcode 0xf1, call, call_71
         wopcode 0xf2, callcode, callcode_71
-        wopcode 0xf3, return, return_20
+        return_20: // 0xf3
+            pop
+            return_20_extra
+            //
+            // push
+            jump
+            stop
+            stop
         wopcode 0xf4, delegatecall, delegatecall_61
         wopcode 0xf5, create2, create2_41
         eopcode 0xf6, 104
@@ -1482,24 +1572,40 @@ deployer {
             stop
             stop
         jump_10_extra:
-            0xe0        // start of data data_ptr
-            // push1
-            add
-            0x80          // store new data_ptr
-            // push
-            mstore
+            // tag
+            0x100      // bytecode ptr
+            mload
+            add        // get actual position
+
+            0x160
+            mstore     // update current bytecode ptr
+
             0xc0
             // push
             mload
             jump
         jumpi_20_extra:
-            swap1    // cond, v0, dest
-            swap2    // dest, v0, cond
-            jump_10
-            // push
+            // cond, tag
+            swap1      // tag, cond
+            jumpi_20_extra_jump
             jumpi
-            pop
-            pop
+            pop      // pop tag
+
+            0xc0
+            // push
+            mload
+            jump
+
+        jumpi_20_extra_jump:
+            // tag
+            // add bytecode offset to tag
+            0x100
+            mload     // bytecode pointer
+            add       // cond, real_pos
+            0x160
+            mstore    // change current bytecode ptr
+
+
             0xc0
             // push
             mload
@@ -2803,14 +2909,28 @@ deployer {
             mload
             jump
         interpret_11_extra:
-            // ptr to bytecode
-            t2_ptr_       //
-            0x80
+            // ptr to calldata, ptr to bytecode
+            t2_ptr_       // store ptr to bytecode
+            dup1
+            0x100
             mstore
 
+            0x160
+            mstore        // store current bytecode ptr
+
+            t2_ptr_       // store ptr to calldata
+            0x120
+            mstore
+
+            0x40
+            mload       // store current freeMemPtr as mem offset
+            0x140
+            mstore
+
+            // store initial tag
             0xc0
             mload
-            0x60
+            0x80
             mstore
 
             interpret_11_extra_start
@@ -2818,7 +2938,7 @@ deployer {
             mstore
 
         interpret_11_extra_start:
-        0x80    // push data pointer on stack
+            0x160    // push bytecode pointer on stack
           mload
           0x00
           0xf8
@@ -2865,7 +2985,7 @@ deployer {
           pop // pops old data_ptr
         interpret_11_extra_loop:
           dup3
-          0x80    // store data_ptr
+          0x160    // store data_ptr
           mstore
           0x08
           dup2
@@ -2883,11 +3003,126 @@ deployer {
           pop
           jump	// out
         interpret_11_extra_end_3:
-            0x60
+            0x80      // load previous tag
             mload
             dup1
             0xc0
             mstore
             jump
+        calldataload_11_extra:
+            // calldata start position
+            0x120
+            mload    // ptr to calldata
+            add      // add the given offset
+            mload
+            0xc0
+            // push
+            mload
+            jump
+        calldatasize_01_extra:
+            // load calldata length from pointer
+            0x20
+            0x120
+            mload     // ptr
+            sub       // length is in prev slot
+            mload
 
+            0xc0
+            // push
+            mload
+            jump
+        calldatacopy_30_extra:
+            // len, calldata_pos, mem_ptr
+            0x140        // mem offset
+            mload
+            add          // new mem_ptr
+
+            swap1      // len, mem_ptr, calldata_pos
+            0x120
+            mload      // calldata pointer
+            add        // add calldata_pos
+            swap1      // len, calldata_ptr, mem_ptr
+            mmultimstore // size_bytes, source_ptr, target_ptr
+
+            0xc0
+            // push
+            mload
+            jump
+
+        codesize_01_extra:
+            // load bytecode length from pointer
+            0x20
+            0x100
+            mload     // ptr
+            sub       // length is in prev slot
+            mload
+
+            0xc0
+            // push
+            mload
+            jump
+        codecopy_30_extra:
+            // len, code_pos, mem_ptr
+            0x140        // mem offset
+            mload
+            add          // new mem_ptr
+
+            swap1      // len, mem_ptr, bytecode_pos
+            0x100
+            mload      // bytecode pointer
+            add        // add bytecode_pos
+            swap1      // len, bytecode_ptr, mem_ptr
+            mmultimstore // size_bytes, source_ptr, target_ptr
+
+            0xc0
+            // push
+            mload
+            jump
+        extcodecopy_40_extra:
+            stop
+        returndatacopy_30_extra:
+            stop
+        mload_11_extra:
+            // position
+            // increase with mem offset
+            0x140
+            mload
+            add
+            mload
+
+            0xc0
+            // push
+            mload
+            jump
+        mstore_20_extra:
+            // value, ptr
+            // increase with mem offset
+            0x140
+            mload
+            add
+            mstore
+
+            0xc0
+            // push
+            mload
+            jump
+        mstore8_20_extra:
+            // value, ptr
+            // increase with mem offset
+            0x140
+            mload
+            add
+            mstore8
+
+            0xc0
+            // push
+            mload
+            jump
+        return_20_extra:
+            // len, ptr
+            // increase ptr with mem offset
+            0x140
+            mload
+            add
+            return
 }
