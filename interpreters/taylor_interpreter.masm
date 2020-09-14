@@ -37,6 +37,14 @@ deployer {
             shr
         %endmacro
 
+        %macro getouttype
+            // expects a 4byte value
+            0x180
+            and
+            0x07
+            shr   // returns 0 (t1), 1 (t2), 2 (t3)
+        %endmacro
+
         %macro getfuncloco
             // expects a 4byte value
             0x40
@@ -1539,7 +1547,7 @@ deployer {
             jump
             stop
             stop
-        apply_lambda_x1:     // 0x164
+        apply_lambda_x1:     // 0x163
             pop
             apply_lambda_x1_extra
             //
@@ -1547,8 +1555,9 @@ deployer {
             jump
             stop
             stop
-        eopcode 0x165, 174
-        eopcode 0x166, 175
+        eopcode 0x164, 176
+        eopcode 0x165, 176
+        eopcode 0x166, 176
         eopcode 0x167, 176
         eopcode 0x168, 177
         eopcode 0x169, 178
@@ -2654,6 +2663,12 @@ deployer {
             add
 
             jump
+        apply_x1_extra_:
+            stop
+        apply_x1_extra__:
+            stop
+        apply_x1_extra___:
+            stop
         apply_compiled_x1_extra:
             0xc0
             // push
@@ -2673,18 +2688,10 @@ deployer {
             // args, sig_ptr__, tag, lambda_ptr__
             swap1    // args, sig_ptr__, lambda_ptr__, tag
             0xc0
-            mstore   // put back tag
-
-            dup1
-            t2_ptr_     //
-            mload
-            0x00
-            eq
-            apply_external_x1_extra
-            jumpi
+            mstore   // put back tag // args, sig_ptr__, lambda_ptr__
 
             swap1     // args, lambda_ptr__, sig_ptr__
-            pop
+            pop       // args, lambda_ptr__
             // continue with lambda
         apply_lambda_x1_extra:
             dup1  // args, lambda_ptr__, lambda_ptr__
@@ -2831,23 +2838,95 @@ deployer {
             jump
 
         apply_external_x1_extra:
-            // args, sig_ptr__, lambda_ptr__
-            pop   //  args, sig_ptr__
+            // args, lambda_ptr__
+            pop   //  args
 
             0xc0
-            mload  // args, sig_ptr__, tag
+            mload  // args, tag
 
-            apply_external_x1_extra_1
+            getframe       //
+            getdataptr     //   args, tag, code_ptr
+            dup1
+            getfourb       //   args, tag, code_ptr, 4bsig
+
+            0x00
+            dup2
+            getouttype     //
+            gt
+            apply_external_x1_extra_t2
+            jumpi
+
+            apply_external_x1_extra_end_t1
             0xc0
             mstore
 
-            getframe       //
-            getdataptr     //
-            dup1
-            getfourb       //
-            getfunclength  //  args, sig_ptr__, tag, code_ptr, length
+            getfunclength  //  args, tag, code_ptr, length
             0x08
             add    // add apply sig length
+
+            0x00
+            0x00      // args, tag, code_ptr, length, 0x00, 0x00
+            swap2      // args, tag, code_ptr, 0x00, 0x00, length
+            swap1      // args, tag, code_ptr, 0x00, length, 0x00
+            swap3     // args, tag, 0x00, 0x00, length, code_ptr
+            0x00      // value
+            getleaf   // leaf address
+            gas
+            call
+
+            call__common
+            jump
+        apply_external_x1_extra_end_t1:
+            // args, tag, result_ptr
+
+            t2_ptr_    //
+            mload      // todo: proper processing of result - value, bytelike - what is it
+
+            swap1
+            0xc0
+            mstore   // args, result
+
+            swap1
+            pop
+            swap1
+            pop
+            // TODO: pop all args off the stack...
+            // actually we should reconstruct the code from the results
+            // not reexecute the entire code, that contains other functions too
+
+            0xc0
+            // push
+            mload
+            jump
+        apply_external_x1_extra_t2:
+            // args, tag, 4bsig
+            apply_external_x1_extra_end_t2
+            0xc0
+            mstore
+
+            getfunclength  //  args, tag, code_ptr, length
+            0x10
+            add    // add apply and return# sigs length
+
+            // copy code and add a t2 return function before apply
+            dup1               // args, sig_ptr__, tag, code_ptr, length, length
+            allocate 0x40    // args, sig_ptr__, tag, code_ptr, length, newcode_ptr_
+
+            0x3000900000000101000000000000000000000000000000000000000000000000
+            dup2
+            mstore    // add a return# function before apply
+
+            // args, sig_ptr__, tag, code_ptr, length, newcode_ptr_
+            0x08
+            dup3   // args, sig_ptr__, tag, code_ptr, length, newcode_ptr_, 0x08, length
+            sub    // args, sig_ptr__, tag, code_ptr, length, newcode_ptr_, len
+            dup4  // args, sig_ptr__, tag, code_ptr, length, newcode_ptr_, length, code_ptr
+            dup3    // args, sig_ptr__, tag, code_ptr, length, newcode_ptr_, length, code_ptr, newcode_ptr_
+            mmultimstore     // size_bytes, source_ptr, target_ptr
+
+            // args, sig_ptr__, tag, code_ptr, length, newcode_ptr_
+            swap2
+            pop         // args, sig_ptr__, tag, newcode_ptr_, length
 
             0x00
             0x00      // args, sig_ptr__, tag, code_ptr, length, 0x00, 0x00
@@ -2861,16 +2940,12 @@ deployer {
 
             call__common
             jump
-
-        apply_external_x1_extra_1:
+        apply_external_x1_extra_end_t2:
             // args, sig_ptr__, tag, result_ptr
-
-            t2_ptr_    //
-            mload      // todo: proper processing of result - value, bytelike - what is it
 
             swap1
             0xc0
-            mstore   // args, sig_ptr__, result
+            mstore   // args, sig_ptr__, result_ptr
 
             swap1
             pop
