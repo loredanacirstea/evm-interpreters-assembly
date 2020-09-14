@@ -84,27 +84,6 @@ deployer {
             sha3
         %endmacro
 
-        %macro getnamehash
-            // expects pointer to name (bytes)
-
-            0x03    // seed
-            0x00
-            mstore
-
-            // hash name first, so we don't need to copy the bytes
-            dup1
-            mload   // length
-            swap1   // length, ptr
-            sha3
-
-            0x20
-            mstore
-
-            0x40
-            0x00
-            sha3
-        %endmacro
-
         %macro getroot
             0x04
             sload
@@ -1560,14 +1539,6 @@ deployer {
             jump
             stop
             stop
-        apply_stored_x1:     // 0x163
-            pop
-            apply_stored_x1_extra
-            //
-            // push
-            jump
-            stop
-            stop
         apply_lambda_x1:     // 0x164
             pop
             apply_lambda_x1_extra
@@ -2010,11 +1981,7 @@ deployer {
             // push
             mload
             jump
-        getfn_11_extra:  // fsig pointer -> pointer
-            0x20
-            add
-            mload
-
+        getfn_11_extra:  // fsig uint256 -> pointer
             0xfffffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffff    // mem/stack -> 0
             and
 
@@ -2029,32 +1996,16 @@ deployer {
             // push
             mload
             jump
-        setalias_20_extra:  // name pointer, signature ptr TODO might be > 32 bytes save with length
-            // sig, name_ptr
-            getnamehash    // sig, key
+        setalias_20_extra:  // key/ name hash, signature ptr TODO might be > 32 bytes save with length
+            // sig, key
             sstore
             0x01           // add a success result on stack
             0xc0
             // push
             mload
             jump
-        getalias_11_extra:  // name pointer -> signature pointer
-            getnamehash  //
+        getalias_11_extra:  // key/name hash -> signature uint256
             sload        // load signature
-
-            0x20          // TODO multi slots
-            t2_init__ 0x40
-            dup1      // sig, sig_ptr, sig_ptr
-            swap2    // sig_ptr, sig_ptr, sig
-            swap1    // sig_ptr, sig, sig_ptr
-
-            t2_ptr_   //
-            mstore    // sig_ptr
-
-            0x01
-            getframe //
-            setdelmarker  // do not delete frame
-
             0xc0
             // push
             mload
@@ -2683,8 +2634,15 @@ deployer {
             // push
             mload
             jump
-        apply_xx_extra: // args, lambda_ptr__ or signature_ptr__ for compiled/stored
-            // get ftype - compiled, stored, lambda
+        apply_xx_extra: // args, lambda_ptr__ or signature_ptr__ for compiled/stored or 0 if not fn found
+            // get ftype - compiled, lambda
+
+            dup1
+            mload
+            iszero
+            apply_external_x1_extra
+            jumpi
+
             dup1         // args, ptr__, ptr__
             t2_ptr_      //
             getfourb     //
@@ -2694,29 +2652,26 @@ deployer {
             mul
             apply_compiled_x1
             add
+
             jump
         apply_compiled_x1_extra:
             0xc0
             // push
             mload
             jump
-        apply_stored_x1_extra:     // args, signature_ptr__ lookup in storage or forward to registered contract
-            // args, sig_ptr__
+        apply_stored_x1_extra:     // args, signature uint256 lookup in storage or forward to registered contract
+            // args, signature
             0xc0
-            mload    // args, sig_ptr__, tag
-
-            dup2    // args, sig_ptr__, tag, sig_ptr__
-
+            mload    // args, signature, tag
+            dup2    // args, signature, tag, signature
             apply_stored_x1_extra_1
             0xc0
             mstore
-
             getfn_11_extra
             jump
         apply_stored_x1_extra_1:
             // args, sig_ptr__, tag, lambda_ptr__
             swap1    // args, sig_ptr__, lambda_ptr__, tag
-
             0xc0
             mstore   // put back tag
 
