@@ -3195,7 +3195,7 @@ deployer {
 
             dup2
             getfuncloco              //    computation_ptr_, args_ptr_, frame_ptr, arity, loc
-            dup4      // frame ptr
+            dup3      // frame ptr
             setloco   //
 
             // computation_ptr_, args_ptr_, frame_ptr, arity
@@ -3353,7 +3353,6 @@ deployer {
 
                 let_x1_extra_for_content:
                     // copy result in env_ptr
-
                     getframe   //
 
                     dup1
