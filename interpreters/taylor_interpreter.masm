@@ -1444,9 +1444,9 @@ deployer {
             jump
             stop
             stop
-        create_21:            // 0x132
+        t2_init_11:            // 0x132
             pop
-            create_21_extra
+            t2_init_11_extra
             //
             // push
             jump
@@ -1454,11 +1454,25 @@ deployer {
             stop
         eopcode 0x133, 131
         eopcode 0x134, 132
-        eopcode 0x135, 133
+        clone__21:            // 0x135
+            pop
+            clone__21_extra
+            //
+            // push
+            jump
+            stop
+            stop
         eopcode 0x136, 134
         eopcode 0x137, 135
         eopcode 0x138, 136
-        eopcode 0x139, 137
+        create_21:            // 0x139
+            pop
+            create_21_extra
+            //
+            // push
+            jump
+            stop
+            stop
         sstore_21:            // 0x13a
             pop
             sstore_21_extra
@@ -2355,6 +2369,29 @@ deployer {
             jump
         t2_len_11_extra:
             t2_len_    //
+            0xc0
+            // push
+            mload
+            jump
+        t2_init_11_extra:
+            // size
+            t2_init__ 0x40    //
+
+            0xc0
+            // push
+            mload
+            jump
+        clone__21_extra:
+            // size, source_ptr_
+            dup2
+            t2_init__ 0x40      // size, source_ptr_, target_ptr__
+
+            swap2
+            swap1        // target_ptr__, size, source_ptr_
+            dup3
+            t2_ptr_      // target_ptr__, size, source_ptr_, target_ptr_
+            mmultimstore  // target_ptr__
+
             0xc0
             // push
             mload
