@@ -1519,7 +1519,14 @@ deployer {
             jump
             stop
             stop
-        eopcode 0x14c, 155
+        nth_21: // 0x14c
+            pop
+            nth_21_extra
+            //
+            // push
+            jump
+            stop
+            stop
         eopcode 0x14d, 156
         eopcode 0x14e, 157
         eopcode 0x14f, 158
@@ -2534,6 +2541,15 @@ deployer {
             0x01
             getframe //
             setdelmarker  // do not delete frame
+
+            0xc0
+            // push
+            mload
+            jump
+        nth_21_extra:
+            // index, t3ptr___
+            swap1
+            t3_item_    //
 
             0xc0
             // push
