@@ -395,7 +395,7 @@
     mload
 %endmacro
 
-%macro t3arity
+%macro t3_arity_
     mload   // expects t3 pointer on stack
 %endmacro
 
