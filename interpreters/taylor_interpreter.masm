@@ -232,13 +232,21 @@ deployer {
             0x140  // get del mark
             add
             mload
-            keep_frame_%instance
+            keep_frame_%instance_dealloc
             jumpi
-            dup1  // just to keep stack balanced
             0x40
             mstore
+            keep_frame_%instance
+            jump
+            keep_frame_%instance_dealloc:
+                // frame_ptr
+                mload  // prev_frame_ptr
+                0x01
+                swap1
+                0x140    // __setdelmarker
+                add
+                mstore
             keep_frame_%instance:
-                pop
         %endmacro
 
         %macro getsuperenv
@@ -1978,10 +1986,9 @@ deployer {
             shr         // frame_ptr, superIndex, index
             swap1       // frame_ptr, index, superIndex
 
-
-
             dup3        // frame_ptr, index, superIndex, frame_ptr
             swap1       // frame_ptr, index, frame_ptr, superIndex
+
             getsuperenv // frame_ptr, index, env_ptr
 
             0x40     // after arity and self
@@ -1992,6 +1999,8 @@ deployer {
             mul
             add    // frame_ptr, index, env_ptr
             mload  // load env value
+
+
 
             swap1   // pop index
             pop
@@ -2084,6 +2093,7 @@ deployer {
             0x20
             add       // args, lambda_ptr
             mload
+
             apply_lambda_x1_extra
             jump
         super_1x_extra:
@@ -2364,6 +2374,7 @@ deployer {
             mload
             jump
         t2_ptr_11_extra:
+            // receives t2
             t2_ptr_     //
 
             0x01
@@ -2376,6 +2387,7 @@ deployer {
             jump
         t2_len_11_extra:
             t2_len_    //
+
             0xc0
             // push
             mload
@@ -2398,6 +2410,10 @@ deployer {
             dup3
             t2_ptr_      // target_ptr__, size, source_ptr_, target_ptr_
             mmultimstore  // target_ptr__
+
+            0x01
+            getframe      //
+            setdelmarker  // do not delete frame
 
             0xc0
             // push
@@ -2550,6 +2566,10 @@ deployer {
             // index, t3ptr___
             swap1
             t3_item_    //
+
+            0x01
+            getframe //
+            setdelmarker  // do not delete frame
 
             0xc0
             // push
@@ -2860,9 +2880,6 @@ deployer {
             getoutputptr // lambda_ptr, new_env_ptr, new_frame_ptr, output_ptr
             dup2         // lambda_ptr, new_env_ptr, new_frame_ptr, output_ptr, new_frame_ptr
             setoutputptr  // lambda_ptr, new_env_ptr, new_frame_ptr
-
-            // pop  // lambda_ptr, new_env_ptr, new_frame_ptr
-
 
             swap1  // lambda_ptr, new_frame_ptr, new_env_ptr
             dup2
