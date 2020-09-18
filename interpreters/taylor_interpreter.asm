@@ -4732,8 +4732,10 @@ unused_178:  // 0x169
             shr         // frame_ptr, superIndex, index
             swap1       // frame_ptr, index, superIndex
 
+
             dup3        // frame_ptr, index, superIndex, frame_ptr
             swap1       // frame_ptr, index, frame_ptr, superIndex
+            stop
 
             /* (0) getsuperenv // frame_ptr, index, env_ptr   // frame_ptr, index, env_ptr   */
 // frame_ptr, index
@@ -4778,8 +4780,6 @@ for_stack_4:
             mul
             add    // frame_ptr, index, env_ptr
             mload  // load env value
-
-
 
             swap1   // pop index
             pop
@@ -7890,6 +7890,7 @@ for_stack_18:
                     0x40
                     add
                     mload       // load result_ptr or value
+
 
                     // frame_ptr, result_ptr
 

@@ -1986,8 +1986,10 @@ deployer {
             shr         // frame_ptr, superIndex, index
             swap1       // frame_ptr, index, superIndex
 
+
             dup3        // frame_ptr, index, superIndex, frame_ptr
             swap1       // frame_ptr, index, frame_ptr, superIndex
+            stop
 
             getsuperenv // frame_ptr, index, env_ptr
 
@@ -1999,8 +2001,6 @@ deployer {
             mul
             add    // frame_ptr, index, env_ptr
             mload  // load env value
-
-
 
             swap1   // pop index
             pop
@@ -3458,6 +3458,7 @@ deployer {
                     0x40
                     add
                     mload       // load result_ptr or value
+
 
                     // frame_ptr, result_ptr
 
