@@ -1989,7 +1989,6 @@ deployer {
 
             dup3        // frame_ptr, index, superIndex, frame_ptr
             swap1       // frame_ptr, index, frame_ptr, superIndex
-            stop
 
             getsuperenv // frame_ptr, index, env_ptr
 

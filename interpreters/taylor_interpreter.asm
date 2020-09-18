@@ -4735,7 +4735,6 @@ unused_178:  // 0x169
 
             dup3        // frame_ptr, index, superIndex, frame_ptr
             swap1       // frame_ptr, index, frame_ptr, superIndex
-            stop
 
             /* (0) getsuperenv // frame_ptr, index, env_ptr   // frame_ptr, index, env_ptr   */
 // frame_ptr, index
