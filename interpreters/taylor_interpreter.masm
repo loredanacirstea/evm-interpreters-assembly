@@ -1607,7 +1607,14 @@ deployer {
             jump
             stop
             stop
-        eopcode 0x164, 176
+        apply_list_21:     // 0x164
+            pop
+            apply_list_21_extra
+            //
+            // push
+            jump
+            stop
+            stop
         eopcode 0x165, 176
         eopcode 0x166, 176
         eopcode 0x167, 176
@@ -2855,6 +2862,61 @@ deployer {
             // push
             mload
             jump
+        apply_list_21_extra:
+            // arg_list___, lambda_ptr__
+
+            dup1  // arg_list___, lambda_ptr__, lambda_ptr__
+            0x20
+            add   // after length lambda_ptr // arg_list___, lambda_ptr__, lambda_ptr, lambda_ptr
+            dup1     // load lambda head todo: require id is lambda id
+            getfourb  // arg_list___, lambda_ptr__, lambda_ptr, 4b
+
+            getfuncarity // lambda arity // arg_list___, lambda_ptr__, lambda_ptr, lambda_arity
+
+            // move lambda pointer to lambda body
+            swap1   // arg_list___, lambda_ptr__, lambda_arity, lambda_ptr
+            0x08
+            add     // lambda sig
+            dup2
+            0x02
+            mul     // unknowns offset
+            add     // move lambda ptr at body
+
+            swap1   // arg_list___, lambda_ptr__, lambda_ptr, lambda_arity
+
+            // create new memory frame with new env
+
+            dup1             // arg_list___, lambda_ptr__, lambda_ptr, lambda_arity, lambda_arity
+            0x01
+            add              // self
+            t3_init__ 0x40   // arg_list___, lambda_ptr__, lambda_ptr, lambda_arity, new_env_ptr
+
+            // storing reference to self
+            swap1   // arg_list___, lambda_ptr__, lambda_ptr, new_env_ptr, lambda_arity
+            swap2   // arg_list___, lambda_ptr__, lambda_arity, new_env_ptr, lambda_ptr
+            swap3   // arg_list___, lambda_ptr, lambda_arity, new_env_ptr, lambda_ptr__
+            dup2    // arg_list___, lambda_ptr, lambda_arity, new_env_ptr, lambda_ptr__, new_env_ptr
+            0x20
+            add
+            mstore  // arg_list___, lambda_ptr, lambda_arity, new_env_ptr
+
+            swap1   // arg_list___, lambda_ptr, new_env_ptr, lambda_arity
+            0x20
+            mul     // arg_list___, lambda_ptr, new_env_ptr, size_bytes
+            dup4
+            0x20
+            add    // arg_list___, lambda_ptr, new_env_ptr, size_bytes, arg_list___ptr_
+            dup3
+            0x40
+            add    // arg_list___, lambda_ptr, new_env_ptr, size_bytes, arg_list___ptr_, new_env_ptr_
+            mmultimstore   // arg_list___, lambda_ptr, new_env_ptr
+            swap1
+            swap2
+            pop
+
+            apply_xx_extra_mfor_end_1    // lambda_ptr__, new_env_ptr
+            jump
+
         apply_stored_x1_extra:     // args, signature uint256 lookup in storage or forward to registered contract
             // args, signature
             0xc0
@@ -2948,6 +3010,7 @@ deployer {
         apply_xx_extra_mfor_end:
             // lambda_ptr, new_env_ptr, current_env_ptr
             pop  // lambda_ptr, new_env_ptr
+        apply_xx_extra_mfor_end_1:   // used by apply-list
 
             // MEMORY FRAME INIT  //
             0x160
