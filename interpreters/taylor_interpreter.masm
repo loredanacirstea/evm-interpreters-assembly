@@ -1551,7 +1551,14 @@ deployer {
             jump
             stop
             stop
-        eopcode 0x14f, 158
+        t3_arity_11: // 0x14f
+            pop
+            t3_arity_11_extra
+            //
+            // push
+            jump
+            stop
+            stop
         map_xx:         // 0x150
             pop
             map_xx_extra
@@ -2597,9 +2604,18 @@ deployer {
             jump
         rest___11_extra:
             // t3ptr___
-            0x01
+
+            dup1
+            t3_arity_           // t3ptr___, arity
+
+            0x00
             dup2
-            t3_arity_           //
+            eq
+            rest___11_extra_zero
+            jumpi
+
+            0x01
+            swap1
             sub                 // t3ptr___, new_arity
 
             dup1
@@ -2618,6 +2634,21 @@ deployer {
 
             swap1
             pop
+            swap1
+            pop
+
+            0x01
+            getframe //
+            setdelmarker  // do not delete frame
+
+            0xc0
+            // push
+            mload
+            jump
+        rest___11_extra_zero:
+            // t3ptr___, arity
+            t3_init__ 0x40       // t3ptr___, empty_tuple
+
             swap1
             pop
 
@@ -2669,6 +2700,18 @@ deployer {
             pop
             pop
             pop
+
+            0x01
+            getframe //
+            setdelmarker  // do not delete frame
+
+            0xc0
+            // push
+            mload
+            jump
+        t3_arity_11_extra:
+            // t3_ptr___
+            t3_arity_       //
 
             0xc0
             // push
@@ -2864,7 +2907,6 @@ deployer {
             jump
         apply_list_21_extra:
             // arg_list___, lambda_ptr__
-
             dup1  // arg_list___, lambda_ptr__, lambda_ptr__
             0x20
             add   // after length lambda_ptr // arg_list___, lambda_ptr__, lambda_ptr, lambda_ptr
