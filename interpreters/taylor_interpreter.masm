@@ -613,10 +613,11 @@ deployer {
             0xe0
             mstore
 
+            // function args inherit function evironment
             dup1   // previous frame ptr is on stack
             getenvptr  //
             dup3    // new_frame_ptr
-            setenvptr // ENV_PTR(2)  // TODO - more complex when we have let*
+            setenvptr // ENV_PTR(2)
 
             dup1     // get mem/stack location from parent
             getloco  //
@@ -2014,7 +2015,6 @@ deployer {
             shr         // frame_ptr, superIndex, index
             swap1       // frame_ptr, index, superIndex
 
-
             dup3        // frame_ptr, index, superIndex, frame_ptr
             swap1       // frame_ptr, index, frame_ptr, superIndex
 
@@ -2028,6 +2028,7 @@ deployer {
             mul
             add    // frame_ptr, index, env_ptr
             mload  // load env value
+
 
             swap1   // pop index
             pop
@@ -3493,15 +3494,28 @@ deployer {
             dup4       // new_frame_ptr, args_ptr_, prev_frame_ptr, computation_ptr_, new_frame_ptr
             setdataptr // new_frame_ptr, args_ptr_, prev_frame_ptr
 
-            getdataptr     //  new_frame_ptr, args_ptr_, old_data_ptr
+            dup1
+            getdataptr     //  new_frame_ptr, args_ptr_, prev_frame_ptr, old_data_ptr
             getfourb       //
-            getfunclength   //   new_frame_ptr, args_ptr_, arity number of vars
+            getfunclength   //   new_frame_ptr, args_ptr_, prev_frame_ptr, arity number of vars
 
             // env_ptr
             dup1
             0x01
             add       // self
-            t3_init__ 0x40      // new_frame_ptr, args_ptr_, arity, env_ptr
+            t3_init__ 0x40      // new_frame_ptr, args_ptr_, prev_frame_ptr, arity, env_ptr
+
+            swap1       //  new_frame_ptr, args_ptr_, prev_frame_ptr, env_ptr, arity
+            swap2       // new_frame_ptr, args_ptr_, arity, env_ptr, prev_frame_ptr
+            getenvptr  //
+            0x20
+            add
+            mload     // self lambda ptr
+            dup2
+            0x20
+            add
+            mstore     // save prev frame lambda
+
 
             dup4                // new_frame_ptr, args_ptr_, arity, env_ptr, new_frame_ptr
             setenvptr           //  new_frame_ptr, args_ptr_, arity
