@@ -207,45 +207,45 @@
 
 %macro wopcode
     %2:  // %0
-        pop
         %1
         0xc0
         // push
         mload
         jump
         stop
+        stop
 %endmacro
 
 %macro wopcode_push
     push%1_01:  // %0
-        0xc0
+        %1
         // push
-        mload
+        push_x_extra
+        //
+        // push2
         jump
-        stop
-        stop
         stop
 %endmacro
 
 %macro wopcode_dup
     dup%1_00:  // %0
-        pop
         dup%1
         0xc0
         // push
         mload
         jump
         stop
+        stop
 %endmacro
 
 %macro wopcode_swap
     swap%1_00:  // %0
-        pop
         swap%1
         0xc0
         // push
         mload
         jump
+        stop
         stop
 %endmacro
 
