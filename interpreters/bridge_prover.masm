@@ -1,0 +1,751 @@
+deployer {
+
+    %macro wopcode
+        %2:  // %0
+            %1
+            0xc0
+            // push
+            mload
+            jump
+            stop
+            stop
+    %endmacro
+
+    %macro wopcode_push
+        push%1_01:  // %0
+            0x%1
+            // push
+            push_x_extra
+            //
+            // push2
+            jump
+            stop
+    %endmacro
+
+    %macro wopcode_dup
+        dup%1_00:  // %0
+            dup%1
+            0xc0
+            // push
+            mload
+            jump
+            stop
+            stop
+    %endmacro
+
+    %macro wopcode_swap
+        swap%1_00:  // %0
+            swap%1
+            0xc0
+            // push
+            mload
+            jump
+            stop
+            stop
+    %endmacro
+
+    %macro eopcode
+        unused_%1:  // %0
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+    %endmacro
+
+    %macro TAG_STOP
+        0xa0
+    %endmacro
+
+    %macro TAG_RETURN
+        0xc0
+    %endmacro
+
+    %macro PTR_BYTECODE
+        0x100
+    %endmacro
+
+    %macro PTR_CALLDATA
+        0x120
+    %endmacro
+
+    %macro PTR_MUTABILITY_HASH
+        0x180
+    %endmacro
+
+
+        // 0x60 free
+        // 0x80 cache for tags
+        // 0xa0 stop tag
+        // 0xc0 return tag from compiled fns
+        // 0x100 ptr to bytecode for evm interpreter (length is at - 32)
+        // 0x120 ptr to calldata for evm interpreter (length is at - 32)
+        // 0x140 mem offset for evm interpreter
+        // 0x160 current data_ptr for evm interpreter - maybe this should be in the mem frame
+        // 0x1a0 ptr to entire calldata - data_ptr : lengthB + bytecode + lengthC + calldata
+
+
+        // !!! 0xa0 !!! start tag value - native functions
+        mmstore 0xa0 stop_00
+
+
+        // !!! 0xc0 !!! tag for returning from native function
+        mmstore 0xc0 tag_2
+
+        // !!! 0x100 !!! bytecode pointer - at data_ptr, after bytecode length
+        0x1c0
+        0x100
+        mstore
+
+        // !!! 0x120 !!! calldata pointer
+        0x1c0              // bytecode start
+        0x00
+        calldataload       // add bytecode length
+        add
+        0x20
+        add                // add 32 bytes for calldata length
+        0x120
+        mstore
+
+        // !!! 0x140 !!! mem offset
+        0x1a0              // after entire calldata
+        calldatasize
+        add
+        0x140
+        mstore
+
+        // !!! 0x160 !!! current_data_ptr (bytecode)
+        0x1c0
+        0x160
+        mstore
+
+        // !!! 0x1a0 !!! copy entire calldata at data_ptr
+        calldatasize
+        0x00
+        0x1a0
+        calldatacopy
+
+        tag_2:  // eval
+          0x160    // current_data_ptr
+          mload   // push data pointer on stack
+          dup1    // data_ptr, data_ptr
+          mload
+          0xf8
+          shr     // data_ptr, opcode
+          0x01    // increment data_ptr
+          dup3
+          add
+          swap2
+          pop    // data_ptr, opcode
+
+          swap1
+          0x160    // current_data_ptr
+          mstore   // opcode ; store data_ptr
+          0x08
+          mul
+          0xa0
+          mload
+          add      // opcode_tag
+          jump // in
+
+         // we keep 4 instructions per function, for easy pc calculation
+        stop_00:  // 0x00
+            stop  // the following is not executed
+            stop
+            stop
+            stop
+            stop
+            stop
+            stop
+        wopcode 0x01, add, add_21
+        wopcode 0x02, mul, mul_21
+        wopcode 0x03, sub, sub_21
+        wopcode 0x04, div, div_21
+        wopcode 0x05, sdiv, sdiv_21
+        wopcode 0x06, mod, mod_21
+        wopcode 0x07, smod, smod_21
+        wopcode 0x08, addmod, addmod_31
+        wopcode 0x09, mulmod, mulmod_31
+        wopcode 0x0a, exp, exp_21
+        wopcode 0x0b, signextend, signextend_21
+        eopcode 0x0c, 1
+        eopcode 0x0d, 2
+        eopcode 0x0e, 3
+        eopcode 0x0f, 4
+        wopcode 0x10, lt, lt_21
+        wopcode 0x11, gt, gt_21
+        wopcode 0x12, slt, slt_21
+        wopcode 0x13, sgt, sgt_21
+        wopcode 0x14, eq, eq_21
+        wopcode 0x15, iszero, iszero_11
+        wopcode 0x16, and, and_21
+        wopcode 0x17, or, or_21
+        wopcode 0x18, xor, xor_21
+        wopcode 0x19, not, not_11
+        wopcode 0x1a, byte, byte_21
+        wopcode 0x1b, shl, shl_21
+        wopcode 0x1c, shr, shr_21
+        wopcode 0x1d, sar, sar_21
+        eopcode 0x1e, 5
+        eopcode 0x1f, 6
+        wopcode 0x20, sha3, sha3_21
+        eopcode 0x21, 7
+        eopcode 0x22, 8
+        eopcode 0x23, 9
+        eopcode 0x24, 10
+        eopcode 0x25, 11
+        eopcode 0x26, 12
+        eopcode 0x27, 13
+        eopcode 0x28, 14
+        eopcode 0x29, 15
+        eopcode 0x2a, 16
+        eopcode 0x2b, 17
+        eopcode 0x2c, 18
+        eopcode 0x2d, 19
+        eopcode 0x2e, 20
+        eopcode 0x2f, 21
+        wopcode 0x30, address, address_01
+        wopcode 0x31, balance, balance_11
+        wopcode 0x32, origin, origin_01
+        wopcode 0x33, caller, caller_01
+        wopcode 0x34, callvalue, callvalue_01
+        calldataload_11:  // 0x35
+            calldataload_11_extra
+            //
+            // push2 ?
+            jump
+            stop
+            stop
+            stop
+        calldatasize_01:  // 0x36
+            calldatasize_01_extra
+            //
+            // push2 ?
+            jump
+            stop
+            stop
+            stop
+        calldatacopy_30:  // 0x37
+            calldatacopy_30_extra
+            //
+            // push2 ?
+            jump
+            stop
+            stop
+            stop
+        codesize_01:  // 0x38
+            codesize_01_extra
+            //
+            // push2 ?
+            jump
+            stop
+            stop
+            stop
+        codecopy_30:  // 0x39
+            codecopy_30_extra
+            //
+            // push2 ?
+            jump
+            stop
+            stop
+            stop
+        wopcode 0x3a, gasprice, gasprice_01
+        wopcode 0x3b, extcodesize, extcodesize_11
+        extcodecopy_40:  // 0x3c
+            extcodecopy_40_extra
+            //
+            // push2 ?
+            jump
+            stop
+            stop
+            stop
+        wopcode 0x3d, returndatasize, returndatasize_01
+        returndatacopy_30:  // 0x3e
+            returndatacopy_30_extra
+            //
+            // push2 ?
+            jump
+            stop
+            stop
+            stop
+        wopcode 0x3f, extcodehash, extcodehash_11
+        wopcode 0x40, blockhash, blockhash_11
+        wopcode 0x41, coinbase, coinbase_01
+        wopcode 0x42, timestamp, timestamp_01
+        wopcode 0x43, number, number_01
+        wopcode 0x44, difficulty, difficulty_01
+        wopcode 0x45, gaslimit, gaslimit_01
+        wopcode 0x46, stop, chainid_01
+        wopcode 0x47, stop, selfbalance_01
+        eopcode 0x48, 22
+        eopcode 0x49, 23
+        eopcode 0x4a, 24
+        eopcode 0x4b, 25
+        eopcode 0x4c, 26
+        eopcode 0x4d, 27
+        eopcode 0x4e, 28
+        eopcode 0x4f, 29
+        wopcode 0x50, pop, pop_00
+        mload_11:  // 0x51
+            mload_11_extra
+            //
+            // push2
+            jump
+            stop
+            stop
+            stop
+        mstore_20:  // 0x52
+            mstore_20_extra
+            //
+            // push2
+            jump
+            stop
+            stop
+            stop
+        mstore8_20:  // 0x53
+            mstore8_20_extra
+            //
+            // push2
+            jump
+            stop
+            stop
+            stop
+        sload_11:  // 0x54
+            sload
+            0xc0
+            // push
+            mload
+            jump
+            stop
+            stop
+        sstore_20:  // 0x55
+            sstore_20_extra      // value, key
+            //
+            // push2
+            jump
+            stop
+            stop
+            stop
+        jump_10:  // 0x56
+            jump_10_extra
+            //
+            // push2
+            jump
+            stop
+            stop
+            stop
+        jumpi_20:    // 0x57  // cond, new data_ptr, v0 -> dest, v0, cond, jump_10
+            jumpi_20_extra
+            //
+            // push2
+            jump
+            stop
+            stop
+            stop
+        wopcode 0x58, pc, pc_01
+        wopcode 0x59, msize, msize_01
+        wopcode 0x5a, gas, gas_01
+        wopcode 0x5b, jumpdest, jumpdest_00
+        eopcode 0x5c, 30
+        eopcode 0x5d, 31
+        eopcode 0x5e, 32
+        eopcode 0x5f, 33
+        wopcode_push 0x60, 01
+        wopcode_push 0x61, 02
+        wopcode_push 0x62, 03
+        wopcode_push 0x63, 04
+        wopcode_push 0x64, 05
+        wopcode_push 0x65, 06
+        wopcode_push 0x66, 07
+        wopcode_push 0x67, 08
+        wopcode_push 0x68, 09
+        wopcode_push 0x69, 0a
+        wopcode_push 0x6a, 0b
+        wopcode_push 0x6b, 0c
+        wopcode_push 0x6c, 0d
+        wopcode_push 0x6d, 0e
+        wopcode_push 0x6e, 0f
+        wopcode_push 0x6f, 10
+        wopcode_push 0x70, 11
+        wopcode_push 0x71, 12
+        wopcode_push 0x72, 13
+        wopcode_push 0x73, 14
+        wopcode_push 0x74, 15
+        wopcode_push 0x75, 16
+        wopcode_push 0x76, 17
+        wopcode_push 0x77, 18
+        wopcode_push 0x78, 19
+        wopcode_push 0x79, 1a
+        wopcode_push 0x7a, 1b
+        wopcode_push 0x7b, 1c
+        wopcode_push 0x7c, 1d
+        wopcode_push 0x7d, 1e
+        wopcode_push 0x7e, 1f
+        wopcode_push 0x7f, 20
+        wopcode_dup 0x80, 1
+        wopcode_dup 0x81, 2
+        wopcode_dup 0x82, 3
+        wopcode_dup 0x83, 4
+        wopcode_dup 0x84, 5
+        wopcode_dup 0x85, 6
+        wopcode_dup 0x86, 7
+        wopcode_dup 0x87, 8
+        wopcode_dup 0x88, 9
+        wopcode_dup 0x89, 10
+        wopcode_dup 0x8a, 11
+        wopcode_dup 0x8b, 12
+        wopcode_dup 0x8c, 13
+        wopcode_dup 0x8d, 14
+        wopcode_dup 0x8e, 15
+        wopcode_dup 0x8f, 16
+        wopcode_swap 0x90, 1
+        wopcode_swap 0x91, 2
+        wopcode_swap 0x92, 3
+        wopcode_swap 0x93, 4
+        wopcode_swap 0x94, 5
+        wopcode_swap 0x95, 6
+        wopcode_swap 0x96, 7
+        wopcode_swap 0x97, 8
+        wopcode_swap 0x98, 9
+        wopcode_swap 0x99, 10
+        wopcode_swap 0x9a, 11
+        wopcode_swap 0x9b, 12
+        wopcode_swap 0x9c, 13
+        wopcode_swap 0x9d, 14
+        wopcode_swap 0x9e, 15
+        wopcode_swap 0x9f, 16
+        wopcode 0xa0, log0, log0_20
+        wopcode 0xa1, log1, log1_30
+        wopcode 0xa2, log2, log2_40
+        wopcode 0xa3, log3, log3_50
+        wopcode 0xa4, log4, log4_60
+        eopcode 0xa5, 34
+        eopcode 0xa6, 35
+        eopcode 0xa7, 36
+        eopcode 0xa8, 37
+        eopcode 0xa9, 38
+        eopcode 0xaa, 39
+        eopcode 0xab, 40
+        eopcode 0xac, 41
+        eopcode 0xad, 42
+        eopcode 0xae, 43
+        eopcode 0xaf, 44
+        eopcode 0xb0, 45
+        eopcode 0xb1, 46
+        eopcode 0xb2, 47
+        eopcode 0xb3, 48
+        eopcode 0xb4, 49
+        eopcode 0xb5, 50
+        eopcode 0xb6, 51
+        eopcode 0xb7, 52
+        eopcode 0xb8, 53
+        eopcode 0xb9, 54
+        eopcode 0xba, 55
+        eopcode 0xbb, 56
+        eopcode 0xbc, 57
+        eopcode 0xbd, 58
+        eopcode 0xbe, 59
+        eopcode 0xbf, 60
+        eopcode 0xc0, 61
+        eopcode 0xc1, 61
+        eopcode 0xc2, 61
+        eopcode 0xc3, 61
+        eopcode 0xc4, 61
+        eopcode 0xc5, 61
+        eopcode 0xc6, 62
+        eopcode 0xc7, 63
+        eopcode 0xc8, 64
+        eopcode 0xc9, 65
+        eopcode 0xca, 66
+        eopcode 0xcb, 67
+        eopcode 0xcc, 68
+        eopcode 0xcd, 69
+        eopcode 0xce, 70
+        eopcode 0xcf, 71
+        eopcode 0xd0, 72
+        eopcode 0xd1, 73
+        eopcode 0xd2, 74
+        eopcode 0xd3, 75
+        eopcode 0xd4, 76
+        eopcode 0xd5, 77
+        eopcode 0xd6, 78
+        eopcode 0xd7, 79
+        eopcode 0xd8, 80
+        eopcode 0xd9, 81
+        eopcode 0xda, 82
+        eopcode 0xdb, 83
+        eopcode 0xdc, 84
+        eopcode 0xdd, 85
+        eopcode 0xde, 86
+        eopcode 0xdf, 87
+        eopcode 0xe0, 88
+        eopcode 0xe1, 89
+        eopcode 0xe2, 90
+        eopcode 0xe3, 91
+        eopcode 0xe4, 92
+        eopcode 0xe5, 93
+        eopcode 0xe6, 94
+        eopcode 0xe7, 95
+        eopcode 0xe8, 96
+        eopcode 0xe9, 97
+        eopcode 0xea, 98
+        eopcode 0xeb, 99
+        eopcode 0xec, 100
+        eopcode 0xed, 101
+        eopcode 0xee, 102
+        eopcode 0xef, 103
+        wopcode 0xf0, create, create_31
+        wopcode 0xf1, call, call_71
+        wopcode 0xf2, callcode, callcode_71
+        return_20: // 0xf3
+            return_20_extra
+            //
+            // push
+            jump
+            stop
+            stop
+            stop
+        wopcode 0xf4, delegatecall, delegatecall_61
+        wopcode 0xf5, create2, create2_41
+        eopcode 0xf6, 104
+        eopcode 0xf7, 105
+        eopcode 0xf8, 106
+        eopcode 0xf9, 107
+        wopcode 0xfa, staticcall, staticcall_61
+        eopcode 0xfb, 108
+        eopcode 0xfc, 109
+        revert_20: // 0xfd
+            revert_20_extra
+            //
+            // push
+            jump
+            stop
+            stop
+            stop
+        eopcode 0xfe, 110
+        wopcode 0xff, selfdestruct, selfdestruct_10
+        push_x_extra:
+            // push number
+            0x160     // current_data_ptr
+            mload     // pushno, data_ptr
+
+            dup1
+            mload    // pushno, data_ptr, 32bytes
+            0x08
+            dup4
+            mul
+            0x0100
+            sub
+            shr      // pushno, data_ptr, value on stack
+
+            swap1   // pushno, value, data_ptr
+            dup3
+            add     // increase data_ptr
+            0x160   // current_data_ptr
+            mstore  // pushno, value
+
+            swap1    // value, pushno
+            pop      // value
+            0xc0
+            // push
+            mload
+            jump
+        jump_10_extra:
+            // tag
+            0x100      // bytecode ptr
+            mload
+            add        // get actual position
+
+            0x160
+            mstore     // update current bytecode ptr
+
+            0xc0
+            // push
+            mload
+            jump
+        jumpi_20_extra:
+            // cond, tag
+            swap1      // tag, cond
+            jumpi_20_extra_jump
+            jumpi
+            pop      // pop tag
+
+            0xc0
+            // push
+            mload
+            jump
+
+        jumpi_20_extra_jump:
+            // tag
+            // add bytecode offset to tag
+            0x100
+            mload     // bytecode pointer
+            add       // cond, real_pos
+            0x160
+            mstore    // change current bytecode ptr
+
+
+            0xc0
+            // push
+            mload
+            jump
+        calldataload_11_extra:
+            // calldata start position
+            0x120
+            mload    // ptr to calldata
+            add      // add the given offset
+            mload
+            0xc0
+            // push
+            mload
+            jump
+        calldatasize_01_extra:
+            // load calldata length from pointer
+            0x20
+            0x120
+            mload     // ptr
+            sub       // length is in prev slot
+            mload
+
+            0xc0
+            // push
+            mload
+            jump
+        calldatacopy_30_extra:
+            // len, calldata_pos, mem_ptr
+            0x140        // mem offset
+            mload
+            add          // new mem_ptr
+
+            swap1      // len, mem_ptr, calldata_pos
+            0x120
+            mload      // calldata pointer
+            add        // add calldata_pos
+            swap1      // len, calldata_ptr, mem_ptr
+            mmultimstore // size_bytes, source_ptr, target_ptr
+
+            0xc0
+            // push
+            mload
+            jump
+
+        codesize_01_extra:
+            // load bytecode length from pointer
+            0x20
+            0x100
+            mload     // ptr
+            sub       // length is in prev slot
+            mload
+
+            0xc0
+            // push
+            mload
+            jump
+        codecopy_30_extra:
+            // len, code_pos, mem_ptr
+            0x140        // mem offset
+            mload
+            add          // new mem_ptr
+
+            swap1      // len, mem_ptr, bytecode_pos
+            0x100
+            mload      // bytecode pointer
+            add        // add bytecode_pos
+            swap1      // len, bytecode_ptr, mem_ptr
+            mmultimstore // size_bytes, source_ptr, target_ptr
+
+            0xc0
+            // push
+            mload
+            jump
+        extcodecopy_40_extra:
+            stop
+        returndatacopy_30_extra:
+            stop
+        mload_11_extra:
+            // position
+            // increase with mem offset
+            0x140
+            mload
+            add
+            mload
+
+            0xc0
+            // push
+            mload
+            jump
+        mstore_20_extra:
+            // value, ptr
+            // increase with mem offset
+            0x140
+            mload
+            add
+            mstore
+
+            0xc0
+            // push
+            mload
+            jump
+        mstore8_20_extra:
+            // value, ptr
+            // increase with mem offset
+            0x140
+            mload
+            add
+            mstore8
+
+            0xc0
+            // push
+            mload
+            jump
+        return_20_extra:
+            // len, ptr
+            // increase ptr with mem offset
+            0x140
+            mload
+            add     // len, actual_ptr
+
+            dup1    // len, actual_ptr, actual_ptr
+            dup3    // len, actual_ptr, actual_ptr, len
+            add     // len, actual_ptr, newptr
+            PTR_MUTABILITY_HASH     //
+            mload   // len, actual_ptr, newptr, hash
+            swap1
+            mstore  // len, actual_ptr
+            dup2    // len, actual_ptr, len
+            0x20
+            add
+            swap2
+            pop     // newlen, actual_ptr
+            return
+        revert_20_extra:
+            // len, ptr
+            // increase ptr with mem offset
+            0x140
+            mload
+            add
+            revert
+        sstore_20_extra:
+            PTR_MUTABILITY_HASH    //
+            mload
+            0x00
+            mstore        // store previous hash
+            0x20
+            mstore
+            0x40
+            mstore
+            0x60
+            0x00
+            keccak256     // hash sstore values
+            PTR_MUTABILITY_HASH     //
+            mstore
+            0xc0
+            // push
+            mload
+            jump
+}
+
+
+
