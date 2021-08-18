@@ -1,5 +1,29 @@
 deployer {
 
+    %macro INTERNAL_MEMORY_OFFSET
+        0x140
+    %endmacro
+
+    %macro EXTERNAL_MEMORY_OFFSET
+        0x160
+    %endmacro
+
+    %macro CURRENT_DATA_PTR
+        0x180
+    %endmacro
+
+    %macro CALLDATA_PTR
+        0x1c0
+    %endmacro
+
+    %macro CONTRACT_ADDRESS
+        0x1c0
+    %endmacro
+
+    %macro BYTECODE_DATA_PTR
+        0x200
+    %endmacro
+
     %macro wopcode
         %2:  // %0
             %1
@@ -61,12 +85,13 @@ deployer {
         // 0xc0 return tag from compiled fns
         // 0x100 ptr to bytecode for evm interpreter (length is at - 32)
         // 0x120 ptr to calldata for evm interpreter (length is at - 32)
-        // 0x140 mem offset for evm interpreter
-        // 0x160 current data_ptr for evm interpreter - maybe this should be in the mem frame
-        // 0x1a0 ptr to entire calldata - contract address (32 bytes) + data_ptr : lengthB + bytecode + lengthC + calldata
-            // - 0x1a0 - address
-            // - 0x1c0 - bytecode length
-            // - 0x1e0 - bytecode data
+        // 0x140 mem offset for internal interpreter operations - hashing
+        // 0x160 mem offset for interpreted memory instructions
+        // 0x180 current data_ptr for evm interpreter - maybe this should be in the mem frame
+        // 0x1c0 ptr to entire calldata - contract address (32 bytes) + data_ptr : lengthB + bytecode + lengthC + calldata
+            // - 0x1c0 - address
+            // - 0x1e0 - bytecode length
+            // - 0x200 - bytecode data
 
 
         // !!! 0xa0 !!! start tag value - native functions
@@ -95,22 +120,30 @@ deployer {
         CALLDATA_PTR              // after entire calldata
         calldatasize
         add
-        0x140
+        dup1
+        INTERNAL_MEMORY_OFFSET //
         mstore
 
-        // !!! 0x160 !!! current_data_ptr (bytecode)
+        // !!! 0x160 !!! mem offset
+        // above ptr + 128 bytes of space for internal hashing operations
+        0x128
+        add
+        EXTERNAL_MEMORY_OFFSET //
+        mstore
+
+        // !!! 0x180 !!! current_data_ptr (bytecode)
         BYTECODE_DATA_PTR  //
-        0x160
+        CURRENT_DATA_PTR  //
         mstore
 
-        // !!! 0x1a0 !!! copy entire calldata at data_ptr
+        // !!! 0x1c0 !!! copy entire calldata at data_ptr
         calldatasize
         0x00
         CALLDATA_PTR  //
         calldatacopy
 
         tag_2:  // eval
-          0x160    // current_data_ptr
+          CURRENT_DATA_PTR    // current_data_ptr
           mload   // push data pointer on stack
           dup1    // data_ptr, data_ptr
           mload
@@ -123,7 +156,7 @@ deployer {
           pop    // data_ptr, opcode
 
           swap1
-          0x160    // current_data_ptr
+          CURRENT_DATA_PTR    // current_data_ptr
           mstore   // opcode ; store data_ptr
           0x08
           mul
@@ -496,7 +529,7 @@ deployer {
         wopcode 0xff, selfdestruct, selfdestruct_10
         push_x_extra:
             // push number
-            0x160     // current_data_ptr
+            CURRENT_DATA_PTR     // current_data_ptr
             mload     // pushno, data_ptr
 
             dup1
@@ -511,7 +544,7 @@ deployer {
             swap1   // pushno, value, data_ptr
             dup3
             add     // increase data_ptr
-            0x160   // current_data_ptr
+            CURRENT_DATA_PTR   // current_data_ptr
             mstore  // pushno, value
 
             swap1    // value, pushno
@@ -526,7 +559,7 @@ deployer {
             mload
             add        // get actual position
 
-            0x160
+            CURRENT_DATA_PTR  //
             mstore     // update current bytecode ptr
 
             0xc0
@@ -551,7 +584,7 @@ deployer {
             0x100
             mload     // bytecode pointer
             add       // cond, real_pos
-            0x160
+            CURRENT_DATA_PTR  //
             mstore    // change current bytecode ptr
 
 
@@ -583,7 +616,7 @@ deployer {
             jump
         calldatacopy_30_extra:
             // len, calldata_pos, mem_ptr
-            0x140        // mem offset
+            EXTERNAL_MEMORY_OFFSET        // mem offset
             mload
             add          // new mem_ptr
 
@@ -613,7 +646,7 @@ deployer {
             jump
         codecopy_30_extra:
             // len, code_pos, mem_ptr
-            0x140        // mem offset
+            EXTERNAL_MEMORY_OFFSET        // mem offset
             mload
             add          // new mem_ptr
 
@@ -635,7 +668,7 @@ deployer {
         mload_11_extra:
             // position
             // increase with mem offset
-            0x140
+            EXTERNAL_MEMORY_OFFSET  //
             mload
             add
             mload
@@ -647,7 +680,7 @@ deployer {
         mstore_20_extra:
             // value, ptr
             // increase with mem offset
-            0x140
+            EXTERNAL_MEMORY_OFFSET  //
             mload
             add
             mstore
@@ -659,7 +692,7 @@ deployer {
         mstore8_20_extra:
             // value, ptr
             // increase with mem offset
-            0x140
+            EXTERNAL_MEMORY_OFFSET  //
             mload
             add
             mstore8
@@ -671,19 +704,18 @@ deployer {
         return_20_extra:
             // len, ptr
             // increase ptr with mem offset
-            0x140
+            EXTERNAL_MEMORY_OFFSET  //
             mload
             add
             return
         revert_20_extra:
             // len, ptr
             // increase ptr with mem offset
-            0x140
+            EXTERNAL_MEMORY_OFFSET  //
             mload
             add
             revert
 }
-
 
 
 
