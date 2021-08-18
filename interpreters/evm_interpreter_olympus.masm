@@ -138,10 +138,32 @@ deployer {
 
     %macro esload_atena
         // ptr
+        // TODO get value
+        0x00
+        swap1
+
+        0x160  // EXTERNAL_MEMORY_OFFSET //
+        mload  // value, ptr, memoffset
+
+        swap1
+        dup2
+        mstore  // value, memoffset
+
+        0x20
+        add
+        mstore
+
+        0x1c0  // CONTRACT_ADDRESS  // store address
+        mload
         0x33c8e66d36f533e49874d2a0fb8fe465bfa6b9e8a33433793d95ba49907dddde  // sload(address,bytes32,bytes32)
 
+        // address, sigHash
         // log2(ptr, len, sigHash, contractAddress)
-        pop
+
+        0x40
+        0x160  // EXTERNAL_MEMORY_OFFSET //
+        mload  // value, ptr, memoffset
+        log2
 
         0xc0
         // push
