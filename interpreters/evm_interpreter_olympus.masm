@@ -63,7 +63,10 @@ deployer {
         // 0x120 ptr to calldata for evm interpreter (length is at - 32)
         // 0x140 mem offset for evm interpreter
         // 0x160 current data_ptr for evm interpreter - maybe this should be in the mem frame
-        // 0x1a0 ptr to entire calldata - data_ptr : lengthB + bytecode + lengthC + calldata
+        // 0x1a0 ptr to entire calldata - contract address (32 bytes) + data_ptr : lengthB + bytecode + lengthC + calldata
+            // - 0x1a0 - address
+            // - 0x1c0 - bytecode length
+            // - 0x1e0 - bytecode data
 
 
         // !!! 0xa0 !!! start tag value - native functions
@@ -73,13 +76,13 @@ deployer {
         // !!! 0xc0 !!! tag for returning from native function
         mmstore 0xc0 tag_2
 
-        // !!! 0x100 !!! bytecode pointer - at data_ptr, after bytecode length
-        0x1c0
+        // !!! 0x100 !!! bytecode pointer - at data_ptr, after bytecode length & address
+        BYTECODE_DATA_PTR  //
         0x100
         mstore
 
         // !!! 0x120 !!! calldata pointer
-        0x1c0              // bytecode start
+        BYTECODE_DATA_PTR  // bytecode start
         0x00
         calldataload       // add bytecode length
         add
@@ -89,21 +92,21 @@ deployer {
         mstore
 
         // !!! 0x140 !!! mem offset
-        0x1a0              // after entire calldata
+        CALLDATA_PTR              // after entire calldata
         calldatasize
         add
         0x140
         mstore
 
         // !!! 0x160 !!! current_data_ptr (bytecode)
-        0x1c0
+        BYTECODE_DATA_PTR  //
         0x160
         mstore
 
         // !!! 0x1a0 !!! copy entire calldata at data_ptr
         calldatasize
         0x00
-        0x1a0
+        CALLDATA_PTR  //
         calldatacopy
 
         tag_2:  // eval
