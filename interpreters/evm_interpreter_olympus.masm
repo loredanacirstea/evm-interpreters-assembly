@@ -24,6 +24,98 @@ deployer {
         0x200
     %endmacro
 
+    %mswitch evmtype
+        zeus
+        hermes
+        simple
+    %endmswitch
+
+    %macro esstore_zeus
+        // value, ptr
+        0x160  // EXTERNAL_MEMORY_OFFSET //
+        mload  // value, ptr, memoffset
+
+        0x1c0  // CONTRACT_ADDRESS  // store address
+        mload
+        dup2
+        mstore  // value, ptr, memoffset
+
+        dup1   // value, ptr, memoffset, memoffset
+        swap2  // value, memoffset, memoffset, ptr
+        swap1  // value, memoffset, ptr, memoffset
+        0x20
+        add
+        mstore  // value, memoffset
+
+        0x40
+        swap1   // value, 0x40, memoffset
+        keccak256  // value, newptr
+        sstore
+
+        0xc0
+        // push
+        mload
+        jump
+    %endmacro
+
+    %macro esload_zeus
+        // ptr
+        0x160  // EXTERNAL_MEMORY_OFFSET //
+        mload  // ptr, memoffset
+
+        0x1c0  // CONTRACT_ADDRESS  // store address
+        mload
+        dup2
+        mstore  // ptr, memoffset
+
+        dup1   // ptr, memoffset, memoffset
+        swap2  // memoffset, memoffset, ptr
+        swap1  // memoffset, ptr, memoffset
+        0x20
+        add
+        mstore  // memoffset
+
+        0x40
+        swap1   // 0x40, memoffset
+        keccak256  // newptr
+        sload
+
+        0xc0
+        // push
+        mload
+        jump
+    %endmacro
+
+    %macro esstore_simple
+        sstore
+
+        0xc0
+        // push
+        mload
+        jump
+    %endmacro
+
+    %macro esload_simple
+        sload
+
+        0xc0
+        // push
+        mload
+        jump
+    %endmacro
+
+    %macro esstore_hermes
+        0x01
+        swap2
+        log1
+    %endmacro
+
+    %macro esload_hermes
+        0x02
+        swap2
+        log1
+    %endmacro
+
     %macro wopcode
         %2:  // %0
             %1
@@ -327,8 +419,22 @@ deployer {
             stop
             stop
             stop
-        wopcode 0x54, sload, sload_11
-        wopcode 0x55, sstore, sstore_20
+        sload_11:  // 0x54
+            sload_11_extra
+            //
+            // push2 ?
+            jump
+            stop
+            stop
+            stop
+        sstore_20:  // 0x55
+            sstore_20_extra
+            //
+            // push2 ?
+            jump
+            stop
+            stop
+            stop
         jump_10:  // 0x56
             jump_10_extra
             //
@@ -715,6 +821,10 @@ deployer {
             mload
             add
             revert
+        sstore_20_extra:
+            evmtype esstore
+        sload_11_extra:
+            evmtype esload
 }
 
 
