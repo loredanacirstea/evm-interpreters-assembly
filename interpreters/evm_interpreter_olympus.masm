@@ -26,9 +26,27 @@ deployer {
 
     %mswitch evmtype
         zeus
-        hermes
+        atena
         simple
     %endmswitch
+
+    %macro esstore_simple
+        sstore
+
+        0xc0
+        // push
+        mload
+        jump
+    %endmacro
+
+    %macro esload_simple
+        sload
+
+        0xc0
+        // push
+        mload
+        jump
+    %endmacro
 
     %macro esstore_zeus
         // value, ptr
@@ -86,8 +104,31 @@ deployer {
         jump
     %endmacro
 
-    %macro esstore_simple
-        sstore
+    %macro esstore_atena
+        // value, ptr
+
+        0x160  // EXTERNAL_MEMORY_OFFSET //
+        mload  // value, ptr, memoffset
+
+        swap1
+        dup2
+        mstore  // value, memoffset
+
+        0x20
+        add
+        mstore
+
+        0x1c0  // CONTRACT_ADDRESS  // store address
+        mload
+        0x0dda1a6643a09aa4598b8890d85dc9ab59edd0e967ea62ad878b8e3cbe769e21  // sstore(address,bytes32,bytes32)
+
+        // address, sigHash
+        // log2(ptr, len, sigHash, contractAddress)
+
+        0x40
+        0x160  // EXTERNAL_MEMORY_OFFSET //
+        mload  // value, ptr, memoffset
+        log2
 
         0xc0
         // push
@@ -95,25 +136,17 @@ deployer {
         jump
     %endmacro
 
-    %macro esload_simple
-        sload
+    %macro esload_atena
+        // ptr
+        0x33c8e66d36f533e49874d2a0fb8fe465bfa6b9e8a33433793d95ba49907dddde  // sload(address,bytes32,bytes32)
+
+        // log2(ptr, len, sigHash, contractAddress)
+        pop
 
         0xc0
         // push
         mload
         jump
-    %endmacro
-
-    %macro esstore_hermes
-        0x01
-        swap2
-        log1
-    %endmacro
-
-    %macro esload_hermes
-        0x02
-        swap2
-        log1
     %endmacro
 
     %macro wopcode
