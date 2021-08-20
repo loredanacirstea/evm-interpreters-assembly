@@ -32,13 +32,22 @@ deployer {
         0x1c0
     %endmacro
 
-    %macro BYTECODE_DATA_PTR
+    %macro STORAGE_HASH_PTR
+        0x1e0
+    %endmacro
+
+    %macro LOGS_HASH_PTR
         0x200
+    %endmacro
+
+    %macro BYTECODE_DATA_PTR
+        0x240
     %endmacro
 
     %mswitch evmtype
         zeus
         atena
+        hermes
         simple
     %endmswitch
 
@@ -48,6 +57,9 @@ deployer {
 
     %macro esload_simple
         sload
+    %endmacro
+
+    %macro ereturn_simple
     %endmacro
 
     %macro esstore_zeus
@@ -94,6 +106,9 @@ deployer {
         swap1   // 0x40, memoffset
         keccak256  // newptr
         sload
+    %endmacro
+
+    %macro ereturn_zeus
     %endmacro
 
     %macro esstore_atena
@@ -158,6 +173,66 @@ deployer {
         0x140  // INTERNAL_MEMORY_PTR_PTR //
         mload  // value, ptr, memoffset
         log2
+    %endmacro
+
+    %macro ereturn_atena
+    %endmacro
+
+    %macro esstore_hermes
+        // value, ptr
+        dup2
+        dup2
+        sstore  // we temporarily store the variable
+
+        0x140  // INTERNAL_MEMORY_PTR_PTR
+        mload
+        0x1e0  // STORAGE_HASH_PTR
+        mload  // value, ptr, memptr, storagehash
+        dup2
+        mstore  // value, ptr, memptr
+        swap1
+        dup2   // value, memptr, ptr, memptr
+        0x20
+        add
+        mstore  // value, memptr
+        swap1
+        dup2   // memptr, value, memptr
+        0x40
+        add
+        mstore  // memptr
+        0x60
+        swap1
+        keccak256 // newhash
+        0x1e0  // STORAGE_HASH_PTR
+        mstore
+    %endmacro
+
+    %macro esload_hermes
+        // ptr
+        sload  // get the value from storage
+    %endmacro
+
+    %macro ereturn_hermes
+        // len, ptr
+        0x1e0  // STORAGE_HASH_PTR
+        mload
+        dup2  // len, ptr, storage_hash, ptr
+        dup4
+        add   // len, ptr, storage_hash, ptr_storage
+        swap1
+        dup2  // len, ptr, ptr_storage, storage_hash, ptr_storage
+        mstore  // len, ptr, ptr_storage
+        0x20
+        add
+        0x200  // LOGS_HASH_PTR
+        mload
+        swap1  // len, ptr, log_hash, ptr_logs
+        mstore // len, ptr
+        dup2
+        0x40
+        add
+        swap2
+        pop
     %endmacro
 
     %macro wopcode
@@ -228,8 +303,10 @@ deployer {
 
         // 0x1c0 ptr to entire calldata - contract address (32 bytes) + data_ptr : lengthB + bytecode + lengthC + calldata
             // - 0x1c0 - address
-            // - 0x1e0 - bytecode length
-            // - 0x200 - bytecode data
+            // - 0x1e0 - storage hash
+            // - 0x200 - log hash
+            // - 0x220 - bytecode length
+            // - 0x240 - bytecode data
 
 
         // !!! 0xa0 !!! start tag value - native functions
@@ -893,6 +970,7 @@ deployer {
             EXTERNAL_MEMORY_PTR_PTR  //
             mload
             add
+            evmtype ereturn
             return
         revert_20_extra:
             // len, ptr
