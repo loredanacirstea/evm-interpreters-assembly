@@ -53,6 +53,15 @@ You can encounter such state in the wild, outside the chain. With all it needs t
 - They recover all advantages of the chains with smart contracts over those without (eg.: Ethereum over Bitcoin)
 
 ---
+
+# The TCP/IP Stack
+![](/images/tcp_ip_enc.png)
+
+---
+# The Blockchain Stack
+
+![](/images/chain_stack.png)
+---
 # Next Videos
 
 - How to explicitly implement abstract blockchains on Ethereum:
