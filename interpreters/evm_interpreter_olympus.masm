@@ -62,12 +62,28 @@ deployer {
     %macro ereturn_simple
     %endmacro
 
+    %macro elog0_simple
+        wopcode 0xa0, log0, log0_20
+    %endmacro
+    %macro elog1_simple
+        wopcode 0xa1, log1, log1_30
+    %endmacro
+    %macro elog2_simple
+        wopcode 0xa2, log2, log2_40
+    %endmacro
+    %macro elog3_simple
+        wopcode 0xa3, log3, log3_50
+    %endmacro
+    %macro elog4_simple
+        wopcode 0xa4, log4, log4_60
+    %endmacro
+
     %macro esstore_zeus
         // value, ptr
-        0x140  // INTERNAL_MEMORY_PTR_PTR //
+        INTERNAL_MEMORY_PTR_PTR //
         mload  // value, ptr, memoffset
 
-        0x1c0  // CONTRACT_ADDRESS  // store address
+        CONTRACT_ADDRESS  // store address
         mload
         dup2
         mstore  // value, ptr, memoffset
@@ -87,10 +103,10 @@ deployer {
 
     %macro esload_zeus
         // ptr
-        0x140  // INTERNAL_MEMORY_PTR_PTR //
+        INTERNAL_MEMORY_PTR_PTR //
         mload  // ptr, memoffset
 
-        0x1c0  // CONTRACT_ADDRESS  // store address
+        CONTRACT_ADDRESS  // store address
         mload
         dup2
         mstore  // ptr, memoffset
@@ -111,6 +127,22 @@ deployer {
     %macro ereturn_zeus
     %endmacro
 
+    %macro elog0_zeus
+        wopcode 0xa0, log0, log0_20
+    %endmacro
+    %macro elog1_zeus
+        wopcode 0xa1, log1, log1_30
+    %endmacro
+    %macro elog2_zeus
+        wopcode 0xa2, log2, log2_40
+    %endmacro
+    %macro elog3_zeus
+        wopcode 0xa3, log3, log3_50
+    %endmacro
+    %macro elog4_zeus
+        wopcode 0xa4, log4, log4_60
+    %endmacro
+
     %macro esstore_atena
         // value, ptr
         // value and pointer are logged in the unindexed data
@@ -120,7 +152,7 @@ deployer {
         dup2
         sstore  // we temporarily store the variable
 
-        0x140  // INTERNAL_MEMORY_PTR_PTR //
+        INTERNAL_MEMORY_PTR_PTR //
         mload  // value, ptr, memoffset
 
         swap1
@@ -131,7 +163,7 @@ deployer {
         add
         mstore
 
-        0x1c0  // CONTRACT_ADDRESS
+        CONTRACT_ADDRESS
         mload
         0x0dda1a6643a09aa4598b8890d85dc9ab59edd0e967ea62ad878b8e3cbe769e21  // sstore(address,bytes32,bytes32)
 
@@ -139,7 +171,7 @@ deployer {
         // log2(ptr, len, sigHash, contractAddress)
 
         0x40
-        0x140  // INTERNAL_MEMORY_PTR_PTR //
+        INTERNAL_MEMORY_PTR_PTR //
         mload  // value, ptr, memoffset
         log2
     %endmacro
@@ -151,7 +183,7 @@ deployer {
         dup1   // remains on stack // ptr, value, value
         swap2  // value, value, ptr
 
-        0x140  // INTERNAL_MEMORY_PTR_PTR //
+        INTERNAL_MEMORY_PTR_PTR //
         mload  // value, ptr, memoffset
 
         swap1
@@ -162,7 +194,7 @@ deployer {
         add
         mstore
 
-        0x1c0  // CONTRACT_ADDRESS  // store address
+        CONTRACT_ADDRESS  // store address
         mload
         0x33c8e66d36f533e49874d2a0fb8fe465bfa6b9e8a33433793d95ba49907dddde  // sload(address,bytes32,bytes32)
 
@@ -170,12 +202,28 @@ deployer {
         // log2(ptr, len, sigHash, contractAddress)
 
         0x40
-        0x140  // INTERNAL_MEMORY_PTR_PTR //
+        INTERNAL_MEMORY_PTR_PTR //
         mload  // value, ptr, memoffset
         log2
     %endmacro
 
     %macro ereturn_atena
+    %endmacro
+
+    %macro elog0_atena
+        wopcode 0xa0, log0, log0_20
+    %endmacro
+    %macro elog1_atena
+        wopcode 0xa1, log1, log1_30
+    %endmacro
+    %macro elog2_atena
+        wopcode 0xa2, log2, log2_40
+    %endmacro
+    %macro elog3_atena
+        wopcode 0xa3, log3, log3_50
+    %endmacro
+    %macro elog4_atena
+        wopcode 0xa4, log4, log4_60
     %endmacro
 
     %macro esstore_hermes
@@ -184,7 +232,7 @@ deployer {
         dup2
         sstore  // we temporarily store the variable
 
-        0x140  // INTERNAL_MEMORY_PTR_PTR
+        INTERNAL_MEMORY_PTR_PTR  //
         mload
         0x1e0  // STORAGE_HASH_PTR
         mload  // value, ptr, memptr, storagehash
@@ -233,6 +281,33 @@ deployer {
         add
         swap2
         pop
+    %endmacro
+
+    %macro logopcode_hermes
+        %2:  // %0
+            memorystore_%1
+            //
+            // push2
+            jump
+            stop
+            stop
+            stop
+    %endmacro
+
+    %macro elog0_hermes
+        logopcode_hermes 0xa0, log0, log0_20
+    %endmacro
+    %macro elog1_hermes
+        logopcode_hermes 0xa1, log1, log1_30
+    %endmacro
+    %macro elog2_hermes
+        logopcode_hermes 0xa2, log2, log2_40
+    %endmacro
+    %macro elog3_hermes
+        logopcode_hermes 0xa3, log3, log3_50
+    %endmacro
+    %macro elog4_hermes
+        logopcode_hermes 0xa4, log4, log4_60
     %endmacro
 
     %macro wopcode
@@ -669,11 +744,11 @@ deployer {
         wopcode_swap 0x9d, 14
         wopcode_swap 0x9e, 15
         wopcode_swap 0x9f, 16
-        wopcode 0xa0, log0, log0_20
-        wopcode 0xa1, log1, log1_30
-        wopcode 0xa2, log2, log2_40
-        wopcode 0xa3, log3, log3_50
-        wopcode 0xa4, log4, log4_60
+        evmtype elog0
+        evmtype elog1
+        evmtype elog2
+        evmtype elog3
+        evmtype elog4
         eopcode 0xa5, 34
         eopcode 0xa6, 35
         eopcode 0xa7, 36
@@ -1055,6 +1130,50 @@ deployer {
         reset_initial_storage_extra:
             pop  // storage pointer
             jump // tag set before entering reset
+        memorystore_log0:
+            // len, ptr
+            memorystore_logs_end
+            jump
+        memorystore_log1:
+            // topic, len, ptr
+            INTERNAL_MEMORY_PTR_PTR  //
+            mload
+            dup3  // topic, len, ptr, memptr, len
+            dup3  // topic, len, ptr, memptr, len, ptr
+            dup3  // topic, len, ptr, memptr, len, ptr, memptr
+            mmultimstore  // size_bytes, source_ptr, storage key
+            // topic, len, ptr, memptr
+            swap1
+            pop  // topic, len, memptr
+            swap2  // memptr, len, topic
+            dup3   // memptr, len, topic, memptr
+            dup3   // memptr, len, topic, memptr, len
+            add
+            mstore  // memptr, len
+            0x20
+            add
+            swap1  // newlen, memptr
+            memorystore_logs_end
+            jump
+        memorystore_log2:
+            // len, ptr, topic, topic
+            memorystore_logs_end
+            jump
+        memorystore_log3:
+            // len, ptr, topic, topic, topic
+            memorystore_logs_end
+            jump
+        memorystore_log4:
+            // len, ptr, topic, topic, topic, topic
+            memorystore_logs_end
+            jump
+        memorystore_logs_end:
+            // len, ptr
+            keccak256
+            0xc0
+            // push
+            mload
+            jump
 }
 
 
