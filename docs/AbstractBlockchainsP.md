@@ -1,5 +1,5 @@
 ![](/images/chain3.png)
-# The Abstract Blockchains
+# The "Abstracted" Blockchains   p1
 *what they are and how we missed them*
 
 ---
@@ -26,12 +26,12 @@
 - But there is no direct access from the chain root state to the state variables other than through the contract
 
 ---
-# Therefore Abstract Blockchains exist at those levels
+# Therefore Abstracted Blockchains exist at those levels
 - Each contract, contract variable, and/or storage slot can have their own blockchains
 - They can have their own rules of forking and merging (for scaling)
 - They can have bridges to other chains with rules for generalized consensus
-- States and contracts can be encapsulated or decapsulated from the main chain and can be used “in the wild”, with their output able to be accepted back on the main chain
-- “In the wild” states benefit from 3 layers of verification
+- States and contracts can be encapsulated or decapsulated from the main chain and can be used off-chain, with their output able to be accepted back on the main chain
+- Off-chain states could benefit from 3 layers of verification
 
 ---
 state variable
@@ -44,13 +44,14 @@ You can encounter such state in the wild, outside the chain. With all it needs t
 ![](/images/chain3.png)
 
 ---
-# Abstract Blockchains
+# "Abstracted" Blockchains
 - Blockchains that are not obvious because are not needed for traditional usecases
+- Presence of large-breadth merklezation should prompt for middle-layer blockchains
 - When implemented, extend functionality, scaling, and/or decentralization
 - Protect the state while allowing for controlled use
 - Allow for encapsulation and decapsulation
 - Provide common behavior for Layer 2 processing, Bridging, de/encapsulation
-- They recover all advantages of the chains with smart contracts over those without (eg.: Ethereum over Bitcoin)
+- They cancel out all disadvantages of the chains with smart contracts over those without (eg.: Ethereum over Bitcoin)
 
 ---
 
@@ -64,13 +65,13 @@ You can encounter such state in the wild, outside the chain. With all it needs t
 ---
 # Next Videos
 
-- How to explicitly implement abstract blockchains on Ethereum:
-
-  - The traced states
+- How to explicitly implement (concretize) abstract blockchains on Ethereum:
+  - Selecting the traceable entities
   - Verification mechanism
-  
+  - De/Encapsulation
+  - Forking & Merging
 - How to use them for:
-
   - Layer 2 scaling
   - Bridging
-  - Possibly more... 
+  - Provable Safe Transport
+  - Possibly more...
