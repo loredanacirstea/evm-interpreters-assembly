@@ -323,7 +323,14 @@ deployer {
         eopcode 0x5c, 30
         eopcode 0x5d, 31
         eopcode 0x5e, 32
-        eopcode 0x5f, 33
+        push00_01:  // 0x5f
+            // push
+            0x00
+            // push
+            0xc0
+            mload
+            jump
+            stop
         wopcode_push 0x60, 01
         wopcode_push 0x61, 02
         wopcode_push 0x62, 03
