@@ -879,25 +879,23 @@ sstore_20:  // 0x55
             stop
             stop
             stop
-        /* (46) wopcode 0x58, pc, pc_01      */
-pc_01:  // 0x58
-            pc
-            0xc0
-            // push
-            mload
+        pc_01:  // 0x58
+            pc_01_extra
+            //
+            // push2
             jump
             stop
             stop
-        /* (47) wopcode 0x59, msize, msize_01      */
-msize_01:  // 0x59
-            msize
-            0xc0
-            // push
-            mload
+            stop
+        msize_01: // 0x59
+            msize_01_extra
+            //
+            // push2
             jump
             stop
             stop
-        /* (48) wopcode 0x5a, gas, gas_01      */
+            stop
+        /* (46) wopcode 0x5a, gas, gas_01      */
 gas_01:  // 0x5a
             gas
             0xc0
@@ -906,7 +904,7 @@ gas_01:  // 0x5a
             jump
             stop
             stop
-        /* (49) wopcode 0x5b, jumpdest, jumpdest_00      */
+        /* (47) wopcode 0x5b, jumpdest, jumpdest_00      */
 jumpdest_00:  // 0x5b
             jumpdest
             0xc0
@@ -2368,7 +2366,7 @@ unused_110:  // 0xfe
             stop
             stop
             stop
-        /* (50) wopcode 0xff, selfdestruct, selfdestruct_10      */
+        /* (48) wopcode 0xff, selfdestruct, selfdestruct_10      */
 selfdestruct_10:  // 0xff
             selfdestruct
             0xc0
@@ -2376,6 +2374,29 @@ selfdestruct_10:  // 0xff
             mload
             jump
             stop
+            stop
+        pc_01_extra:
+            0x100 // bytecode start ptr
+            mload
+            0x160 // current bytecode ptr
+            mload
+            sub // pc
+
+            0xc0
+            // push
+            mload
+            jump
+            stop
+            stop
+        msize_01_extra:
+            0x140 // mem offset
+            mload
+            msize
+            sub
+            // push
+            0xc0
+            mload
+            jump
             stop
         push_x_extra:
             // push number

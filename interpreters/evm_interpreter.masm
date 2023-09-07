@@ -316,8 +316,22 @@ deployer {
             stop
             stop
             stop
-        wopcode 0x58, pc, pc_01
-        wopcode 0x59, msize, msize_01
+        pc_01:  // 0x58
+            pc_01_extra
+            //
+            // push2
+            jump
+            stop
+            stop
+            stop
+        msize_01: // 0x59
+            msize_01_extra
+            //
+            // push2
+            jump
+            stop
+            stop
+            stop
         wopcode 0x5a, gas, gas_01
         wopcode 0x5b, jumpdest, jumpdest_00
         eopcode 0x5c, 30
@@ -582,6 +596,29 @@ deployer {
             stop
         eopcode 0xfe, 110
         wopcode 0xff, selfdestruct, selfdestruct_10
+        pc_01_extra:
+            0x100 // bytecode start ptr
+            mload
+            0x160 // current bytecode ptr
+            mload
+            sub // pc
+
+            0xc0
+            // push
+            mload
+            jump
+            stop
+            stop
+        msize_01_extra:
+            0x140 // mem offset
+            mload
+            msize
+            sub
+            // push
+            0xc0
+            mload
+            jump
+            stop
         push_x_extra:
             // push number
             0x160     // current_data_ptr
