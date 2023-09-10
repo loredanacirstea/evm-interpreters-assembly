@@ -1,7 +1,6 @@
 ;; evm interpreter for cosmwasm
 ;; the base is evm_interpreter.wat
 (module
-  (type (;1;) (func (param i32 i32) (result i32)))
   (type (;1;) (func (param i32 i32)))
   (type (;2;) (func (param i32 i32 i32) (result i32)))
   (type (;3;) (func (param i32 i32 i32)))
@@ -16,20 +15,30 @@
   (type (;12;) (func (param i32 i32 i32 i32) (result i32)))
   (type (;13;) (func (param i32 i32 i32 i32 i32 i32 i32)))
   (type (;14;) (func (param i32 i32 i32 i32 i32) (result i32)))
-  ;; (import "env" "abort" (func (;0;) (type 7)))
-  ;; (import "env" "db_read" (func (;1;) (type 4)))
-  ;; (import "env" "db_write" (func (;2;) (type 1)))
-  ;; (import "env" "db_remove" (func (;3;) (type 7)))
-  ;; (import "env" "db_scan" (func (;4;) (type 2)))
-  ;; (import "env" "db_next" (func (;5;) (type 4)))
-  ;; (import "env" "addr_validate" (func (;6;) (type 4)))
-  ;; (import "env" "addr_canonicalize" (func (;7;) (type 0)))
-  ;; (import "env" "addr_humanize" (func (;8;) (type 0)))
+
+  ;; (import "env" "abort" (func $cw_abort (param i32)))
+  ;; (import "env" "db_read" (func $cw_db_read (param i32) (result i32)))
+  ;; (import "env" "db_write" (func $cw_db_write (param i32 i32)))
+  ;; (import "env" "db_remove" (func $cw_db_remove (param i32)))
+
+  (func $cw_abort (import "env" "abort") (param i32))
+  (func $cw_db_read (import "env" "db_read") (param i32) (result i32))
+  (func $cw_db_write (import "env" "db_write") (param i32 i32))
+  (func $cw_db_remove (import "env" "db_remove") (param i32))
+
+  (func $cw_debug (import "env" "debug") (param i32))
+
+
+  ;; (import "env" "db_scan" (func $cw_db_scan (param i32 i32 i32)))
+  ;; (import "env" "db_next" (func $cw_db_next (type 4)))
+  ;; (import "env" "addr_validate" (func $cw_addr_validate (type 4)))
+  ;; (import "env" "addr_canonicalize" (func $cw_addr_canonicalize (type 0)))
+  ;; (import "env" "addr_humanize" (func $cw_addr_humanize (type 0)))
   ;; (import "env" "secp256k1_verify" (func (;9;) (type 2)))
   ;; (import "env" "secp256k1_recover_pubkey" (func (;10;) (type 15)))
   ;; (import "env" "ed25519_verify" (func (;11;) (type 2)))
   ;; (import "env" "ed25519_batch_verify" (func (;12;) (type 2)))
-  (import "env" "debug" (func $cw_debug (type 7)))
+  ;; (import "env" "debug" (func $cw_debug (type 7)))
   ;; (import "env" "query_chain" (func (;14;) (type 4)))
 
 ;; ethereum_getAddress
@@ -54,7 +63,13 @@
 (func $getCaller (param i32) (nop))
 
 ;; ethereum_getCallValue
-(func $getCallValue (param i32) (nop))
+(func $getCallValue (param $resultptr i32)
+  ;; TODO actual value
+  (i64.store (local.get $resultptr) (i64.const 0))
+  (i64.store (i32.add (local.get $resultptr) (i32.const 8)) (i64.const 0))
+  (i64.store (i32.add (local.get $resultptr) (i32.const 16)) (i64.const 0))
+  (i64.store (i32.add (local.get $resultptr) (i32.const 24)) (i64.const 0))
+)
 
 ;; ethereum_getChainId
 (func $getChainId (param i32) (nop))
@@ -119,12 +134,6 @@
 ;; ethereum_selfDestruct
 (func $selfDestruct (param i32) (nop))
 
-;; ethereum_storageLoad
-(func $storageLoad (param i32 i32) (nop))
-
-;; ethereum_storageStore
-(func $storageStore (param i32 i32) (nop))
-
 ;; ethereum_callStatic
 (func $callStatic (param i64 i32 i32 i32 i32 i32) (result i32) (i32.const 0))
 
@@ -136,53 +145,216 @@
 
 ;; ethereum_callDataCopy
 (func $callDataCopy (param $destPtr i32) (param $calldOffset i32) (param $calldLen i32)
+  (local $calldRegionPtr i32)
+  (local.set $calldRegionPtr (i32.load (global.get $cwMsgRegionPtrPtr)))
+
+
+  ;; TODO if calldLen > calldata length -> fill with zeros
   (call $copyMemory
-    (i32.add (global.get $calldatastart) (i32.const 12))
-    ;; (global.get $calldatastart)
+    (i32.load (local.get $calldRegionPtr))
     (local.get $calldLen)
     (local.get $destPtr)
   )
+
+  ;; (call $doDebugAndDealloc (call $cw_region (local.get $destPtr) (local.get $calldLen)))
 )
 
 ;; ethereum_getCallDataSize
 (func $getCallDataSize  (result i32)
-  (i32.load (i32.add (global.get $calldatastart) (i32.const 8)))
+  (local $calldRegionPtr i32)
+  (local.set $calldRegionPtr (i32.load (global.get $cwMsgRegionPtrPtr)))
+  (i32.load (i32.add (local.get $calldRegionPtr) (i32.const 4)))
 )
 
 ;; ethereum_finish
 (func $finish (param $ptr i32) (param $len i32)
-  (i32.store (global.get $returndataPtr) (local.get $ptr))
-  (i32.store (global.get $returndataLen) (local.get $len))
+  (i32.store (global.get $returndataPtrPtr) (local.get $ptr))
+  (i32.store (global.get $returndataLenPtr) (local.get $len))
 )
+
+;; ethereum_storageLoad
+(func $storageLoad (param $keyptr i32) (param $dataptr i32)
+  (local $allocptr i32)
+  (local $allocregionptr i32)
+  (local $regionptr i32)
+
+  (i32.store (global.get $ptrInWaitingForAllocPtr) (local.get $dataptr))
+  (local.set $regionptr (call $cw_region (local.get $keyptr) (i32.const 32)))
+
+  ;; (call $doDebug (local.get $regionptr))
+
+  (local.set $allocregionptr (call $cw_db_read (local.get $regionptr)))
+  (local.set $allocptr (i32.load (local.get $allocregionptr)))
+
+  ;; allocptr must be the same as dataptr
+  (if (i32.ne (local.get $allocptr) (local.get $dataptr))
+    (then (call $cw_abort (call $cw_region (global.get $panicAllocation) (global.get $panicAllocationLen))))
+  )
+)
+
+;; ethereum_storageStore
+(func $storageStore (param $keyptr i32) (param $dataptr i32)
+
+  ;; (call $doDebugAndDealloc (call $cw_region (local.get $keyptr) (i32.const 32)))
+
+  (call $cw_db_write
+    (call $cw_region (local.get $keyptr) (i32.const 32))
+    (call $cw_region (local.get $dataptr) (i32.const 32))
+  )
+)
+
   ;; save returndata ptr & length
-  (global $returndataPtr i32  (i32.const 107560))
-  (global $returndataLen i32  (i32.const 107564))
-  (global $calldatastart i32  (i32.const 107568))
+  (global $returndataPtrPtr i32  (i32.const 107560))
+  (global $returndataLenPtr i32  (i32.const 107564))
+
+  ;; reserved space for base64 table 100 bytes -> 107568 -> 107668
+  (global $b64tabledata i32 (i32.const 107568))
+
+  ;; reserved space for errors 200 bytes -> 107668 -> 107868
+  (global $panicAllocation i32  (i32.const 107668))
+  (global $panicAllocationLen i32  (i32.const 32))
+  (data (i32.const 107668) "panic: allocated pointer invalid")
+
+  (global $panicAllocationAfterExec i32  (i32.const 107700))
+  (global $panicAllocationAfterExecLen i32  (i32.const 37))
+  (data (i32.const 107700) "panic: preallocated pointer not found")
+
+  (global $panicCwRegionsOverflow i32  (i32.const 107737))
+  (global $panicCwRegionsOverflowLen i32  (i32.const 26))
+  (data (i32.const 107737) "panic: cw regions overflow")
+
+  ;; CosmWasm regions - last free pointer
+  (global $cwregionsptrFreePtr i32 (i32.const 107868)) ;; ptr to free ptr for cw regions
+  ;; reserved space for CosmWasm regions 10000 bytes 107772 -> 117772
+  (global $cwregionsptrStart i32 (i32.const 107772))
+  (global $cwregionsptrEnd i32 (i32.const 117768))
+  (global $ptrInWaitingForAllocPtr i32  (i32.const 117772)) ;; ptr to wip allocation ptr
+
+  ;; misc
+  (global $firststackslottmp i32 (i32.const 117776)) ;; 32 bytes slot
+  (global $cwEnvRegionPtrPtr i32  (i32.const 117808)) ;; ptr to env ptr
+  (global $cwInfoRegionPtrPtr i32  (i32.const 117812)) ;; ptr to info ptr
+  (global $cwMsgRegionPtrPtr i32  (i32.const 117816)) ;; ptr to msg ptr
+
+  ;; EVM memory start
+  (global $memstartevm i32  (i32.const 117820)) ;; ptr to EVM memory start (unlimited)
+
+  ;; pre-execution allocation dynamic memory starts at 117828
+  (global $preExecutionAllocFreePtrPtr i32  (i32.const 117824)) ;; ptr to free ptr
+  (global $preExecutionAllocStart i32  (i32.const 117828))
 
   (type $et12 (func))
-  (type $cwalloc (func (param i32) (result i32)))
-  (type $cwdealloc (func (param i32)))
   (func $ewasm_env_1 (export "interface_version_8") (type $et12) (nop))
+
+  (func $cw_region (param $valueptr i32) (param $valuelen i32) (result i32)
+    (local $regionptr i32)
+    (local.set $regionptr (i32.load (global.get $cwregionsptrFreePtr)))
+    ;; cosmwasm panics at offset 0
+    (if (i32.eqz (local.get $valueptr))
+      (then
+        (call $copyMemory (local.get $valueptr) (i32.const 32) (global.get $firststackslottmp))
+        (local.set $valueptr (global.get $firststackslottmp))
+      )
+    )
+
+    ;; panic if region ptr overflow
+    (if (i32.gt_u (local.get $regionptr) (global.get $cwregionsptrEnd) )
+      (then (call $cw_abort (call $cw_region (global.get $panicCwRegionsOverflow) (global.get $panicCwRegionsOverflowLen))))
+    )
+
+    (i32.store (local.get $regionptr) (local.get $valueptr))
+    ;; (i32.store (local.get $regionptr) (i32.const 1))
+
+    (i32.store (i32.add (local.get $regionptr) (i32.const 4)) (local.get $valuelen))
+    (i32.store (i32.add (local.get $regionptr) (i32.const 8)) (local.get $valuelen))
+    (i32.store (global.get $cwregionsptrFreePtr) (i32.add (local.get $regionptr) (i32.const 12)))
+    (local.get $regionptr)
+  )
+
+  (func $debugI32 (param $value i32)
+    (local $ptr i32)
+    (local.set $ptr (i32.const 108826))
+    (i32.store (local.get $ptr) (local.get $value))
+    (call $doDebugAndDealloc (call $cw_region (local.get $ptr) (i32.const 4)))
+  )
+
+  (func $doDebug (param $regionptr i32)
+    (call $cw_debug (local.get $regionptr))
+  )
+  (func $doDebugAndDealloc (param $regionptr i32)
+    (call $cw_debug (local.get $regionptr))
+    (call $region_dealloc (local.get $regionptr))
+  )
+
+  ;; only dealloc if region is last allocated
+  (func $region_dealloc (param $regionptr i32)
+    (i32.store (local.get $regionptr) (i32.const 0))
+    (i32.store (i32.add (local.get $regionptr) (i32.const 4)) (i32.const 0))
+    (i32.store (i32.add (local.get $regionptr) (i32.const 8)) (i32.const 0))
+    (i32.store (global.get $cwregionsptrFreePtr) (local.get $regionptr))
+  )
 
   ;; rust region: offset 4b, capacity 4b, length 4b
   (func $cw_allocate (export "allocate") (param $size i32) (result i32)
     (local $regionptr i32)
     (local $dataptr i32)
-    ;; TODO allocation other than for calldata
-    ;; (local.set $regionptr (i32.const 10000000))
-    (local.set $regionptr (global.get $calldatastart))
-    (local.set $dataptr (i32.add (local.get $regionptr) (i32.const 12)))
-    (i32.store (local.get $regionptr) (local.get $dataptr))
-    (i32.store (i32.add (local.get $regionptr) (i32.const 4)) (local.get $size))
-    (i32.store (i32.add (local.get $regionptr) (i32.const 8)) (local.get $size))
+    (local $postdataptr i32)
+    (local $ptrInWaiting i32)
 
-    ;; update memstart
-    (global.set $memstart (i32.add (local.get $dataptr) (local.get $size)))
+    (call $memoryInit)
+
+    ;; (call $debugI32 (i32.const 0x11111111))
+    ;; (call $debugI32 (local.get $size))
+
+    (local.set $ptrInWaiting (i32.load (global.get $ptrInWaitingForAllocPtr)))
+
+    (if (i32.gt_u (local.get $ptrInWaiting) (i32.const 0))
+      (then
+        (local.set $dataptr (local.get $ptrInWaiting))
+        (i32.store (global.get $ptrInWaitingForAllocPtr) (i32.const 0))
+      )
+      (else
+        ;; (call $debugI32 (global.get $cwMsgRegionPtrPtr))
+        ;; (call $debugI32 (i32.load (global.get $cwMsgRegionPtrPtr)))
+        ;; (call $doDebugAndDealloc (call $cw_region (i32.const 107560) (i32.const 1344)))
+
+        ;; panic if execution allocation was already done
+        (if (i32.gt_u (i32.load (global.get $cwMsgRegionPtrPtr)) (i32.const 0))
+          (then (call $cw_abort (call $cw_region (global.get $panicAllocationAfterExec) (global.get $panicAllocationAfterExecLen))))
+        )
+
+        ;; fill in the dynamic memory (pre memstartevm)
+        (local.set $dataptr (i32.load (global.get $preExecutionAllocFreePtrPtr)))
+        (local.set $postdataptr (i32.add (local.get $dataptr) (local.get $size)))
+
+        ;; update free memory pointer & memstartevm
+        (i32.store (global.get $preExecutionAllocFreePtrPtr) (local.get $postdataptr))
+        (i32.store (global.get $memstartevm) (local.get $postdataptr))
+      )
+    )
+    (local.set $regionptr (call $cw_region (local.get $dataptr) (local.get $size)))
     (local.get $regionptr)
   )
 
   ;; TODO
-  (func $cw_deallocate (export "deallocate") (type $cwdealloc) (nop))
+  (func $cw_deallocate (export "deallocate") (param $regionptr i32) (nop))
+
+  (func $memoryInit
+    ;; initialize memstartevm if not initialized
+    (if (i32.eqz (i32.load (global.get $memstartevm)))
+      (then (i32.store (global.get $memstartevm) (global.get $preExecutionAllocStart)))
+    )
+
+    ;; initialize CosmWasm regions if not initialized
+    (if (i32.eqz (i32.load (global.get $cwregionsptrFreePtr)))
+      (then (i32.store (global.get $cwregionsptrFreePtr) (global.get $cwregionsptrStart)))
+    )
+
+    ;; initialize preExecutionAllocFreePtrPtr if not initialized
+    (if (i32.eqz (i32.load (global.get $preExecutionAllocFreePtrPtr)))
+      (then (i32.store (global.get $preExecutionAllocFreePtrPtr) (global.get $preExecutionAllocStart)))
+    )
+  )
 
   (func $instantiateEntry
         (export "instantiate")
@@ -190,8 +362,10 @@
         (param $infoptr i32)
         (param $msgptr i32)
         (result i32)
+        (i32.store (global.get $cwEnvRegionPtrPtr) (local.get $envptr))
+        (i32.store (global.get $cwInfoRegionPtrPtr) (local.get $infoptr))
+        (i32.store (global.get $cwMsgRegionPtrPtr) (local.get $msgptr))
         (call $instantiate)
-        ;; TODO fixme
         (call $setEmptyReturnData)
   )
 
@@ -201,6 +375,9 @@
         (param $infoptr i32)
         (param $msgptr i32)
         (result i32)
+        (i32.store (global.get $cwEnvRegionPtrPtr) (local.get $envptr))
+        (i32.store (global.get $cwInfoRegionPtrPtr) (local.get $infoptr))
+        (i32.store (global.get $cwMsgRegionPtrPtr) (local.get $msgptr))
         (call $main)
         (call $setReturnDataExecute)
   )
@@ -210,21 +387,33 @@
         (param $envptr i32)
         (param $msgptr i32)
         (result i32)
+        (i32.store (global.get $cwEnvRegionPtrPtr) (local.get $envptr))
+        (i32.store (global.get $cwMsgRegionPtrPtr) (local.get $msgptr))
         (call $main)
         (call $setReturnDataQuery)
   )
 
-  ;; TODO remove
-  (data (i32.const 60000) "\7b\22\6f\6b\22\3a\7b\22\6d\65\73\73\61\67\65\73\22\3a\6e\75\6c\6c\2c\22\64\61\74\61\22\3a\6e\75\6c\6c\2c\22\61\74\74\72\69\62\75\74\65\73\22\3a\6e\75\6c\6c\2c\22\65\76\65\6e\74\73\22\3a\6e\75\6c\6c\7d\7d")
   (func $setEmptyReturnData (result i32)
-    (local $resultptr i32)
-    (local $resultdataptr i32)
-    (local.set $resultptr (i32.const 10000000))
-    (local.set $resultdataptr (i32.add (local.get $resultptr) (i32.const 12)))
-    (i32.store (local.get $resultptr) (i32.const 60000))
-    (i32.store (i32.add (local.get $resultptr) (i32.const 4)) (i32.const 68) )
-    (i32.store (i32.add (local.get $resultptr) (i32.const 8)) (i32.const 68) )
-    (local.get $resultptr)
+    (local $returnptr i32)
+    (local.set $returnptr (i32.const 0))
+
+    ;; 7b226f6b223a7b226d65737361676573223a6e756c6c2c2264617461223a6e756c6c2c2261747472696275746573223a6e756c6c2c226576656e7473223a6e756c6c7d7d
+    ;; {"ok":{"messages":null,"data":null,"attributes":null,"events":null}}
+
+    (i64.store (i32.const 12) (i64.const 0x227b3a226b6f227b)) ;; inverse 0x7b226f6b223a7b22
+    (i64.store (i32.const 20) (i64.const 0x736567617373656d)) ;; 6d65737361676573
+    (i64.store (i32.const 28) (i64.const 0x222c6c6c756e3a22)) ;; 223a6e756c6c2c22
+    (i64.store (i32.const 36) (i64.const 0x756e3a2261746164)) ;; 64617461223a6e75
+    (i64.store (i32.const 44) (i64.const 0x72747461222c6c6c)) ;; 6c6c2c2261747472
+    (i64.store (i32.const 52) (i64.const 0x3a22736574756269)) ;; 696275746573223a
+    (i64.store (i32.const 60) (i64.const 0x7665222c6c6c756e)) ;; 6e756c6c2c226576
+    (i64.store (i32.const 68) (i64.const 0x756e3a2273746e65)) ;; 656e7473223a6e75
+    (i32.store (i32.const 76) (i32.const 0x7d7d6c6c)) ;; 6c6c7d7d
+
+    (i32.store (local.get $returnptr) (i32.const 12))
+    (i32.store (i32.add (local.get $returnptr) (i32.const 4)) (i32.const 68) )
+    (i32.store (i32.add (local.get $returnptr) (i32.const 8)) (i32.const 68) )
+    (local.get $returnptr)
   )
 
   (func $setReturnDataExecute (result i32)
@@ -233,10 +422,10 @@
     (local $datalen i32)
     (local $totaldatalen i32)
     (local $datahexptr i32)
-    ;; we just write a region before the returndataPtr
+    ;; we just write a region before the returndataPtrPtr
     ;; this memory should not be reused after returning the result
 
-    (local.set $datalen (i32.load (global.get $returndataLen)))
+    (local.set $datalen (i32.load (global.get $returndataLenPtr)))
 
     (local.set $returnptr (i32.const 0))
     (i32.store (local.get $returnptr) (i32.const 12))
@@ -257,7 +446,7 @@
 
     ;; transform returndata to base64
     (local.set $datalen (call $b64encode
-      (i32.load (global.get $returndataPtr))
+      (i32.load (global.get $returndataPtrPtr))
       (local.get $datalen)
       (local.get $currentptr)
     ))
@@ -282,10 +471,10 @@
     (local $datalen i32)
     (local $totaldatalen i32)
     (local $datahexptr i32)
-    ;; we just write a region before the returndataPtr
+    ;; we just write a region before the returndataPtrPtr
     ;; this memory should not be reused after returning the result
 
-    (local.set $datalen (i32.load (global.get $returndataLen)))
+    (local.set $datalen (i32.load (global.get $returndataLenPtr)))
 
     (local.set $returnptr (i32.const 0))
     (i32.store (local.get $returnptr) (i32.const 12))
@@ -300,7 +489,7 @@
 
     ;; transform returndata to base64
     (local.set $datalen (call $b64encode
-      (i32.load (global.get $returndataPtr))
+      (i32.load (global.get $returndataPtrPtr))
       (local.get $datalen)
       (local.get $currentptr)
     ))
@@ -350,10 +539,8 @@
 
   ;; base64 encoding thanks to https://github.com/michaelg29/webassembly-tutorial/blob/main/base64/base64.wat
   ;; b64 encoding table
-  ;; TODO change mem location
-  (global $b64tabledata i32 (i32.const 66000))
-  (data (;0;) (i32.const 66000) "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
-
+  ;; b64tabledata global
+  (data (;0;) (i32.const 107568) "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
   ;; b64 encode function
   (func $b64encode
       (param $str i32)
@@ -548,13 +735,13 @@
         ;; first nibble
         (i32.store8
           (local.get $destptr)
-          ;; value / 16 + 0x30 (ascii for 0)
+          ;; value / 16
           (call $nibbleToAscii (i32.div_u (local.get $tempvalue) (i32.const 16)))
         )
         ;; second nibble
         (i32.store8
           (i32.add (local.get $destptr) (i32.const 1))
-          ;; value % 16 + 0x30 (ascii for 0)
+          ;; value % 16
           (call $nibbleToAscii (i32.rem_u (local.get $tempvalue) (i32.const 16)))
         )
 
@@ -597,7 +784,7 @@
 
   ;; memory related global
   ;; (global $evmbytecodestart i32  (i32.const 66600))
-  (global $memstart (mut i32)  (i32.const 107560))
+  ;; (global $memstart (mut i32)  (i32.const 107560))
   ;; the number of 256 words stored in memory
   (global $wordCount (mut i64) (i64.const 0))
   ;; what was charged for the last memory allocation
@@ -609,7 +796,7 @@
   (global $global__2 (mut i64) (i64.const 0))
 
   (func $get_sp (export "get_sp") (result i32) (global.get $sp))
-  (func $get_memstart (export "get_memstart") (result i32) (global.get $memstart))
+  (func $get_memstart (export "get_memstart") (result i32) (i32.load (global.get $memstartevm)))
   (func $get_wordCount (export "get_wordCount") (result i64) (global.get $wordCount))
 
 
@@ -869,7 +1056,7 @@
           (i64.load (i32.add (global.get $sp) (i32.const -112)))
           (i64.load (i32.add (global.get $sp) (i32.const -104)))))
     (call $memusegas (local.get $offset0) (local.get $length0))
-    (local.set $offset0 (i32.add (global.get $memstart) (local.get $offset0)))(local.set $offset1 (call $check_overflow
+    (local.set $offset0 (i32.add (i32.load (global.get $memstartevm)) (local.get $offset0)))(local.set $offset1 (call $check_overflow
           (i64.load (i32.add (global.get $sp) (i32.const -160)))
           (i64.load (i32.add (global.get $sp) (i32.const -152)))
           (i64.load (i32.add (global.get $sp) (i32.const -144)))
@@ -879,7 +1066,7 @@
           (i64.load (i32.add (global.get $sp) (i32.const -176)))
           (i64.load (i32.add (global.get $sp) (i32.const -168)))))
     (call $memusegas (local.get $offset1) (local.get $length1))
-    (local.set $offset1 (i32.add (global.get $memstart) (local.get $offset1))) (i64.store (i32.add (global.get $sp) (i32.const -192)) (i64.extend_i32_u (i32.eqz (call $call(call $check_overflow_i64
+    (local.set $offset1 (i32.add (i32.load (global.get $memstartevm)) (local.get $offset1))) (i64.store (i32.add (global.get $sp) (i32.const -192)) (i64.extend_i32_u (i32.eqz (call $call(call $check_overflow_i64
           (i64.load (global.get $sp))
           (i64.load (i32.add (global.get $sp) (i32.const 8)))
           (i64.load (i32.add (global.get $sp) (i32.const 16)))
@@ -898,7 +1085,7 @@
           (i64.load (i32.add (global.get $sp) (i32.const -112)))
           (i64.load (i32.add (global.get $sp) (i32.const -104)))))
     (call $memusegas (local.get $offset0) (local.get $length0))
-    (local.set $offset0 (i32.add (global.get $memstart) (local.get $offset0)))(local.set $offset1 (call $check_overflow
+    (local.set $offset0 (i32.add (i32.load (global.get $memstartevm)) (local.get $offset0)))(local.set $offset1 (call $check_overflow
           (i64.load (i32.add (global.get $sp) (i32.const -160)))
           (i64.load (i32.add (global.get $sp) (i32.const -152)))
           (i64.load (i32.add (global.get $sp) (i32.const -144)))
@@ -908,7 +1095,7 @@
           (i64.load (i32.add (global.get $sp) (i32.const -176)))
           (i64.load (i32.add (global.get $sp) (i32.const -168)))))
     (call $memusegas (local.get $offset1) (local.get $length1))
-    (local.set $offset1 (i32.add (global.get $memstart) (local.get $offset1))) (i64.store (i32.add (global.get $sp) (i32.const -192)) (i64.extend_i32_u (i32.eqz (call $callCode(call $check_overflow_i64
+    (local.set $offset1 (i32.add (i32.load (global.get $memstartevm)) (local.get $offset1))) (i64.store (i32.add (global.get $sp) (i32.const -192)) (i64.extend_i32_u (i32.eqz (call $callCode(call $check_overflow_i64
           (i64.load (global.get $sp))
           (i64.load (i32.add (global.get $sp) (i32.const 8)))
           (i64.load (i32.add (global.get $sp) (i32.const 16)))
@@ -927,7 +1114,7 @@
           (i64.load (i32.add (global.get $sp) (i32.const -48)))
           (i64.load (i32.add (global.get $sp) (i32.const -40)))))
     (call $memusegas (local.get $offset0) (local.get $length0))
-    (local.set $offset0 (i32.add (global.get $memstart) (local.get $offset0))) (call $callDataCopy(local.get $offset0)(call $check_overflow
+    (local.set $offset0 (i32.add (i32.load (global.get $memstartevm)) (local.get $offset0))) (call $callDataCopy(local.get $offset0)(call $check_overflow
           (i64.load (i32.add (global.get $sp) (i32.const -32)))
           (i64.load (i32.add (global.get $sp) (i32.const -24)))
           (i64.load (i32.add (global.get $sp) (i32.const -16)))
@@ -979,7 +1166,7 @@
           (i64.load (i32.add (global.get $sp) (i32.const -48)))
           (i64.load (i32.add (global.get $sp) (i32.const -40)))))
     (call $memusegas (local.get $offset0) (local.get $length0))
-    (local.set $offset0 (i32.add (global.get $memstart) (local.get $offset0))) (call $codeCopy(local.get $offset0)(call $check_overflow
+    (local.set $offset0 (i32.add (i32.load (global.get $memstartevm)) (local.get $offset0))) (call $codeCopy(local.get $offset0)(call $check_overflow
           (i64.load (i32.add (global.get $sp) (i32.const -32)))
           (i64.load (i32.add (global.get $sp) (i32.const -24)))
           (i64.load (i32.add (global.get $sp) (i32.const -16)))
@@ -995,7 +1182,7 @@
           (i64.load (i32.add (global.get $sp) (i32.const -48)))
           (i64.load (i32.add (global.get $sp) (i32.const -40)))))
     (call $memusegas (local.get $offset0) (local.get $length0))
-    (local.set $offset0 (i32.add (global.get $memstart) (local.get $offset0))) (call $create(call $bswap_m256 (global.get $sp))(local.get $offset0)(local.get $length0)(i32.add (global.get $sp) (i32.const -64)))(drop (call $bswap_m256 (i32.add (global.get $sp) (i32.const -64)))));; generated by ./wasm/generateInterface.js
+    (local.set $offset0 (i32.add (i32.load (global.get $memstartevm)) (local.get $offset0))) (call $create(call $bswap_m256 (global.get $sp))(local.get $offset0)(local.get $length0)(i32.add (global.get $sp) (i32.const -64)))(drop (call $bswap_m256 (i32.add (global.get $sp) (i32.const -64)))));; generated by ./wasm/generateInterface.js
 (func $CREATE2 (local $offset0 i32)(local $length0 i32) (local.set $offset0 (call $check_overflow
           (i64.load (i32.add (global.get $sp) (i32.const -32)))
           (i64.load (i32.add (global.get $sp) (i32.const -24)))
@@ -1006,7 +1193,7 @@
           (i64.load (i32.add (global.get $sp) (i32.const -48)))
           (i64.load (i32.add (global.get $sp) (i32.const -40)))))
     (call $memusegas (local.get $offset0) (local.get $length0))
-    (local.set $offset0 (i32.add (global.get $memstart) (local.get $offset0))) (call $create2(call $bswap_m256 (global.get $sp))(local.get $offset0)(local.get $length0)(call $bswap_m256 (i32.add (global.get $sp) (i32.const -96)))(i32.add (global.get $sp) (i32.const -96)))(drop (call $bswap_m256 (i32.add (global.get $sp) (i32.const -96)))));; generated by ./wasm/generateInterface.js
+    (local.set $offset0 (i32.add (i32.load (global.get $memstartevm)) (local.get $offset0))) (call $create2(call $bswap_m256 (global.get $sp))(local.get $offset0)(local.get $length0)(call $bswap_m256 (i32.add (global.get $sp) (i32.const -96)))(i32.add (global.get $sp) (i32.const -96)))(drop (call $bswap_m256 (i32.add (global.get $sp) (i32.const -96)))));; generated by ./wasm/generateInterface.js
 (func $DELEGATECALL (local $offset0 i32)(local $length0 i32)(local $offset1 i32)(local $length1 i32) (local.set $offset0 (call $check_overflow
           (i64.load (i32.add (global.get $sp) (i32.const -64)))
           (i64.load (i32.add (global.get $sp) (i32.const -56)))
@@ -1017,7 +1204,7 @@
           (i64.load (i32.add (global.get $sp) (i32.const -80)))
           (i64.load (i32.add (global.get $sp) (i32.const -72)))))
     (call $memusegas (local.get $offset0) (local.get $length0))
-    (local.set $offset0 (i32.add (global.get $memstart) (local.get $offset0)))(local.set $offset1 (call $check_overflow
+    (local.set $offset0 (i32.add (i32.load (global.get $memstartevm)) (local.get $offset0)))(local.set $offset1 (call $check_overflow
           (i64.load (i32.add (global.get $sp) (i32.const -128)))
           (i64.load (i32.add (global.get $sp) (i32.const -120)))
           (i64.load (i32.add (global.get $sp) (i32.const -112)))
@@ -1027,7 +1214,7 @@
           (i64.load (i32.add (global.get $sp) (i32.const -144)))
           (i64.load (i32.add (global.get $sp) (i32.const -136)))))
     (call $memusegas (local.get $offset1) (local.get $length1))
-    (local.set $offset1 (i32.add (global.get $memstart) (local.get $offset1))) (i64.store (i32.add (global.get $sp) (i32.const -160)) (i64.extend_i32_u (i32.eqz (call $callDelegate(call $check_overflow_i64
+    (local.set $offset1 (i32.add (i32.load (global.get $memstartevm)) (local.get $offset1))) (i64.store (i32.add (global.get $sp) (i32.const -160)) (i64.extend_i32_u (i32.eqz (call $callDelegate(call $check_overflow_i64
           (i64.load (global.get $sp))
           (i64.load (i32.add (global.get $sp) (i32.const 8)))
           (i64.load (i32.add (global.get $sp) (i32.const 16)))
@@ -1306,7 +1493,7 @@
           (i64.load (i32.add (global.get $sp) (i32.const -80)))
           (i64.load (i32.add (global.get $sp) (i32.const -72)))))
     (call $memusegas (local.get $offset0) (local.get $length0))
-    (local.set $offset0 (i32.add (global.get $memstart) (local.get $offset0))) (call $externalCodeCopy(call $bswap_m256 (global.get $sp))(local.get $offset0)(call $check_overflow
+    (local.set $offset0 (i32.add (i32.load (global.get $memstartevm)) (local.get $offset0))) (call $externalCodeCopy(call $bswap_m256 (global.get $sp))(local.get $offset0)(call $check_overflow
           (i64.load (i32.add (global.get $sp) (i32.const -64)))
           (i64.load (i32.add (global.get $sp) (i32.const -56)))
           (i64.load (i32.add (global.get $sp) (i32.const -48)))
@@ -1431,7 +1618,7 @@
   (call $memusegas (local.get $offset) (local.get $length))
 
   ;; FIXME: how to deal with overflow?
-  (local.set $offset (i32.add (local.get $offset) (global.get $memstart)))
+  (local.set $offset (i32.add (local.get $offset) (i32.load (global.get $memstartevm))))
 
   (if (i32.eq (local.get $number) (i32.const 0))
     (then
@@ -1558,8 +1745,12 @@
   ;; subttract gas useage
   (call $memusegas (local.get $offset) (i32.const  32))
 
+  ;; (call $debugI32 (local.get $offset))
+
   ;; FIXME: how to deal with overflow?
-  (local.set $offset (i32.add (local.get $offset) (global.get $memstart)))
+  (local.set $offset (i32.add (local.get $offset) (i32.load (global.get $memstartevm))))
+
+  ;; (call $doDebugAndDealloc (call $cw_region (local.get $offset) (i32.const 32)))
 
   (i64.store (i32.add (global.get $sp) (i32.const 24)) (i64.load (i32.add (local.get $offset) (i32.const 24))))
   (i64.store (i32.add (global.get $sp) (i32.const 16)) (i64.load (i32.add (local.get $offset) (i32.const 16))))
@@ -1739,7 +1930,7 @@
   ;; swap top stack item
   (drop (call $bswap_m256 (local.get $sp)))
 
-  (local.set $offset (i32.add (local.get $offset) (global.get $memstart)))
+  (local.set $offset (i32.add (local.get $offset) (i32.load (global.get $memstartevm))))
   ;; store word to memory
   (i64.store          (local.get $offset)                 (i64.load          (local.get $sp)))
   (i64.store (i32.add (local.get $offset) (i32.const 8))  (i64.load (i32.add (local.get $sp) (i32.const  8))))
@@ -1775,7 +1966,7 @@
 
   ;; pop stack
   (local.set $sp (i32.sub (global.get $sp) (i32.const 32)))
-  (local.set $offset (i32.add (local.get $offset) (global.get $memstart)))
+  (local.set $offset (i32.add (local.get $offset) (i32.load (global.get $memstartevm))))
   (i32.store8 (i32.add (local.get $offset) (i32.const 0)) (i32.load (local.get $sp)))
 )
 (func $MUL
@@ -2084,7 +2275,7 @@
           (i64.load (i32.add (global.get $sp) (i32.const -16)))
           (i64.load (i32.add (global.get $sp) (i32.const -8)))))
     (call $memusegas (local.get $offset0) (local.get $length0))
-    (local.set $offset0 (i32.add (global.get $memstart) (local.get $offset0))) (call $finish(local.get $offset0)(local.get $length0)));; generated by ./wasm/generateInterface.js
+    (local.set $offset0 (i32.add (i32.load (global.get $memstartevm)) (local.get $offset0))) (call $finish(local.get $offset0)(local.get $length0)));; generated by ./wasm/generateInterface.js
 (func $RETURNDATACOPY (local $offset0 i32)(local $length0 i32) (local.set $offset0 (call $check_overflow
           (i64.load (global.get $sp))
           (i64.load (i32.add (global.get $sp) (i32.const 8)))
@@ -2095,7 +2286,7 @@
           (i64.load (i32.add (global.get $sp) (i32.const -48)))
           (i64.load (i32.add (global.get $sp) (i32.const -40)))))
     (call $memusegas (local.get $offset0) (local.get $length0))
-    (local.set $offset0 (i32.add (global.get $memstart) (local.get $offset0))) (call $returnDataCopy(local.get $offset0)(call $check_overflow
+    (local.set $offset0 (i32.add (i32.load (global.get $memstartevm)) (local.get $offset0))) (call $returnDataCopy(local.get $offset0)(call $check_overflow
           (i64.load (i32.add (global.get $sp) (i32.const -32)))
           (i64.load (i32.add (global.get $sp) (i32.const -24)))
           (i64.load (i32.add (global.get $sp) (i32.const -16)))
@@ -2115,7 +2306,7 @@
           (i64.load (i32.add (global.get $sp) (i32.const -16)))
           (i64.load (i32.add (global.get $sp) (i32.const -8)))))
     (call $memusegas (local.get $offset0) (local.get $length0))
-    (local.set $offset0 (i32.add (global.get $memstart) (local.get $offset0))) (call $revert(local.get $offset0)(local.get $length0)))(func $SAR
+    (local.set $offset0 (i32.add (i32.load (global.get $memstartevm)) (local.get $offset0))) (call $revert(local.get $offset0)(local.get $length0)))(func $SAR
     (local $sp i32)
     (local $x1 i64)
     (local $x2 i64)
@@ -2575,7 +2766,7 @@
   (call $useGas (i64.extend_i32_u (i32.mul (i32.div_u (i32.add (local.get $length) (i32.const 31)) (i32.const 32)) (i32.const 6))))
   (call $memusegas (local.get $dataOffset) (local.get $length))
 
-  (local.set $dataOffset (i32.add (global.get $memstart) (local.get $dataOffset)))
+  (local.set $dataOffset (i32.add (i32.load (global.get $memstartevm)) (local.get $dataOffset)))
 
   (local.set $contextOffset (i32.const 32808))
   (local.set $outputOffset (i32.sub (global.get $sp) (i32.const 32)))
@@ -3175,7 +3366,7 @@
           (i64.load (i32.add (global.get $sp) (i32.const -80)))
           (i64.load (i32.add (global.get $sp) (i32.const -72)))))
     (call $memusegas (local.get $offset0) (local.get $length0))
-    (local.set $offset0 (i32.add (global.get $memstart) (local.get $offset0)))(local.set $offset1 (call $check_overflow
+    (local.set $offset0 (i32.add (i32.load (global.get $memstartevm)) (local.get $offset0)))(local.set $offset1 (call $check_overflow
           (i64.load (i32.add (global.get $sp) (i32.const -128)))
           (i64.load (i32.add (global.get $sp) (i32.const -120)))
           (i64.load (i32.add (global.get $sp) (i32.const -112)))
@@ -3185,7 +3376,7 @@
           (i64.load (i32.add (global.get $sp) (i32.const -144)))
           (i64.load (i32.add (global.get $sp) (i32.const -136)))))
     (call $memusegas (local.get $offset1) (local.get $length1))
-    (local.set $offset1 (i32.add (global.get $memstart) (local.get $offset1))) (i64.store (i32.add (global.get $sp) (i32.const -160)) (i64.extend_i32_u (i32.eqz (call $callStatic(call $check_overflow_i64
+    (local.set $offset1 (i32.add (i32.load (global.get $memstartevm)) (local.get $offset1))) (i64.store (i32.add (global.get $sp) (i32.const -160)) (i64.extend_i32_u (i32.eqz (call $callStatic(call $check_overflow_i64
           (i64.load (global.get $sp))
           (i64.load (i32.add (global.get $sp) (i32.const 8)))
           (i64.load (i32.add (global.get $sp) (i32.const 16)))
@@ -4506,7 +4697,7 @@
   ;; the first 31704 bytes are guaranteed to be available
   ;; adjust for 32 bytes  - the maximal size of MSTORE write
   ;; TODO it should be memory.size * page_size
-  (local.set $offset (i32.add (local.get $length) (i32.add (local.get $offset) (global.get $memstart))))
+  (local.set $offset (i32.add (local.get $length) (i32.add (local.get $offset) (i32.load (global.get $memstartevm)))))
   (if (i32.gt_u (local.get $offset) (i32.mul (i32.const 65536) (memory.size)))
     (then
       (drop (memory.grow
@@ -7984,14 +8175,5 @@
 (call $REVERT) (br $done)
 (global.set $sp (i32.add (global.get $sp) (i32.const -64)))
 )))
-
-
-(data (i32.const 66600) "\61\0a\6c\61\00\10\60\00\39\61\0a\6c\60\00\f3\00")
-(data (i32.const 66616) "\61\00\55\60\a0\52\61\00\38\60\c0\52\61\01\c0\61\01\00\52\61\01\c0\60\00\35\01\60\20\01\61\01\20\52\61\01\a0\36\01\61\01\40\52\61\01\c0\61\01\60\52\36\60\00\61\01\a0\37\5b\61\01\60\51\80\51\60\f8\1c\60\01\82\01\91\50\90\61\01\60\52\60\08\02\60\a0\51\01\56\5b\00\00\00\00\00\00\00\5b\01\60\c0\51\56\00\00\5b\02\60\c0\51\56\00\00\5b\03\60\c0\51\56\00\00\5b\04\60\c0\51\56\00\00\5b\05\60\c0\51\56\00\00\5b\06\60\c0\51\56\00\00\5b\07\60\c0\51\56\00\00\5b\08\60\c0\51\56\00\00\5b\09\60\c0\51\56\00\00\5b\0a\60\c0\51\56\00\00\5b\0b\60\c0\51\56\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\10\60\c0\51\56\00\00\5b\11\60\c0\51\56\00\00\5b\12\60\c0\51\56\00\00\5b\13\60\c0\51\56\00\00\5b\14\60\c0\51\56\00\00\5b\15\60\c0\51\56\00\00\5b\16\60\c0\51\56\00\00\5b\17\60\c0\51\56\00\00\5b\18\60\c0\51\56\00\00\5b\19\60\c0\51\56\00\00\5b\1a\60\c0\51\56\00\00\5b\1b\60\c0\51\56\00\00\5b\1c\60\c0\51\56\00\00\5b\1d\60\c0\51\56\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\61\08\b5\56\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\30\60\c0\51\56\00\00\5b\31\60\c0\51\56\00\00\5b\32\60\c0\51\56\00\00\5b\33\60\c0\51\56\00\00\5b\34\60\c0\51\56\00\00\5b\61\08\c0\56\00\00\00\5b\61\08\cb\56\00\00\00\5b\61\08\d8\56\00\00\00\5b\61\09\28\56\00\00\00\5b\61\09\35\56\00\00\00\5b\3a\60\c0\51\56\00\00\5b\3b\60\c0\51\56\00\00\5b\61\09\85\56\00\00\00\5b\3d\60\c0\51\56\00\00\5b\61\09\93\56\00\00\00\5b\3f\60\c0\51\56\00\00\5b\40\60\c0\51\56\00\00\5b\41\60\c0\51\56\00\00\5b\42\60\c0\51\56\00\00\5b\43\60\c0\51\56\00\00\5b\44\60\c0\51\56\00\00\5b\45\60\c0\51\56\00\00\5b\46\60\c0\51\56\00\00\5b\47\60\c0\51\56\00\00\5b\48\60\c0\51\56\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\50\60\c0\51\56\00\00\5b\61\09\9e\56\00\00\00\5b\61\09\a9\56\00\00\00\5b\61\09\b4\56\00\00\00\5b\54\60\c0\51\56\00\00\5b\55\60\c0\51\56\00\00\5b\61\08\8e\56\00\00\00\5b\61\08\9c\56\00\00\00\5b\61\08\55\56\00\00\00\5b\61\08\65\56\00\00\00\5b\5a\60\c0\51\56\00\00\5b\5b\60\c0\51\56\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\60\00\60\c0\51\56\00\5b\60\01\61\08\71\56\00\5b\60\02\61\08\71\56\00\5b\60\03\61\08\71\56\00\5b\60\04\61\08\71\56\00\5b\60\05\61\08\71\56\00\5b\60\06\61\08\71\56\00\5b\60\07\61\08\71\56\00\5b\60\08\61\08\71\56\00\5b\60\09\61\08\71\56\00\5b\60\0a\61\08\71\56\00\5b\60\0b\61\08\71\56\00\5b\60\0c\61\08\71\56\00\5b\60\0d\61\08\71\56\00\5b\60\0e\61\08\71\56\00\5b\60\0f\61\08\71\56\00\5b\60\10\61\08\71\56\00\5b\60\11\61\08\71\56\00\5b\60\12\61\08\71\56\00\5b\60\13\61\08\71\56\00\5b\60\14\61\08\71\56\00\5b\60\15\61\08\71\56\00\5b\60\16\61\08\71\56\00\5b\60\17\61\08\71\56\00\5b\60\18\61\08\71\56\00\5b\60\19\61\08\71\56\00\5b\60\1a\61\08\71\56\00\5b\60\1b\61\08\71\56\00\5b\60\1c\61\08\71\56\00\5b\60\1d\61\08\71\56\00\5b\60\1e\61\08\71\56\00\5b\60\1f\61\08\71\56\00\5b\60\20\61\08\71\56\00\5b\80\60\c0\51\56\00\00\5b\81\60\c0\51\56\00\00\5b\82\60\c0\51\56\00\00\5b\83\60\c0\51\56\00\00\5b\84\60\c0\51\56\00\00\5b\85\60\c0\51\56\00\00\5b\86\60\c0\51\56\00\00\5b\87\60\c0\51\56\00\00\5b\88\60\c0\51\56\00\00\5b\89\60\c0\51\56\00\00\5b\8a\60\c0\51\56\00\00\5b\8b\60\c0\51\56\00\00\5b\8c\60\c0\51\56\00\00\5b\8d\60\c0\51\56\00\00\5b\8e\60\c0\51\56\00\00\5b\8f\60\c0\51\56\00\00\5b\90\60\c0\51\56\00\00\5b\91\60\c0\51\56\00\00\5b\92\60\c0\51\56\00\00\5b\93\60\c0\51\56\00\00\5b\94\60\c0\51\56\00\00\5b\95\60\c0\51\56\00\00\5b\96\60\c0\51\56\00\00\5b\97\60\c0\51\56\00\00\5b\98\60\c0\51\56\00\00\5b\99\60\c0\51\56\00\00\5b\9a\60\c0\51\56\00\00\5b\9b\60\c0\51\56\00\00\5b\9c\60\c0\51\56\00\00\5b\9d\60\c0\51\56\00\00\5b\9e\60\c0\51\56\00\00\5b\9f\60\c0\51\56\00\00\5b\61\09\bf\56\00\00\00\5b\61\09\ca\56\00\00\00\5b\61\09\d5\56\00\00\00\5b\61\09\e0\56\00\00\00\5b\61\09\eb\56\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\61\09\f6\56\00\00\00\5b\61\0a\04\56\00\00\00\5b\61\0a\17\56\00\00\00\5b\61\0a\5e\56\00\00\00\5b\61\0a\2a\56\00\00\00\5b\61\0a\3d\56\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\61\0a\4b\56\00\00\00\5b\00\00\00\00\00\00\00\5b\00\00\00\00\00\00\00\5b\61\0a\65\56\00\00\00\5b\00\00\00\00\00\00\00\5b\ff\60\c0\51\56\00\00\5b\61\01\00\51\61\01\60\51\03\60\c0\51\56\00\00\5b\61\01\40\51\59\03\60\c0\51\56\00\5b\61\01\60\51\80\51\60\08\83\02\61\01\00\03\1c\90\82\01\61\01\60\52\90\50\60\c0\51\56\5b\61\01\00\51\01\61\01\60\52\60\c0\51\56\5b\90\61\08\a7\57\50\60\c0\51\56\5b\61\01\00\51\01\61\01\60\52\60\c0\51\56\5b\61\01\40\51\01\20\60\c0\51\56\5b\61\01\20\51\01\51\60\c0\51\56\5b\60\20\61\01\20\51\03\51\60\c0\51\56\5b\61\01\40\51\01\90\61\01\20\51\01\90\82\60\20\81\04\60\00\60\20\83\06\11\01\90\50\92\50\61\09\20\83\60\00\5b\81\81\10\61\09\07\57\50\50\56\5b\84\51\84\52\84\60\20\01\94\50\83\60\20\01\93\50\5b\60\01\01\61\08\fc\56\5b\50\50\50\60\c0\51\56\5b\60\20\61\01\00\51\03\51\60\c0\51\56\5b\61\01\40\51\01\90\61\01\00\51\01\90\82\60\20\81\04\60\00\60\20\83\06\11\01\90\50\92\50\61\09\7d\83\60\00\5b\81\81\10\61\09\64\57\50\50\56\5b\84\51\84\52\84\60\20\01\94\50\83\60\20\01\93\50\5b\60\01\01\61\09\59\56\5b\50\50\50\60\c0\51\56\5b\81\61\01\40\51\01\91\50\3c\60\c0\51\56\5b\61\01\40\51\01\3e\60\c0\51\56\5b\61\01\40\51\01\51\60\c0\51\56\5b\61\01\40\51\01\52\60\c0\51\56\5b\61\01\40\51\01\53\60\c0\51\56\5b\61\01\40\51\01\a0\60\c0\51\56\5b\61\01\40\51\01\a1\60\c0\51\56\5b\61\01\40\51\01\a2\60\c0\51\56\5b\61\01\40\51\01\a3\60\c0\51\56\5b\61\01\40\51\01\a4\60\c0\51\56\5b\81\61\01\40\51\01\91\50\f0\60\c0\51\56\5b\61\01\40\51\84\81\01\94\50\86\01\95\50\f1\60\c0\51\56\5b\61\01\40\51\84\81\01\94\50\86\01\95\50\f2\60\c0\51\56\5b\61\01\40\51\83\81\01\93\50\85\01\94\50\f4\60\c0\51\56\5b\81\61\01\40\51\01\91\50\f5\60\c0\51\56\5b\61\01\40\51\83\81\01\93\50\85\01\94\50\fa\60\c0\51\56\5b\61\01\40\51\01\f3\5b\61\01\40\51\01\fd")
-;; (func $evm_bytecode (export "evm_bytecode") (result i32 i32 i32)
-;;     i32.const 66600
-;;     i32.const 16
-;;     i32.const 2668)
-
 
 )
