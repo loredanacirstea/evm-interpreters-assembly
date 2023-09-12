@@ -48,8 +48,10 @@ The resulting (after transpilation) contract memory layout is currently as follo
 `---------------------------------------------------
 | preExecutionAllocFreePtrPtr (4 bytes) - 117824
 `---------------------------------------------------
-| preExecutionAllocStart (dynamic bytes) - 117828
+| json fields of interest (400 bytes) - 117828
 `---------------------------------------------------
-| "EVM 1.0" contract memory starts here ("unlimited" in size) - 107560 / or after preExecutionAllocStart
+| preExecutionAllocStart (dynamic bytes) - 118228
+`---------------------------------------------------
+| "EVM 1.0" contract memory starts here ("unlimited" in size) - after preExecutionAllocStart
 `---------------------------------------------------
 ```
