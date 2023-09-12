@@ -84,16 +84,108 @@
 ;; ethereum_getBlockHash ;; TODO
 (func $getBlockHash (param i64 i32) (nop))
 
-;; ethereum_getCaller ;; TODO
-(func $getCaller (param i32) (nop))
+;; ethereum_getCaller
+(func $getCaller (param $resultptr i32)
+  (local $inforegionptr i32)
+  (local $infoptr i32)
+  (local $infolen i32)
+  (local $addrStrRegion i32)
+  (local $addrBzRegion i32)
+  (local $ndx i32)
+  (local $valueptr i32)
+  (local $valuelen i32)
+  (local $canonres i32)
+  (local.set $inforegionptr (i32.load (global.get $cwInfoRegionPtrPtr)))
+  (local.set $infoptr (i32.load (local.get $inforegionptr)))
+  (local.set $infolen (i32.load (i32.add (local.get $inforegionptr) (i32.const 4))))
 
-;; ethereum_getCallValue ;; TODO
+  (local.set $ndx (call $searchForString (local.get $infoptr) (local.get $infolen) (global.get $jsonFieldInfoSender) (global.get $jsonFieldInfoSenderLen)))
+
+  (if (i32.gt_s (local.get $ndx) (i32.const -1))
+    (then
+      (local.set $valueptr (i32.add (i32.add (local.get $ndx) (local.get $infoptr)) (global.get $jsonFieldInfoSenderLen)))
+
+      ;; time is a string in cosmwasm, add 1 for "
+      (local.set $valueptr (i32.add (local.get $valueptr) (i32.const 1)))
+      (local.set $valuelen (call $getStringValueLengthFromJsonField
+        (local.get $valueptr)
+        (i32.sub (local.get $infolen) (local.get $ndx))
+      ))
+
+      (local.set $addrStrRegion (call $cw_region (local.get $valueptr) (local.get $valuelen)))
+      (local.set $addrBzRegion (call $cw_region (local.get $resultptr) (i32.const 32)))
+
+      (local.set $canonres (call $cw_addr_canonicalize (local.get $addrStrRegion) (local.get $addrBzRegion)))
+      ;; result == 0 => success
+      ;; result > 0 => error is at ptr
+      (if (i32.gt_u (local.get $canonres) (i32.const 0))
+        (then (call $cw_abort (local.get $canonres)))
+      )
+
+      ;; load length; if 20, we need to shift the bytes to right
+      (if (i32.eq (i32.const 20) (i32.load (i32.add (local.get $addrBzRegion) (i32.const 8))))
+        (then (call $shiftAddress (i32.load (local.get $addrBzRegion))))
+      )
+    )
+  )
+)
+
+;; ethereum_getCallValue
 (func $getCallValue (param $resultptr i32)
-  ;; TODO actual value
+  (local $inforegionptr i32)
+  (local $infoptr i32)
+  (local $infolen i32)
+  (local $addrStrRegion i32)
+  (local $addrBzRegion i32)
+  (local $ndx i32)
+  (local $valueptr i32)
+  (local $valuelen i32)
+  (local $canonres i32)
+  (local.set $inforegionptr (i32.load (global.get $cwInfoRegionPtrPtr)))
+
   (i64.store (local.get $resultptr) (i64.const 0))
   (i64.store (i32.add (local.get $resultptr) (i32.const 8)) (i64.const 0))
   (i64.store (i32.add (local.get $resultptr) (i32.const 16)) (i64.const 0))
   (i64.store (i32.add (local.get $resultptr) (i32.const 24)) (i64.const 0))
+
+  ;; cosmwasm query does not have access to this value
+  (if (i32.ne (local.get $inforegionptr) (i32.const 0))
+    (then
+      (local.set $infoptr (i32.load (local.get $inforegionptr)))
+      (local.set $infolen (i32.load (i32.add (local.get $inforegionptr) (i32.const 4))))
+
+      (local.set $ndx (call $searchForString (local.get $infoptr) (local.get $infolen) (global.get $jsonFieldInfoFunds) (global.get $jsonFieldInfoFundsLen)))
+
+      ;; jsonFieldInfoFundsAmount
+
+      (if (i32.gt_s (local.get $ndx) (i32.const -1))
+        (then
+          (local.set $valueptr (i32.add (i32.add (local.get $ndx) (local.get $infoptr)) (global.get $jsonFieldInfoFundsLen)))
+
+          (local.set $ndx (call $searchForString (local.get $valueptr) (i32.sub (local.get $infolen) (local.get $ndx)) (global.get $jsonFieldInfoFundsAmount) (global.get $jsonFieldInfoFundsAmountLen)))
+
+          (local.set $valueptr (i32.add (i32.add (local.get $ndx) (local.get $valueptr)) (global.get $jsonFieldInfoFundsAmountLen)))
+
+          ;; amount is a string in cosmwasm, add 1 for "
+          (local.set $valueptr (i32.add (local.get $valueptr) (i32.const 1)))
+          (local.set $valuelen (call $getStringValueLengthFromJsonField
+            (local.get $valueptr)
+            (i32.sub (local.get $infolen) (local.get $ndx))
+          ))
+          ;; TODO
+          ;; (local.set $addrStrRegion (call $cw_region (local.get $valueptr) (local.get $valuelen)))
+          ;; (local.set $addrBzRegion (call $cw_region (local.get $resultptr) (i32.const 32)))
+
+          ;; (local.set $canonres (call $cw_addr_canonicalize (local.get $addrStrRegion) (local.get $addrBzRegion)))
+          ;; ;; result == 0 => success
+          ;; ;; result > 0 => error is at ptr
+          ;; (if (i32.gt_u (local.get $canonres) (i32.const 0))
+          ;;   (then (call $cw_abort (local.get $canonres)))
+          ;; )
+        )
+      )
+    )
+  )
 )
 
 ;; ethereum_getChainId ;; TODO
@@ -161,7 +253,7 @@
   (local.set $envptr (i32.load (local.get $envregionptr)))
   (local.set $envlen (i32.load (i32.add (local.get $envregionptr) (i32.const 4))))
 
-  ;; (call $cw_debug (local.get $envregionptr))
+  (call $cw_debug (local.get $envregionptr))
   ;; (call $doDebug (call $cw_region (global.get $jsonFieldBlockHeight) (global.get $jsonFieldBlockHeightLen)))
 
   (local.set $ndx (call $searchForString (local.get $envptr) (local.get $envlen) (global.get $jsonFieldBlockHeight) (global.get $jsonFieldBlockHeightLen)))
@@ -191,8 +283,25 @@
 ;; ethereum_getReturnDataSize ;; TODO
 (func $getReturnDataSize  (result i32) (i32.const 0))
 
-;; ethereum_revert ;; TODO
-(func $revert (param i32 i32) (nop))
+;; ethereum_revert
+(func $revert (param $msgptr i32) (param $msglen i32)
+  ;; (call $cw_abort (call $cw_region (local.get $msgptr) (local.get $msglen)))
+  (local $destptr i32)
+  (local $destptrhex i32)
+  (local $hexlen i32)
+  (local.set $destptr (i32.const 0))
+  (local.set $destptrhex (i32.const 2))
+
+  (call $doDebug (call $cw_region (local.get $msgptr) (local.get $msglen)))
+
+  ;; 0x
+  (i32.store8 (i32.const 0) (i32.const 48))
+  (i32.store8 (i32.const 1) (i32.const 120))
+
+  (call $bytesToHex (local.get $msgptr) (local.get $msglen) (local.get $destptrhex))
+  (local.set $hexlen (i32.add (i32.mul (local.get $msglen) (i32.const 2)) (i32.const 2)))
+  (call $cw_abort (call $cw_region (local.get $destptr) (local.get $hexlen)))
+)
 
 ;; ethereum_getBalance ;; TODO
 (func $getBalance (param i32) (nop))
@@ -342,6 +451,7 @@
   (global $preExecutionAllocFreePtrPtr i32  (i32.const 117824)) ;; ptr to free ptr
 
   ;; json fields of interest
+  ;; ENV
   ;; BLOCK
   (data (i32.const 117828) "\"block\":")
   (global $jsonFieldBlock i32  (i32.const 117828))
@@ -368,6 +478,20 @@
   (global $jsonFieldContractAddress i32  (i32.const 117874))
   (global $jsonFieldContractAddressLen i32  (i32.const 10))
 
+  ;; MESSAGE INFO
+  (data (i32.const 117884) "\"sender\":")
+  (global $jsonFieldInfoSender i32  (i32.const 117884))
+  (global $jsonFieldInfoSenderLen i32  (i32.const 9))
+
+  (data (i32.const 117893) "\"funds\":")
+  (global $jsonFieldInfoFunds i32  (i32.const 117893))
+  (global $jsonFieldInfoFundsLen i32  (i32.const 8))
+
+  ;; funds -> amount
+  (data (i32.const 117901) "\"denom\":\"denom\",\"amount\":")
+  (global $jsonFieldInfoFundsAmount i32  (i32.const 117901))
+  (global $jsonFieldInfoFundsAmountLen i32  (i32.const 25))
+
   ;;  pre-execution allocation dynamic memory
   (global $preExecutionAllocStart i32  (i32.const 118228))
 
@@ -390,10 +514,11 @@
       (then (call $cw_abort (call $cw_region (global.get $panicCwRegionsOverflow) (global.get $panicCwRegionsOverflowLen))))
     )
 
+    ;; offset
     (i32.store (local.get $regionptr) (local.get $valueptr))
-    ;; (i32.store (local.get $regionptr) (i32.const 1))
-
+    ;; capacity
     (i32.store (i32.add (local.get $regionptr) (i32.const 4)) (local.get $valuelen))
+    ;; length
     (i32.store (i32.add (local.get $regionptr) (i32.const 8)) (local.get $valuelen))
     (i32.store (global.get $cwregionsptrFreePtr) (i32.add (local.get $regionptr) (i32.const 12)))
     (local.get $regionptr)
@@ -630,6 +755,28 @@
     (i32.store (i32.add (local.get $returnptr) (i32.const 8)) (local.get $totaldatalen))
 
     (local.get $returnptr)
+  )
+
+  (func $shiftAddress (param $startptr i32)
+    (local $destptr i32)
+    (local $part1 i32)
+    (local $part2 i32)
+    (local $part3 i32)
+    (local $part4 i32)
+    (local $part5 i32)
+
+    (local.set $destptr (i32.add (local.get $startptr) (i32.const 12)))
+    (local.set $part1 (i32.load (local.get $startptr)))
+    (local.set $part2 (i32.load (i32.add (local.get $startptr) (i32.const 4))))
+    (local.set $part3 (i32.load (i32.add (local.get $startptr) (i32.const 8))))
+    (local.set $part4 (i32.load (i32.add (local.get $startptr) (i32.const 12))))
+    (local.set $part5 (i32.load (i32.add (local.get $startptr) (i32.const 16))))
+
+    (i32.store (local.get $destptr) (local.get $part1))
+    (i32.store (i32.add (local.get $destptr) (i32.const 4)) (local.get $part2))
+    (i32.store (i32.add (local.get $destptr) (i32.const 8)) (local.get $part3))
+    (i32.store (i32.add (local.get $destptr) (i32.const 12)) (local.get $part4))
+    (i32.store (i32.add (local.get $destptr) (i32.const 16)) (local.get $part5))
   )
 
   (func $copyMemory (param $sourcePointer i32) (param $sourceLength i32) (param $destinationAddr i32)
