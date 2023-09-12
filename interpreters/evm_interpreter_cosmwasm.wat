@@ -20,12 +20,12 @@
   (func $cw_db_read (import "env" "db_read") (param i32) (result i32))
   (func $cw_db_write (import "env" "db_write") (param i32 i32))
   (func $cw_db_remove (import "env" "db_remove") (param i32))
+  (func $cw_db_scan (import "env" "db_scan") (param i32 i32 i32) (result i32))
+  (func $cw_db_next (import "env" "db_next") (param i32) (result i32))
+  (func $cw_addr_validate (import "env" "addr_validate") (param i32) (result i32))
+  (func $cw_addr_canonicalize (import "env" "addr_canonicalize") (param i32 i32) (result i32))
+  (func $cw_addr_humanize (import "env" "addr_humanize") (param i32 i32) (result i32))
 
-  ;; (import "env" "db_scan" (func $cw_db_scan (param i32 i32 i32)))
-  ;; (import "env" "db_next" (func $cw_db_next (type 4)))
-  ;; (import "env" "addr_validate" (func $cw_addr_validate (type 4)))
-  ;; (import "env" "addr_canonicalize" (func $cw_addr_canonicalize (type 0)))
-  ;; (import "env" "addr_humanize" (func $cw_addr_humanize (type 0)))
   ;; (import "env" "secp256k1_verify" (func (;9;) (type 2)))
   ;; (import "env" "secp256k1_recover_pubkey" (func (;10;) (type 15)))
   ;; (import "env" "ed25519_verify" (func (;11;) (type 2)))
@@ -35,29 +35,59 @@
   (func $cw_debug (import "env" "debug") (param i32))
 
 ;; ethereum_getAddress
-(func $getAddress (param i32)
-  (call $cw_debug (i32.load (global.get $cwEnvRegionPtrPtr)))
+(func $getAddress (param $resultptr i32)
+  (local $envregionptr i32)
+  (local $envptr i32)
+  (local $envlen i32)
+  (local $addrStrRegion i32)
+  (local $addrBzRegion i32)
+  (local $ndx i32)
+  (local $valueptr i32)
+  (local $valuelen i32)
+  (local $canonres i32)
+  (local.set $envregionptr (i32.load (global.get $cwEnvRegionPtrPtr)))
+  (local.set $envptr (i32.load (local.get $envregionptr)))
+  (local.set $envlen (i32.load (i32.add (local.get $envregionptr) (i32.const 4))))
+
+  (local.set $ndx (call $searchForString (local.get $envptr) (local.get $envlen) (global.get $jsonFieldContractAddress) (global.get $jsonFieldContractAddressLen)))
+
+  (if (i32.gt_s (local.get $ndx) (i32.const -1))
+    (then
+      (local.set $valueptr (i32.add (i32.add (local.get $ndx) (local.get $envptr)) (global.get $jsonFieldContractAddressLen)))
+
+      ;; time is a string in cosmwasm, add 1 for "
+      (local.set $valueptr (i32.add (local.get $valueptr) (i32.const 1)))
+      (local.set $valuelen (call $getStringValueLengthFromJsonField
+        (local.get $valueptr)
+        (i32.sub (local.get $envlen) (local.get $ndx))
+      ))
+
+      (local.set $addrStrRegion (call $cw_region (local.get $valueptr) (local.get $valuelen)))
+      (local.set $addrBzRegion (call $cw_region (local.get $resultptr) (i32.const 32)))
+
+      (local.set $canonres (call $cw_addr_canonicalize (local.get $addrStrRegion) (local.get $addrBzRegion)))
+      ;; result == 0 => success
+      ;; result > 0 => error is at ptr
+      (if (i32.gt_u (local.get $canonres) (i32.const 0))
+        (then (call $cw_abort (local.get $canonres)))
+      )
+    )
+  )
 )
 
-;; ethereum_getExternalBalance
+;; ethereum_getExternalBalance ;; TODO
 (func $getExternalBalance (param i32 i32) (nop))
 
-;; ethereum_getBaseFee
+;; ethereum_getBaseFee ;; will not implement
 (func $getBaseFee (param i32) (nop))
 
-;; ethereum_getBlockHash
+;; ethereum_getBlockHash ;; TODO
 (func $getBlockHash (param i64 i32) (nop))
 
-;; ethereum_call
-(func $call (param i64 i32 i32 i32 i32 i32 i32) (result i32) (i32.const 0))
-
-;; ethereum_callCode
-(func $callCode (param i64 i32 i32 i32 i32 i32 i32) (result i32) (i32.const 0))
-
-;; ethereum_getCaller
+;; ethereum_getCaller ;; TODO
 (func $getCaller (param i32) (nop))
 
-;; ethereum_getCallValue
+;; ethereum_getCallValue ;; TODO
 (func $getCallValue (param $resultptr i32)
   ;; TODO actual value
   (i64.store (local.get $resultptr) (i64.const 0))
@@ -66,46 +96,55 @@
   (i64.store (i32.add (local.get $resultptr) (i32.const 24)) (i64.const 0))
 )
 
-;; ethereum_getChainId
+;; ethereum_getChainId ;; TODO
 (func $getChainId (param i32) (nop))
 
-;; ethereum_codeCopy
+;; ethereum_codeCopy ;; TODO
 (func $codeCopy (param i32 i32 i32) (nop))
 
-;; ethereum_getBlockCoinbase
+;; ethereum_getBlockCoinbase ;; TODO
 (func $getBlockCoinbase (param i32) (nop))
 
-;; ethereum_create
-(func $create (param i32 i32 i32 i32) (nop))
+;; ethereum_call ;; TODO
+(func $call (param i64 i32 i32 i32 i32 i32 i32) (result i32) (i32.const 0))
 
-;; ethereum_create2
-(func $create2 (param i32 i32 i32 i32 i32) (nop))
+;; ethereum_callCode ;; TODO
+(func $callCode (param i64 i32 i32 i32 i32 i32 i32) (result i32) (i32.const 0))
 
-;; ethereum_callDelegate
+;; ethereum_callDelegate ;; TODO
 (func $callDelegate (param i64 i32 i32 i32 i32 i32) (result i32) (i32.const 0))
 
-;; ethereum_getBlockDifficulty
+;; ethereum_callStatic
+(func $callStatic (param i64 i32 i32 i32 i32 i32) (result i32) (i32.const 0))
+
+;; ethereum_create ;; TODO
+(func $create (param i32 i32 i32 i32) (nop))
+
+;; ethereum_create2 ;; TODO
+(func $create2 (param i32 i32 i32 i32 i32) (nop))
+
+;; ethereum_getBlockDifficulty ;; not implementing
 (func $getBlockDifficulty (param i32) (nop))
 
-;; ethereum_externalCodeCopy
+;; ethereum_externalCodeCopy ;; TODO
 (func $externalCodeCopy (param i32 i32 i32 i32) (nop))
 
-;; ethereum_getExternalCodeHash
+;; ethereum_getExternalCodeHash ;; TODO
 (func $getExternalCodeHash (param i32 i32) (nop))
 
-;; ethereum_getExternalCodeSize
+;; ethereum_getExternalCodeSize ;; TODO
 (func $getExternalCodeSize (param i32) (result i32) (i32.const 0))
 
 ;; ethereum_getGasLeft
 (func $getGasLeft  (result i64) (i64.const 0))
 
-;; ethereum_getBlockGasLimit
+;; ethereum_getBlockGasLimit ;; TODO
 (func $getBlockGasLimit  (result i64) (i64.const 0))
 
-;; ethereum_getTxGasPrice
+;; ethereum_getTxGasPrice ;; TODO
 (func $getTxGasPrice (param i32) (nop))
 
-;; ethereum_log
+;; ethereum_log ;; TODO
 (func $log (param i32 i32 i32 i32 i32 i32 i32) (nop))
 
 ;; ethereum_getBlockNumber
@@ -143,26 +182,23 @@
   (local.get $blockNumber)
 )
 
-;; ethereum_getTxOrigin
+;; ethereum_getTxOrigin ;; TODO
 (func $getTxOrigin (param i32) (nop))
 
-;; ethereum_returnDataCopy
+;; ethereum_returnDataCopy ;; TODO
 (func $returnDataCopy (param i32 i32 i32) (nop))
 
-;; ethereum_getReturnDataSize
+;; ethereum_getReturnDataSize ;; TODO
 (func $getReturnDataSize  (result i32) (i32.const 0))
 
-;; ethereum_revert
+;; ethereum_revert ;; TODO
 (func $revert (param i32 i32) (nop))
 
-;; ethereum_getBalance
+;; ethereum_getBalance ;; TODO
 (func $getBalance (param i32) (nop))
 
-;; ethereum_selfDestruct
+;; ethereum_selfDestruct ;; TODO
 (func $selfDestruct (param i32) (nop))
-
-;; ethereum_callStatic
-(func $callStatic (param i64 i32 i32 i32 i32 i32) (result i32) (i32.const 0))
 
 ;; ethereum_getBlockTimestamp
 (func $getBlockTimestamp  (result i64)
@@ -203,7 +239,7 @@
   (local.get $resultval)
 )
 
-;; ethereum_useGas
+;; ethereum_useGas ;; TODO
 (func $useGas (param i64) (nop))
 
 ;; ethereum_callDataCopy
@@ -306,6 +342,7 @@
   (global $preExecutionAllocFreePtrPtr i32  (i32.const 117824)) ;; ptr to free ptr
 
   ;; json fields of interest
+  ;; BLOCK
   (data (i32.const 117828) "\"block\":")
   (global $jsonFieldBlock i32  (i32.const 117828))
   (global $jsonFieldBlockLen i32  (i32.const 8))
@@ -317,6 +354,19 @@
   (data (i32.const 117845) "\"time\":")
   (global $jsonFieldBlockTime i32  (i32.const 117845))
   (global $jsonFieldBlockTimeLen i32  (i32.const 7))
+
+  (data (i32.const 117852) "\"chain_id\":")
+  (global $jsonFieldBlockChainId i32  (i32.const 117852))
+  (global $jsonFieldBlockChainIdLen i32  (i32.const 11))
+
+  ;; CONTRACT
+  (data (i32.const 117863) "\"contract\":")
+  (global $jsonFieldContract i32  (i32.const 117863))
+  (global $jsonFieldContractLen i32  (i32.const 11))
+
+  (data (i32.const 117874) "\"address\":")
+  (global $jsonFieldContractAddress i32  (i32.const 117874))
+  (global $jsonFieldContractAddressLen i32  (i32.const 10))
 
   ;;  pre-execution allocation dynamic memory
   (global $preExecutionAllocStart i32  (i32.const 118228))
