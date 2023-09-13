@@ -50,7 +50,9 @@ The resulting (after transpilation) contract memory layout is currently as follo
 `---------------------------------------------------
 | json fields of interest (400 bytes) - 117828
 `---------------------------------------------------
-| preExecutionAllocStart (dynamic bytes) - 118228
+| cosmwasmScratchSpace (10000 bytes) - 118228
+`---------------------------------------------------
+| preExecutionAllocStart (dynamic bytes) - 128228
 `---------------------------------------------------
 | "EVM 1.0" contract memory starts here ("unlimited" in size) - after preExecutionAllocStart
 `---------------------------------------------------

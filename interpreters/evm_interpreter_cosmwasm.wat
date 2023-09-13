@@ -30,39 +30,18 @@
   ;; (import "env" "secp256k1_recover_pubkey" (func (;10;) (type 15)))
   ;; (import "env" "ed25519_verify" (func (;11;) (type 2)))
   ;; (import "env" "ed25519_batch_verify" (func (;12;) (type 2)))
-  ;; (import "env" "query_chain" (func (;14;) (type 4)))
-
+  (func $cw_query_chain (import "env" "query_chain") (param i32) (result i32))
   (func $cw_debug (import "env" "debug") (param i32))
 
 ;; ethereum_getAddress
 (func $getAddress (param $resultptr i32)
-  (local $envregionptr i32)
-  (local $envptr i32)
-  (local $envlen i32)
   (local $addrStrRegion i32)
   (local $addrBzRegion i32)
-  (local $ndx i32)
-  (local $valueptr i32)
-  (local $valuelen i32)
   (local $canonres i32)
-  (local.set $envregionptr (i32.load (global.get $cwEnvRegionPtrPtr)))
-  (local.set $envptr (i32.load (local.get $envregionptr)))
-  (local.set $envlen (i32.load (i32.add (local.get $envregionptr) (i32.const 4))))
 
-  (local.set $ndx (call $searchForString (local.get $envptr) (local.get $envlen) (global.get $jsonFieldContractAddress) (global.get $jsonFieldContractAddressLen)))
-
-  (if (i32.gt_s (local.get $ndx) (i32.const -1))
+  (local.set $addrStrRegion (call $extractContractAddress))
+  (if (i32.gt_s (local.get $addrStrRegion) (i32.const 0))
     (then
-      (local.set $valueptr (i32.add (i32.add (local.get $ndx) (local.get $envptr)) (global.get $jsonFieldContractAddressLen)))
-
-      ;; time is a string in cosmwasm, add 1 for "
-      (local.set $valueptr (i32.add (local.get $valueptr) (i32.const 1)))
-      (local.set $valuelen (call $getStringValueLengthFromJsonField
-        (local.get $valueptr)
-        (i32.sub (local.get $envlen) (local.get $ndx))
-      ))
-
-      (local.set $addrStrRegion (call $cw_region (local.get $valueptr) (local.get $valuelen)))
       (local.set $addrBzRegion (call $cw_region (local.get $resultptr) (i32.const 32)))
 
       (local.set $canonres (call $cw_addr_canonicalize (local.get $addrStrRegion) (local.get $addrBzRegion)))
@@ -303,8 +282,79 @@
   (call $cw_abort (call $cw_region (local.get $destptr) (local.get $hexlen)))
 )
 
-;; ethereum_getBalance ;; TODO
-(func $getBalance (param i32) (nop))
+;; ethereum_getBalance
+(func $getBalance (param $resultptr i32)
+  (local $result i32)
+  (local $addrStrRegion i32)
+  (local $deltaoffset i32)
+  (local $currentptr i32)
+  (local $tmplen i32)
+  (local $requestRegion i32)
+  (local $responseData i32)
+
+  ;; TODO change denom
+  ;; {"bank":{"balance":{"address":"","denom":"denom"}}}
+
+  ;; {"bank":
+  ;; 7b 22 62 61 6e 6b 22 3a
+  (i64.store (global.get $cosmwasmScratchSpace) (i64.const 0x3a226b6e6162227b))
+
+  ;; {"balanc
+  ;; 7b 22 62 61 6c 61 6e 63
+  (i64.store (i32.add (global.get $cosmwasmScratchSpace) (i32.const 8)) (i64.const 0x636e616c6162227b))
+
+  ;; e":{"add
+  ;; 65 22 3a 7b 22 61 64 64
+  (i64.store (i32.add (global.get $cosmwasmScratchSpace) (i32.const 16)) (i64.const 0x646461227b3a2265))
+
+  ;; ress":"
+  ;; 72 65 73 73 22 3a 22 00
+  (i64.store (i32.add (global.get $cosmwasmScratchSpace) (i32.const 24)) (i64.const 0x00223a2273736572))
+
+  (local.set $deltaoffset (i32.const 31))
+
+  (local.set $addrStrRegion (call $extractContractAddress))
+
+  (call $cw_debug (local.get $addrStrRegion))
+  (call $cw_debug (call $cw_region (global.get $cosmwasmScratchSpace) (local.get $deltaoffset)))
+
+  (if (i32.gt_u (local.get $addrStrRegion) (i32.const 0))
+    (then
+      (local.set $tmplen (i32.load (i32.add (local.get $addrStrRegion) (i32.const 4))))
+      (call $copyMemory
+        (i32.load (local.get $addrStrRegion))
+        (local.get $tmplen)
+        (i32.add (global.get $cosmwasmScratchSpace) (local.get $deltaoffset))
+      )
+      (local.set $deltaoffset (i32.add (local.get $deltaoffset) (local.get $tmplen)))
+    )
+  )
+
+  (call $cw_debug (call $cw_region (global.get $cosmwasmScratchSpace) (local.get $deltaoffset)))
+
+  ;; ","denom":"denom"}
+  ;; ","denom":"denom"}}}
+  (local.set $currentptr (i32.add (global.get $cosmwasmScratchSpace) (local.get $deltaoffset)))
+  (i64.store (local.get $currentptr) (i64.const 0x6d6f6e6564222c22  )) ;; 222c2264656e6f6d
+  (local.set $currentptr (i32.add (local.get $currentptr) (i32.const 8)))
+  (i64.store (local.get $currentptr) (i64.const 0x6d6f6e6564223a22  )) ;; 223a2264656e6f6d
+  (local.set $currentptr (i32.add (local.get $currentptr) (i32.const 8)))
+  (i32.store (local.get $currentptr) (i32.const 0x7d7d7d22)) ;; 227d7d7d
+
+  (call $cw_debug (call $cw_region (global.get $cosmwasmScratchSpace) (local.get $deltaoffset)))
+
+  (local.set $deltaoffset (i32.add (local.get $deltaoffset) (i32.const 20)))
+  (local.set $requestRegion (call $cw_region (global.get $cosmwasmScratchSpace)(local.get $deltaoffset)))
+
+  (call $cw_debug (local.get $requestRegion))
+
+  ;; set response pointer in waiting to be allocated
+  (local.set $responseData (i32.add (global.get $cosmwasmScratchSpace)(local.get $deltaoffset)))
+  (i32.store (global.get $ptrInWaitingForAllocPtr) (local.get $responseData))
+
+  (local.set $result (call $cw_query_chain (local.get $requestRegion)))
+  (call $doDebug (local.get $result))
+)
 
 ;; ethereum_selfDestruct ;; TODO
 (func $selfDestruct (param i32) (nop))
@@ -492,8 +542,11 @@
   (global $jsonFieldInfoFundsAmount i32  (i32.const 117901))
   (global $jsonFieldInfoFundsAmountLen i32  (i32.const 25))
 
+  ;; scratch space for temporary operations 10000 bytes - e.g. composing requests
+  (global $cosmwasmScratchSpace i32  (i32.const 118228))
+
   ;;  pre-execution allocation dynamic memory
-  (global $preExecutionAllocStart i32  (i32.const 118228))
+  (global $preExecutionAllocStart i32  (i32.const 128228))
 
   (type $et12 (func))
   (func $ewasm_env_1 (export "interface_version_8") (type $et12) (nop))
@@ -755,6 +808,37 @@
     (i32.store (i32.add (local.get $returnptr) (i32.const 8)) (local.get $totaldatalen))
 
     (local.get $returnptr)
+  )
+
+  (func $extractContractAddress (result i32)
+    (local $envregionptr i32)
+    (local $envptr i32)
+    (local $envlen i32)
+    (local $addrStrRegion i32)
+    (local $ndx i32)
+    (local $valueptr i32)
+    (local $valuelen i32)
+    (local.set $envregionptr (i32.load (global.get $cwEnvRegionPtrPtr)))
+    (local.set $envptr (i32.load (local.get $envregionptr)))
+    (local.set $envlen (i32.load (i32.add (local.get $envregionptr) (i32.const 4))))
+
+    (local.set $ndx (call $searchForString (local.get $envptr) (local.get $envlen) (global.get $jsonFieldContractAddress) (global.get $jsonFieldContractAddressLen)))
+
+    (if (i32.gt_s (local.get $ndx) (i32.const -1))
+      (then
+        (local.set $valueptr (i32.add (i32.add (local.get $ndx) (local.get $envptr)) (global.get $jsonFieldContractAddressLen)))
+
+        ;; time is a string in cosmwasm, add 1 for "
+        (local.set $valueptr (i32.add (local.get $valueptr) (i32.const 1)))
+        (local.set $valuelen (call $getStringValueLengthFromJsonField
+          (local.get $valueptr)
+          (i32.sub (local.get $envlen) (local.get $ndx))
+        ))
+
+        (local.set $addrStrRegion (call $cw_region (local.get $valueptr) (local.get $valuelen)))
+      )
+    )
+    (local.get $addrStrRegion)
   )
 
   (func $shiftAddress (param $startptr i32)
