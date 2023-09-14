@@ -1,21 +1,229 @@
-;; evm interpreter for cosmwasm
-;; the base is evm_interpreter.wat
+
 (module
   (func $cw_abort (import "env" "abort") (param i32))
-  (func $cw_db_read (import "env" "db_read") (param i32) (result i32))
-  (func $cw_db_write (import "env" "db_write") (param i32 i32))
-  (func $cw_db_remove (import "env" "db_remove") (param i32))
-  (func $cw_db_scan (import "env" "db_scan") (param i32 i32 i32) (result i32))
-  (func $cw_db_next (import "env" "db_next") (param i32) (result i32))
-  (func $cw_addr_validate (import "env" "addr_validate") (param i32) (result i32))
-  (func $cw_addr_canonicalize (import "env" "addr_canonicalize") (param i32 i32) (result i32))
-  (func $cw_addr_humanize (import "env" "addr_humanize") (param i32 i32) (result i32))
-  (func $cw_secp256k1_verify (import "env" "secp256k1_verify") (param i32 i32 i32) (result i32))
-  (func $cw_secp256k1_recover_pubkey (import "env" "secp256k1_recover_pubkey") (param i32 i32 i32) (result i64))
-  (func $cw_ed25519_verify (import "env" "ed25519_verify") (param i32 i32 i32) (result i32))
-  (func $cw_ed25519_batch_verify (import "env" "ed25519_batch_verify") (param i32 i32 i32) (result i32))
-  (func $cw_query_chain (import "env" "query_chain") (param i32) (result i32))
-  (func $cw_debug (import "env" "debug") (param i32))
+(func $cw_db_read (import "env" "db_read") (param i32) (result i32))
+(func $cw_db_write (import "env" "db_write") (param i32 i32))
+(func $cw_db_remove (import "env" "db_remove") (param i32))
+(func $cw_db_scan (import "env" "db_scan") (param i32 i32 i32) (result i32))
+(func $cw_db_next (import "env" "db_next") (param i32) (result i32))
+(func $cw_addr_validate (import "env" "addr_validate") (param i32) (result i32))
+(func $cw_addr_canonicalize (import "env" "addr_canonicalize") (param i32 i32) (result i32))
+(func $cw_addr_humanize (import "env" "addr_humanize") (param i32 i32) (result i32))
+(func $cw_secp256k1_verify (import "env" "secp256k1_verify") (param i32 i32 i32) (result i32))
+(func $cw_secp256k1_recover_pubkey (import "env" "secp256k1_recover_pubkey") (param i32 i32 i32) (result i64))
+(func $cw_ed25519_verify (import "env" "ed25519_verify") (param i32 i32 i32) (result i32))
+(func $cw_ed25519_batch_verify (import "env" "ed25519_batch_verify") (param i32 i32 i32) (result i32))
+(func $cw_query_chain (import "env" "query_chain") (param i32) (result i32))
+(func $cw_debug (import "env" "debug") (param i32))
+
+
+  (type $et12 (func))
+  (func $ewasm_env_1 (export "ewasm_env_1") (type $et12) (nop))
+
+
+
+  (global $cb_dest (mut i32) (i32.const 0))
+  (global $sp (mut i32) (i32.const -32))
+  (global $init (mut i32) (i32.const 0))
+
+  ;; memory related global
+  ;; (global $evmbytecodestart i32  (i32.const 66600))
+  ;; (global $memstart i32  (i32.const 107560))
+  ;; the number of 256 words stored in memory
+  (global $wordCount (mut i64) (i64.const 0))
+  ;; what was charged for the last memory allocation
+  (global $prevMemCost (mut i64) (i64.const 0))
+
+  ;; for SHL, SHR, SAR
+  (global $global_ (mut i64) (i64.const 0))
+  (global $global__1 (mut i64) (i64.const 0))
+  (global $global__2 (mut i64) (i64.const 0))
+
+  (func $get_sp (export "get_sp") (result i32) (global.get $sp))
+  (func $get_memstart (export "get_memstart") (result i32) (i32.load (global.get $memstartevm)))
+  (func $get_wordCount (export "get_wordCount") (result i64) (global.get $wordCount))
+
+
+  ;; TODO: memory should only be 1, but can't resize right now
+  (memory 500)
+  (export "memory" (memory 0))
+
+
+;; save returndata ptr & length
+(global $returndataPtrPtr i32  (i32.const 107560))
+(global $returndataLenPtr i32  (i32.const 107564))
+
+;; reserved space for base64 table 100 bytes -> 107568 -> 107668
+(global $b64tabledata i32 (i32.const 107568))
+
+;; reserved space for errors 200 bytes -> 107668 -> 107868
+(global $panicAllocation i32  (i32.const 107668))
+(global $panicAllocationLen i32  (i32.const 32))
+(data (i32.const 107668) "panic: allocated pointer invalid")
+
+(global $panicAllocationAfterExec i32  (i32.const 107700))
+(global $panicAllocationAfterExecLen i32  (i32.const 37))
+(data (i32.const 107700) "panic: preallocated pointer not found")
+
+(global $panicCwRegionsOverflow i32  (i32.const 107737))
+(global $panicCwRegionsOverflowLen i32  (i32.const 26))
+(data (i32.const 107737) "panic: cw regions overflow")
+
+;; CosmWasm regions - last free pointer
+(global $cwregionsptrFreePtr i32 (i32.const 107868)) ;; ptr to free ptr for cw regions
+;; reserved space for CosmWasm regions 10000 bytes 107772 -> 117772
+(global $cwregionsptrStart i32 (i32.const 107772))
+(global $cwregionsptrEnd i32 (i32.const 117768))
+(global $ptrInWaitingForAllocPtr i32  (i32.const 117772)) ;; ptr to wip allocation ptr
+
+;; misc
+(global $firststackslottmp i32 (i32.const 117776)) ;; 32 bytes slot
+(global $cwEnvRegionPtrPtr i32  (i32.const 117808)) ;; ptr to env ptr
+(global $cwInfoRegionPtrPtr i32  (i32.const 117812)) ;; ptr to info ptr
+(global $cwMsgRegionPtrPtr i32  (i32.const 117816)) ;; ptr to msg ptr
+
+;; EVM memory start
+(global $memstartevm i32  (i32.const 117820)) ;; ptr to EVM memory start (unlimited)
+
+;; pre-execution allocation dynamic memory starts at 118228
+(global $preExecutionAllocFreePtrPtr i32  (i32.const 117824)) ;; ptr to free ptr
+
+;; json fields of interest
+;; ENV
+;; BLOCK
+(data (i32.const 117828) "\"block\":")
+(global $jsonFieldBlock i32  (i32.const 117828))
+(global $jsonFieldBlockLen i32  (i32.const 8))
+
+(data (i32.const 117836) "\"height\":")
+(global $jsonFieldBlockHeight i32  (i32.const 117836))
+(global $jsonFieldBlockHeightLen i32  (i32.const 9))
+
+(data (i32.const 117845) "\"time\":")
+(global $jsonFieldBlockTime i32  (i32.const 117845))
+(global $jsonFieldBlockTimeLen i32  (i32.const 7))
+
+(data (i32.const 117852) "\"chain_id\":")
+(global $jsonFieldBlockChainId i32  (i32.const 117852))
+(global $jsonFieldBlockChainIdLen i32  (i32.const 11))
+
+;; CONTRACT
+(data (i32.const 117863) "\"contract\":")
+(global $jsonFieldContract i32  (i32.const 117863))
+(global $jsonFieldContractLen i32  (i32.const 11))
+
+(data (i32.const 117874) "\"address\":")
+(global $jsonFieldContractAddress i32  (i32.const 117874))
+(global $jsonFieldContractAddressLen i32  (i32.const 10))
+
+;; MESSAGE INFO
+(data (i32.const 117884) "\"sender\":")
+(global $jsonFieldInfoSender i32  (i32.const 117884))
+(global $jsonFieldInfoSenderLen i32  (i32.const 9))
+
+(data (i32.const 117893) "\"funds\":")
+(global $jsonFieldInfoFunds i32  (i32.const 117893))
+(global $jsonFieldInfoFundsLen i32  (i32.const 8))
+
+;; funds -> amount
+(data (i32.const 117901) "\"denom\":\"denom\",\"amount\":")
+(global $jsonFieldInfoFundsAmount i32  (i32.const 117901))
+(global $jsonFieldInfoFundsAmountLen i32  (i32.const 25))
+
+;; query response
+(data (i32.const 117926) "\"ok\":")
+(global $jsonFieldResponseOk i32  (i32.const 117926))
+(global $jsonFieldResponseOkLen i32  (i32.const 5))
+
+;; scratch space for temporary operations 10000 bytes - e.g. composing requests
+(global $cosmwasmScratchSpace i32  (i32.const 118228))
+
+;;  pre-execution allocation dynamic memory
+(global $preExecutionAllocStart i32  (i32.const 128228))
+
+
+  (func $cosmwasm_version (export "interface_version_8") (type $et12) (nop))
+
+(func $instantiateEntry
+      (export "instantiate")
+      (param $envptr i32)
+      (param $infoptr i32)
+      (param $msgptr i32)
+      (result i32)
+      (i32.store (global.get $cwEnvRegionPtrPtr) (local.get $envptr))
+      (i32.store (global.get $cwInfoRegionPtrPtr) (local.get $infoptr))
+      (i32.store (global.get $cwMsgRegionPtrPtr) (local.get $msgptr))
+      (call $instantiate)
+      (call $setEmptyReturnData)
+)
+
+(func $mainEntry
+      (export "execute")
+      (param $envptr i32)
+      (param $infoptr i32)
+      (param $msgptr i32)
+      (result i32)
+      (i32.store (global.get $cwEnvRegionPtrPtr) (local.get $envptr))
+      (i32.store (global.get $cwInfoRegionPtrPtr) (local.get $infoptr))
+      (i32.store (global.get $cwMsgRegionPtrPtr) (local.get $msgptr))
+      (call $main)
+      (call $setReturnDataExecute)
+)
+
+(func $queryEntry
+      (export "query")
+      (param $envptr i32)
+      (param $msgptr i32)
+      (result i32)
+      (i32.store (global.get $cwEnvRegionPtrPtr) (local.get $envptr))
+      (i32.store (global.get $cwMsgRegionPtrPtr) (local.get $msgptr))
+      (call $main)
+      (call $setReturnDataQuery)
+)
+
+
+;; rust region: offset 4b, capacity 4b, length 4b
+(func $cw_allocate (export "allocate") (param $size i32) (result i32)
+  (local $regionptr i32)
+  (local $dataptr i32)
+  (local $postdataptr i32)
+  (local $ptrInWaiting i32)
+
+  (call $memoryInit)
+
+  ;; (call $debugI32 (i32.const 0x11111111))
+  ;; (call $debugI32 (local.get $size))
+
+  (local.set $ptrInWaiting (i32.load (global.get $ptrInWaitingForAllocPtr)))
+
+  (if (i32.gt_u (local.get $ptrInWaiting) (i32.const 0))
+    (then
+      (local.set $dataptr (local.get $ptrInWaiting))
+      (i32.store (global.get $ptrInWaitingForAllocPtr) (i32.const 0))
+    )
+    (else
+      ;; panic if execution allocation was already done
+      (if (i32.gt_u (i32.load (global.get $cwMsgRegionPtrPtr)) (i32.const 0))
+        (then (call $cw_abort (call $cw_region (global.get $panicAllocationAfterExec) (global.get $panicAllocationAfterExecLen))))
+      )
+
+      ;; fill in the dynamic memory (pre memstartevm)
+      (local.set $dataptr (i32.load (global.get $preExecutionAllocFreePtrPtr)))
+      (local.set $postdataptr (i32.add (local.get $dataptr) (local.get $size)))
+
+      ;; update free memory pointer & memstartevm
+      (i32.store (global.get $preExecutionAllocFreePtrPtr) (local.get $postdataptr))
+      (i32.store (global.get $memstartevm) (local.get $postdataptr))
+    )
+  )
+  (local.set $regionptr (call $cw_region (local.get $dataptr) (local.get $size)))
+  (local.get $regionptr)
+)
+
+;; TODO
+(func $cw_deallocate (export "deallocate") (param $regionptr i32) (nop))
+
+
 
 ;; ethereum_getAddress
 (func $getAddress (param $resultptr i32)
@@ -490,984 +698,791 @@
   )
 )
 
-  ;; save returndata ptr & length
-  (global $returndataPtrPtr i32  (i32.const 107560))
-  (global $returndataLenPtr i32  (i32.const 107564))
-
-  ;; reserved space for base64 table 100 bytes -> 107568 -> 107668
-  (global $b64tabledata i32 (i32.const 107568))
-
-  ;; reserved space for errors 200 bytes -> 107668 -> 107868
-  (global $panicAllocation i32  (i32.const 107668))
-  (global $panicAllocationLen i32  (i32.const 32))
-  (data (i32.const 107668) "panic: allocated pointer invalid")
-
-  (global $panicAllocationAfterExec i32  (i32.const 107700))
-  (global $panicAllocationAfterExecLen i32  (i32.const 37))
-  (data (i32.const 107700) "panic: preallocated pointer not found")
-
-  (global $panicCwRegionsOverflow i32  (i32.const 107737))
-  (global $panicCwRegionsOverflowLen i32  (i32.const 26))
-  (data (i32.const 107737) "panic: cw regions overflow")
-
-  ;; CosmWasm regions - last free pointer
-  (global $cwregionsptrFreePtr i32 (i32.const 107868)) ;; ptr to free ptr for cw regions
-  ;; reserved space for CosmWasm regions 10000 bytes 107772 -> 117772
-  (global $cwregionsptrStart i32 (i32.const 107772))
-  (global $cwregionsptrEnd i32 (i32.const 117768))
-  (global $ptrInWaitingForAllocPtr i32  (i32.const 117772)) ;; ptr to wip allocation ptr
-
-  ;; misc
-  (global $firststackslottmp i32 (i32.const 117776)) ;; 32 bytes slot
-  (global $cwEnvRegionPtrPtr i32  (i32.const 117808)) ;; ptr to env ptr
-  (global $cwInfoRegionPtrPtr i32  (i32.const 117812)) ;; ptr to info ptr
-  (global $cwMsgRegionPtrPtr i32  (i32.const 117816)) ;; ptr to msg ptr
-
-  ;; EVM memory start
-  (global $memstartevm i32  (i32.const 117820)) ;; ptr to EVM memory start (unlimited)
-
-  ;; pre-execution allocation dynamic memory starts at 118228
-  (global $preExecutionAllocFreePtrPtr i32  (i32.const 117824)) ;; ptr to free ptr
-
-  ;; json fields of interest
-  ;; ENV
-  ;; BLOCK
-  (data (i32.const 117828) "\"block\":")
-  (global $jsonFieldBlock i32  (i32.const 117828))
-  (global $jsonFieldBlockLen i32  (i32.const 8))
-
-  (data (i32.const 117836) "\"height\":")
-  (global $jsonFieldBlockHeight i32  (i32.const 117836))
-  (global $jsonFieldBlockHeightLen i32  (i32.const 9))
-
-  (data (i32.const 117845) "\"time\":")
-  (global $jsonFieldBlockTime i32  (i32.const 117845))
-  (global $jsonFieldBlockTimeLen i32  (i32.const 7))
-
-  (data (i32.const 117852) "\"chain_id\":")
-  (global $jsonFieldBlockChainId i32  (i32.const 117852))
-  (global $jsonFieldBlockChainIdLen i32  (i32.const 11))
-
-  ;; CONTRACT
-  (data (i32.const 117863) "\"contract\":")
-  (global $jsonFieldContract i32  (i32.const 117863))
-  (global $jsonFieldContractLen i32  (i32.const 11))
-
-  (data (i32.const 117874) "\"address\":")
-  (global $jsonFieldContractAddress i32  (i32.const 117874))
-  (global $jsonFieldContractAddressLen i32  (i32.const 10))
-
-  ;; MESSAGE INFO
-  (data (i32.const 117884) "\"sender\":")
-  (global $jsonFieldInfoSender i32  (i32.const 117884))
-  (global $jsonFieldInfoSenderLen i32  (i32.const 9))
-
-  (data (i32.const 117893) "\"funds\":")
-  (global $jsonFieldInfoFunds i32  (i32.const 117893))
-  (global $jsonFieldInfoFundsLen i32  (i32.const 8))
-
-  ;; funds -> amount
-  (data (i32.const 117901) "\"denom\":\"denom\",\"amount\":")
-  (global $jsonFieldInfoFundsAmount i32  (i32.const 117901))
-  (global $jsonFieldInfoFundsAmountLen i32  (i32.const 25))
-
-  ;; query response
-  (data (i32.const 117926) "\"ok\":")
-  (global $jsonFieldResponseOk i32  (i32.const 117926))
-  (global $jsonFieldResponseOkLen i32  (i32.const 5))
-
-  ;; scratch space for temporary operations 10000 bytes - e.g. composing requests
-  (global $cosmwasmScratchSpace i32  (i32.const 118228))
-
-  ;;  pre-execution allocation dynamic memory
-  (global $preExecutionAllocStart i32  (i32.const 128228))
-
-  (type $et12 (func))
-  (func $ewasm_env_1 (export "interface_version_8") (type $et12) (nop))
-
-  (func $cw_region (param $valueptr i32) (param $valuelen i32) (result i32)
-    (local $regionptr i32)
-    (local.set $regionptr (i32.load (global.get $cwregionsptrFreePtr)))
-    ;; cosmwasm panics at offset 0
-    (if (i32.eqz (local.get $valueptr))
-      (then
-        (call $copyMemory (local.get $valueptr) (i32.const 32) (global.get $firststackslottmp))
-        (local.set $valueptr (global.get $firststackslottmp))
-      )
-    )
-
-    ;; panic if region ptr overflow
-    (if (i32.gt_u (local.get $regionptr) (global.get $cwregionsptrEnd) )
-      (then (call $cw_abort (call $cw_region (global.get $panicCwRegionsOverflow) (global.get $panicCwRegionsOverflowLen))))
-    )
-
-    ;; offset
-    (i32.store (local.get $regionptr) (local.get $valueptr))
-    ;; capacity
-    (i32.store (i32.add (local.get $regionptr) (i32.const 4)) (local.get $valuelen))
-    ;; length
-    (i32.store (i32.add (local.get $regionptr) (i32.const 8)) (local.get $valuelen))
-    (i32.store (global.get $cwregionsptrFreePtr) (i32.add (local.get $regionptr) (i32.const 12)))
-    (local.get $regionptr)
-  )
-
-  (func $debugI32 (param $value i32)
-    (local $ptr i32)
-    (local.set $ptr (i32.const 108826))
-    (i32.store (local.get $ptr) (local.get $value))
-    (call $doDebugAndDealloc (call $cw_region (local.get $ptr) (i32.const 4)))
-  )
-
-  (func $doDebug (param $regionptr i32)
-    (call $cw_debug (local.get $regionptr))
-  )
-  (func $doDebugAndDealloc (param $regionptr i32)
-    (call $cw_debug (local.get $regionptr))
-    (call $region_dealloc (local.get $regionptr))
-  )
-
-  ;; only dealloc if region is last allocated
-  (func $region_dealloc (param $regionptr i32)
-    (i32.store (local.get $regionptr) (i32.const 0))
-    (i32.store (i32.add (local.get $regionptr) (i32.const 4)) (i32.const 0))
-    (i32.store (i32.add (local.get $regionptr) (i32.const 8)) (i32.const 0))
-    (i32.store (global.get $cwregionsptrFreePtr) (local.get $regionptr))
-  )
-
-  ;; rust region: offset 4b, capacity 4b, length 4b
-  (func $cw_allocate (export "allocate") (param $size i32) (result i32)
-    (local $regionptr i32)
-    (local $dataptr i32)
-    (local $postdataptr i32)
-    (local $ptrInWaiting i32)
-
-    (call $memoryInit)
-
-    ;; (call $debugI32 (i32.const 0x11111111))
-    ;; (call $debugI32 (local.get $size))
-
-    (local.set $ptrInWaiting (i32.load (global.get $ptrInWaitingForAllocPtr)))
-
-    (if (i32.gt_u (local.get $ptrInWaiting) (i32.const 0))
-      (then
-        (local.set $dataptr (local.get $ptrInWaiting))
-        (i32.store (global.get $ptrInWaitingForAllocPtr) (i32.const 0))
-      )
-      (else
-        ;; panic if execution allocation was already done
-        (if (i32.gt_u (i32.load (global.get $cwMsgRegionPtrPtr)) (i32.const 0))
-          (then (call $cw_abort (call $cw_region (global.get $panicAllocationAfterExec) (global.get $panicAllocationAfterExecLen))))
-        )
-
-        ;; fill in the dynamic memory (pre memstartevm)
-        (local.set $dataptr (i32.load (global.get $preExecutionAllocFreePtrPtr)))
-        (local.set $postdataptr (i32.add (local.get $dataptr) (local.get $size)))
-
-        ;; update free memory pointer & memstartevm
-        (i32.store (global.get $preExecutionAllocFreePtrPtr) (local.get $postdataptr))
-        (i32.store (global.get $memstartevm) (local.get $postdataptr))
-      )
-    )
-    (local.set $regionptr (call $cw_region (local.get $dataptr) (local.get $size)))
-    (local.get $regionptr)
-  )
-
-  ;; TODO
-  (func $cw_deallocate (export "deallocate") (param $regionptr i32) (nop))
 
   (func $memoryInit
-    ;; initialize memstartevm if not initialized
-    (if (i32.eqz (i32.load (global.get $memstartevm)))
-      (then (i32.store (global.get $memstartevm) (global.get $preExecutionAllocStart)))
+  ;; initialize memstartevm if not initialized
+  (if (i32.eqz (i32.load (global.get $memstartevm)))
+    (then (i32.store (global.get $memstartevm) (global.get $preExecutionAllocStart)))
+  )
+
+  ;; initialize CosmWasm regions if not initialized
+  (if (i32.eqz (i32.load (global.get $cwregionsptrFreePtr)))
+    (then (i32.store (global.get $cwregionsptrFreePtr) (global.get $cwregionsptrStart)))
+  )
+
+  ;; initialize preExecutionAllocFreePtrPtr if not initialized
+  (if (i32.eqz (i32.load (global.get $preExecutionAllocFreePtrPtr)))
+    (then (i32.store (global.get $preExecutionAllocFreePtrPtr) (global.get $preExecutionAllocStart)))
+  )
+)
+
+(func $cw_region (param $valueptr i32) (param $valuelen i32) (result i32)
+  (local $regionptr i32)
+  (local.set $regionptr (i32.load (global.get $cwregionsptrFreePtr)))
+  ;; cosmwasm panics at offset 0
+  (if (i32.eqz (local.get $valueptr))
+    (then
+      (call $copyMemory (local.get $valueptr) (i32.const 32) (global.get $firststackslottmp))
+      (local.set $valueptr (global.get $firststackslottmp))
     )
+  )
 
-    ;; initialize CosmWasm regions if not initialized
-    (if (i32.eqz (i32.load (global.get $cwregionsptrFreePtr)))
-      (then (i32.store (global.get $cwregionsptrFreePtr) (global.get $cwregionsptrStart)))
+  ;; panic if region ptr overflow
+  (if (i32.gt_u (local.get $regionptr) (global.get $cwregionsptrEnd) )
+    (then (call $cw_abort (call $cw_region (global.get $panicCwRegionsOverflow) (global.get $panicCwRegionsOverflowLen))))
+  )
+
+  ;; offset
+  (i32.store (local.get $regionptr) (local.get $valueptr))
+  ;; capacity
+  (i32.store (i32.add (local.get $regionptr) (i32.const 4)) (local.get $valuelen))
+  ;; length
+  (i32.store (i32.add (local.get $regionptr) (i32.const 8)) (local.get $valuelen))
+  (i32.store (global.get $cwregionsptrFreePtr) (i32.add (local.get $regionptr) (i32.const 12)))
+  (local.get $regionptr)
+)
+
+(func $debugI32 (param $value i32)
+  (local $ptr i32)
+  (local.set $ptr (i32.const 108826))
+  (i32.store (local.get $ptr) (local.get $value))
+  (call $doDebugAndDealloc (call $cw_region (local.get $ptr) (i32.const 4)))
+)
+
+(func $doDebug (param $regionptr i32)
+  (call $cw_debug (local.get $regionptr))
+)
+(func $doDebugAndDealloc (param $regionptr i32)
+  (call $cw_debug (local.get $regionptr))
+  (call $region_dealloc (local.get $regionptr))
+)
+
+;; only dealloc if region is last allocated
+(func $region_dealloc (param $regionptr i32)
+  (i32.store (local.get $regionptr) (i32.const 0))
+  (i32.store (i32.add (local.get $regionptr) (i32.const 4)) (i32.const 0))
+  (i32.store (i32.add (local.get $regionptr) (i32.const 8)) (i32.const 0))
+  (i32.store (global.get $cwregionsptrFreePtr) (local.get $regionptr))
+)
+
+
+(func $setEmptyReturnData (result i32)
+  (local $returnptr i32)
+  (local.set $returnptr (i32.const 0))
+
+  ;; 7b226f6b223a7b226d65737361676573223a6e756c6c2c2264617461223a6e756c6c2c2261747472696275746573223a6e756c6c2c226576656e7473223a6e756c6c7d7d
+  ;; {"ok":{"messages":null,"data":null,"attributes":null,"events":null}}
+
+  (i64.store (i32.const 12) (i64.const 0x227b3a226b6f227b)) ;; inverse 0x7b226f6b223a7b22
+  (i64.store (i32.const 20) (i64.const 0x736567617373656d)) ;; 6d65737361676573
+  (i64.store (i32.const 28) (i64.const 0x222c6c6c756e3a22)) ;; 223a6e756c6c2c22
+  (i64.store (i32.const 36) (i64.const 0x756e3a2261746164)) ;; 64617461223a6e75
+  (i64.store (i32.const 44) (i64.const 0x72747461222c6c6c)) ;; 6c6c2c2261747472
+  (i64.store (i32.const 52) (i64.const 0x3a22736574756269)) ;; 696275746573223a
+  (i64.store (i32.const 60) (i64.const 0x7665222c6c6c756e)) ;; 6e756c6c2c226576
+  (i64.store (i32.const 68) (i64.const 0x756e3a2273746e65)) ;; 656e7473223a6e75
+  (i32.store (i32.const 76) (i32.const 0x7d7d6c6c)) ;; 6c6c7d7d
+
+  (i32.store (local.get $returnptr) (i32.const 12))
+  (i32.store (i32.add (local.get $returnptr) (i32.const 4)) (i32.const 68) )
+  (i32.store (i32.add (local.get $returnptr) (i32.const 8)) (i32.const 68) )
+  (local.get $returnptr)
+)
+
+(func $setReturnDataExecute (result i32)
+  (local $returnptr i32)
+  (local $currentptr i32)
+  (local $datalen i32)
+  (local $totaldatalen i32)
+  (local $datahexptr i32)
+  ;; we just write a region before the returndataPtrPtr
+  ;; this memory should not be reused after returning the result
+
+  (local.set $datalen (i32.load (global.get $returndataLenPtr)))
+
+  (local.set $returnptr (i32.const 0))
+  (i32.store (local.get $returnptr) (i32.const 12))
+
+  ;; 7b226f6b223a7b226d65737361676573223a6e756c6c2c2261747472696275746573223a6e756c6c2c226576656e7473223a6e756c6c2c2264617461223a22
+  ;; {"ok":{"messages":null,"attributes":null,"events":null,"data":"
+
+  (i64.store (i32.const 12) (i64.const 0x227b3a226b6f227b)) ;; inverse 0x7b226f6b223a7b22
+  (i64.store (i32.const 20) (i64.const 0x736567617373656d)) ;; 0x6d65737361676573
+  (i64.store (i32.const 28) (i64.const 0x222c6c6c756e3a22)) ;; 0x223a6e756c6c2c22
+  (i64.store (i32.const 36) (i64.const 0x7475626972747461)) ;; 0x6174747269627574
+  (i64.store (i32.const 44) (i64.const 0x6c6c756e3a227365)) ;; 0x6573223a6e756c6c
+  (i64.store (i32.const 52) (i64.const 0x73746e657665222c)) ;; 0x2c226576656e7473
+  (i64.store (i32.const 60) (i64.const 0x222c6c6c756e3a22)) ;; 0x223a6e756c6c2c22
+  (i64.store (i32.const 68) (i64.const 0x00223a2261746164)) ;; 0x64617461223a2200
+  (local.set $totaldatalen (i32.const 63))
+  (local.set $currentptr (i32.const 75))
+
+  ;; transform returndata to base64
+  (local.set $datalen (call $b64encode
+    (i32.load (global.get $returndataPtrPtr))
+    (local.get $datalen)
+    (local.get $currentptr)
+  ))
+  (local.set $totaldatalen (i32.add (local.get $totaldatalen) (local.get $datalen)))
+  (local.set $currentptr (i32.add (local.get $currentptr) (local.get $datalen)))
+
+  ;; 227d7d
+  ;; "}}
+  (i32.store (local.get $currentptr) (i32.const 0x22))
+  (i32.store (i32.add (local.get $currentptr) (i32.const 1)) (i32.const 0x7d))
+  (i32.store (i32.add (local.get $currentptr) (i32.const 2)) (i32.const 0x7d))
+  (local.set $totaldatalen (i32.add (local.get $totaldatalen) (i32.const 3)))
+
+  (i32.store (i32.add (local.get $returnptr) (i32.const 4)) (local.get $totaldatalen))
+  (i32.store (i32.add (local.get $returnptr) (i32.const 8)) (local.get $totaldatalen))
+
+  (local.get $returnptr)
+)
+(func $setReturnDataQuery (result i32)
+  (local $returnptr i32)
+  (local $currentptr i32)
+  (local $datalen i32)
+  (local $totaldatalen i32)
+  (local $datahexptr i32)
+  ;; we just write a region before the returndataPtrPtr
+  ;; this memory should not be reused after returning the result
+
+  (local.set $datalen (i32.load (global.get $returndataLenPtr)))
+
+  (local.set $returnptr (i32.const 0))
+  (i32.store (local.get $returnptr) (i32.const 12))
+
+  ;; 7b226572726f72223a6e756c6c2c226f6b223a22
+  ;; {"error":null,"ok":"
+  (i64.store (i32.const 12) (i64.const 0x22726f727265227b)) ;; inverse 0x7b226572726f7222
+  (i64.store (i32.const 20) (i64.const 0x6f222c6c6c756e3a)) ;; inverse 0x3a6e756c6c2c226f
+  (i32.store (i32.const 28) (i32.const 0x223a226b)) ;; inverse 0x6b223a22
+  (local.set $totaldatalen (i32.const 20))
+  (local.set $currentptr (i32.const 32))
+
+  ;; transform returndata to base64
+  (local.set $datalen (call $b64encode
+    (i32.load (global.get $returndataPtrPtr))
+    (local.get $datalen)
+    (local.get $currentptr)
+  ))
+  (local.set $totaldatalen (i32.add (local.get $totaldatalen) (local.get $datalen)))
+  (local.set $currentptr (i32.add (local.get $currentptr) (local.get $datalen)))
+
+  ;; 227d
+  ;; "}
+  (i32.store (local.get $currentptr) (i32.const 0x22))
+  (i32.store (i32.add (local.get $currentptr) (i32.const 1)) (i32.const 0x7d))
+  (local.set $totaldatalen (i32.add (local.get $totaldatalen) (i32.const 2)))
+
+  (i32.store (i32.add (local.get $returnptr) (i32.const 4)) (local.get $totaldatalen))
+  (i32.store (i32.add (local.get $returnptr) (i32.const 8)) (local.get $totaldatalen))
+
+  (local.get $returnptr)
+)
+
+(func $extractContractAddress (result i32)
+  (local $envregionptr i32)
+  (local $envptr i32)
+  (local $envlen i32)
+  (local $addrStrRegion i32)
+  (local $ndx i32)
+  (local $valueptr i32)
+  (local $valuelen i32)
+  (local.set $envregionptr (i32.load (global.get $cwEnvRegionPtrPtr)))
+  (local.set $envptr (i32.load (local.get $envregionptr)))
+  (local.set $envlen (i32.load (i32.add (local.get $envregionptr) (i32.const 4))))
+
+  (local.set $ndx (call $searchForString (local.get $envptr) (local.get $envlen) (global.get $jsonFieldContractAddress) (global.get $jsonFieldContractAddressLen)))
+
+  (if (i32.gt_s (local.get $ndx) (i32.const -1))
+    (then
+      (local.set $valueptr (i32.add (i32.add (local.get $ndx) (local.get $envptr)) (global.get $jsonFieldContractAddressLen)))
+
+      ;; time is a string in cosmwasm, add 1 for "
+      (local.set $valueptr (i32.add (local.get $valueptr) (i32.const 1)))
+      (local.set $valuelen (call $getStringValueLengthFromJsonField
+        (local.get $valueptr)
+        (i32.sub (local.get $envlen) (local.get $ndx))
+      ))
+
+      (local.set $addrStrRegion (call $cw_region (local.get $valueptr) (local.get $valuelen)))
     )
-
-    ;; initialize preExecutionAllocFreePtrPtr if not initialized
-    (if (i32.eqz (i32.load (global.get $preExecutionAllocFreePtrPtr)))
-      (then (i32.store (global.get $preExecutionAllocFreePtrPtr) (global.get $preExecutionAllocStart)))
-    )
   )
+  (local.get $addrStrRegion)
+)
 
-  (func $instantiateEntry
-        (export "instantiate")
-        (param $envptr i32)
-        (param $infoptr i32)
-        (param $msgptr i32)
-        (result i32)
-        (i32.store (global.get $cwEnvRegionPtrPtr) (local.get $envptr))
-        (i32.store (global.get $cwInfoRegionPtrPtr) (local.get $infoptr))
-        (i32.store (global.get $cwMsgRegionPtrPtr) (local.get $msgptr))
-        (call $instantiate)
-        (call $setEmptyReturnData)
-  )
+(func $shiftAddress (param $startptr i32)
+  (local $destptr i32)
+  (local $part1 i32)
+  (local $part2 i32)
+  (local $part3 i32)
+  (local $part4 i32)
+  (local $part5 i32)
 
-  (func $mainEntry
-        (export "execute")
-        (param $envptr i32)
-        (param $infoptr i32)
-        (param $msgptr i32)
-        (result i32)
-        (i32.store (global.get $cwEnvRegionPtrPtr) (local.get $envptr))
-        (i32.store (global.get $cwInfoRegionPtrPtr) (local.get $infoptr))
-        (i32.store (global.get $cwMsgRegionPtrPtr) (local.get $msgptr))
-        (call $main)
-        (call $setReturnDataExecute)
-  )
+  (local.set $destptr (i32.add (local.get $startptr) (i32.const 12)))
+  (local.set $part1 (i32.load (local.get $startptr)))
+  (local.set $part2 (i32.load (i32.add (local.get $startptr) (i32.const 4))))
+  (local.set $part3 (i32.load (i32.add (local.get $startptr) (i32.const 8))))
+  (local.set $part4 (i32.load (i32.add (local.get $startptr) (i32.const 12))))
+  (local.set $part5 (i32.load (i32.add (local.get $startptr) (i32.const 16))))
 
-  (func $queryEntry
-        (export "query")
-        (param $envptr i32)
-        (param $msgptr i32)
-        (result i32)
-        (i32.store (global.get $cwEnvRegionPtrPtr) (local.get $envptr))
-        (i32.store (global.get $cwMsgRegionPtrPtr) (local.get $msgptr))
-        (call $main)
-        (call $setReturnDataQuery)
-  )
+  (i32.store (local.get $destptr) (local.get $part1))
+  (i32.store (i32.add (local.get $destptr) (i32.const 4)) (local.get $part2))
+  (i32.store (i32.add (local.get $destptr) (i32.const 8)) (local.get $part3))
+  (i32.store (i32.add (local.get $destptr) (i32.const 12)) (local.get $part4))
+  (i32.store (i32.add (local.get $destptr) (i32.const 16)) (local.get $part5))
+)
 
-  (func $setEmptyReturnData (result i32)
-    (local $returnptr i32)
-    (local.set $returnptr (i32.const 0))
+(func $copyMemory (param $sourcePointer i32) (param $sourceLength i32) (param $destinationAddr i32)
+  (local $i i32)
+  ;; Initialize loop counter
+  (local.set $i (i32.const 0))
 
-    ;; 7b226f6b223a7b226d65737361676573223a6e756c6c2c2264617461223a6e756c6c2c2261747472696275746573223a6e756c6c2c226576656e7473223a6e756c6c7d7d
-    ;; {"ok":{"messages":null,"data":null,"attributes":null,"events":null}}
+  (block $copyMemoryBlock
+    (loop $copyMemoryLoop
+      ;; Compare loop counter to source length
+      ;; if $i is greater than or equal $sourceLength
+      (i32.ge_u (local.get $i) (local.get $sourceLength))
+      (br_if $copyMemoryBlock)  ;; Exit the loop
 
-    (i64.store (i32.const 12) (i64.const 0x227b3a226b6f227b)) ;; inverse 0x7b226f6b223a7b22
-    (i64.store (i32.const 20) (i64.const 0x736567617373656d)) ;; 6d65737361676573
-    (i64.store (i32.const 28) (i64.const 0x222c6c6c756e3a22)) ;; 223a6e756c6c2c22
-    (i64.store (i32.const 36) (i64.const 0x756e3a2261746164)) ;; 64617461223a6e75
-    (i64.store (i32.const 44) (i64.const 0x72747461222c6c6c)) ;; 6c6c2c2261747472
-    (i64.store (i32.const 52) (i64.const 0x3a22736574756269)) ;; 696275746573223a
-    (i64.store (i32.const 60) (i64.const 0x7665222c6c6c756e)) ;; 6e756c6c2c226576
-    (i64.store (i32.const 68) (i64.const 0x756e3a2273746e65)) ;; 656e7473223a6e75
-    (i32.store (i32.const 76) (i32.const 0x7d7d6c6c)) ;; 6c6c7d7d
-
-    (i32.store (local.get $returnptr) (i32.const 12))
-    (i32.store (i32.add (local.get $returnptr) (i32.const 4)) (i32.const 68) )
-    (i32.store (i32.add (local.get $returnptr) (i32.const 8)) (i32.const 68) )
-    (local.get $returnptr)
-  )
-
-  (func $setReturnDataExecute (result i32)
-    (local $returnptr i32)
-    (local $currentptr i32)
-    (local $datalen i32)
-    (local $totaldatalen i32)
-    (local $datahexptr i32)
-    ;; we just write a region before the returndataPtrPtr
-    ;; this memory should not be reused after returning the result
-
-    (local.set $datalen (i32.load (global.get $returndataLenPtr)))
-
-    (local.set $returnptr (i32.const 0))
-    (i32.store (local.get $returnptr) (i32.const 12))
-
-    ;; 7b226f6b223a7b226d65737361676573223a6e756c6c2c2261747472696275746573223a6e756c6c2c226576656e7473223a6e756c6c2c2264617461223a22
-    ;; {"ok":{"messages":null,"attributes":null,"events":null,"data":"
-
-    (i64.store (i32.const 12) (i64.const 0x227b3a226b6f227b)) ;; inverse 0x7b226f6b223a7b22
-    (i64.store (i32.const 20) (i64.const 0x736567617373656d)) ;; 0x6d65737361676573
-    (i64.store (i32.const 28) (i64.const 0x222c6c6c756e3a22)) ;; 0x223a6e756c6c2c22
-    (i64.store (i32.const 36) (i64.const 0x7475626972747461)) ;; 0x6174747269627574
-    (i64.store (i32.const 44) (i64.const 0x6c6c756e3a227365)) ;; 0x6573223a6e756c6c
-    (i64.store (i32.const 52) (i64.const 0x73746e657665222c)) ;; 0x2c226576656e7473
-    (i64.store (i32.const 60) (i64.const 0x222c6c6c756e3a22)) ;; 0x223a6e756c6c2c22
-    (i64.store (i32.const 68) (i64.const 0x00223a2261746164)) ;; 0x64617461223a2200
-    (local.set $totaldatalen (i32.const 63))
-    (local.set $currentptr (i32.const 75))
-
-    ;; transform returndata to base64
-    (local.set $datalen (call $b64encode
-      (i32.load (global.get $returndataPtrPtr))
-      (local.get $datalen)
-      (local.get $currentptr)
-    ))
-    (local.set $totaldatalen (i32.add (local.get $totaldatalen) (local.get $datalen)))
-    (local.set $currentptr (i32.add (local.get $currentptr) (local.get $datalen)))
-
-    ;; 227d7d
-    ;; "}}
-    (i32.store (local.get $currentptr) (i32.const 0x22))
-    (i32.store (i32.add (local.get $currentptr) (i32.const 1)) (i32.const 0x7d))
-    (i32.store (i32.add (local.get $currentptr) (i32.const 2)) (i32.const 0x7d))
-    (local.set $totaldatalen (i32.add (local.get $totaldatalen) (i32.const 3)))
-
-    (i32.store (i32.add (local.get $returnptr) (i32.const 4)) (local.get $totaldatalen))
-    (i32.store (i32.add (local.get $returnptr) (i32.const 8)) (local.get $totaldatalen))
-
-    (local.get $returnptr)
-  )
-  (func $setReturnDataQuery (result i32)
-    (local $returnptr i32)
-    (local $currentptr i32)
-    (local $datalen i32)
-    (local $totaldatalen i32)
-    (local $datahexptr i32)
-    ;; we just write a region before the returndataPtrPtr
-    ;; this memory should not be reused after returning the result
-
-    (local.set $datalen (i32.load (global.get $returndataLenPtr)))
-
-    (local.set $returnptr (i32.const 0))
-    (i32.store (local.get $returnptr) (i32.const 12))
-
-    ;; 7b226572726f72223a6e756c6c2c226f6b223a22
-    ;; {"error":null,"ok":"
-    (i64.store (i32.const 12) (i64.const 0x22726f727265227b)) ;; inverse 0x7b226572726f7222
-    (i64.store (i32.const 20) (i64.const 0x6f222c6c6c756e3a)) ;; inverse 0x3a6e756c6c2c226f
-    (i32.store (i32.const 28) (i32.const 0x223a226b)) ;; inverse 0x6b223a22
-    (local.set $totaldatalen (i32.const 20))
-    (local.set $currentptr (i32.const 32))
-
-    ;; transform returndata to base64
-    (local.set $datalen (call $b64encode
-      (i32.load (global.get $returndataPtrPtr))
-      (local.get $datalen)
-      (local.get $currentptr)
-    ))
-    (local.set $totaldatalen (i32.add (local.get $totaldatalen) (local.get $datalen)))
-    (local.set $currentptr (i32.add (local.get $currentptr) (local.get $datalen)))
-
-    ;; 227d
-    ;; "}
-    (i32.store (local.get $currentptr) (i32.const 0x22))
-    (i32.store (i32.add (local.get $currentptr) (i32.const 1)) (i32.const 0x7d))
-    (local.set $totaldatalen (i32.add (local.get $totaldatalen) (i32.const 2)))
-
-    (i32.store (i32.add (local.get $returnptr) (i32.const 4)) (local.get $totaldatalen))
-    (i32.store (i32.add (local.get $returnptr) (i32.const 8)) (local.get $totaldatalen))
-
-    (local.get $returnptr)
-  )
-
-  (func $extractContractAddress (result i32)
-    (local $envregionptr i32)
-    (local $envptr i32)
-    (local $envlen i32)
-    (local $addrStrRegion i32)
-    (local $ndx i32)
-    (local $valueptr i32)
-    (local $valuelen i32)
-    (local.set $envregionptr (i32.load (global.get $cwEnvRegionPtrPtr)))
-    (local.set $envptr (i32.load (local.get $envregionptr)))
-    (local.set $envlen (i32.load (i32.add (local.get $envregionptr) (i32.const 4))))
-
-    (local.set $ndx (call $searchForString (local.get $envptr) (local.get $envlen) (global.get $jsonFieldContractAddress) (global.get $jsonFieldContractAddressLen)))
-
-    (if (i32.gt_s (local.get $ndx) (i32.const -1))
-      (then
-        (local.set $valueptr (i32.add (i32.add (local.get $ndx) (local.get $envptr)) (global.get $jsonFieldContractAddressLen)))
-
-        ;; time is a string in cosmwasm, add 1 for "
-        (local.set $valueptr (i32.add (local.get $valueptr) (i32.const 1)))
-        (local.set $valuelen (call $getStringValueLengthFromJsonField
-          (local.get $valueptr)
-          (i32.sub (local.get $envlen) (local.get $ndx))
-        ))
-
-        (local.set $addrStrRegion (call $cw_region (local.get $valueptr) (local.get $valuelen)))
+      ;; Store the byte in destination memory
+      (i32.store8
+        (local.get $destinationAddr)
+        ;; Load a byte from source memory
+        (i32.load8_u (local.get $sourcePointer))
       )
+
+      ;; Update memory addresses and loop counter
+      (local.set $i (i32.add (local.get $i) (i32.const 1)))
+      (local.set $sourcePointer (i32.add (local.get $sourcePointer) (i32.const 1)))
+      (local.set $destinationAddr (i32.add (local.get $destinationAddr) (i32.const 1)))
+
+      (br $copyMemoryLoop)  ;; Continue the loop
     )
-    (local.get $addrStrRegion)
   )
+)
 
-  (func $shiftAddress (param $startptr i32)
-    (local $destptr i32)
-    (local $part1 i32)
-    (local $part2 i32)
-    (local $part3 i32)
-    (local $part4 i32)
-    (local $part5 i32)
+;; base64 encoding thanks to https://github.com/michaelg29/webassembly-tutorial/blob/main/base64/base64.wat
+;; b64 encoding table
+;; b64tabledata global
+(data (;0;) (i32.const 107568) "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
+;; b64 encode function
+(func $b64encode (export "b64encode")
+    (param $str i32)
+    (param $strlen i32)
+    (param $out i32)
+    (result i32)
 
-    (local.set $destptr (i32.add (local.get $startptr) (i32.const 12)))
-    (local.set $part1 (i32.load (local.get $startptr)))
-    (local.set $part2 (i32.load (i32.add (local.get $startptr) (i32.const 4))))
-    (local.set $part3 (i32.load (i32.add (local.get $startptr) (i32.const 8))))
-    (local.set $part4 (i32.load (i32.add (local.get $startptr) (i32.const 12))))
-    (local.set $part5 (i32.load (i32.add (local.get $startptr) (i32.const 16))))
+    (local $len i32) ;; output string length
+    (local $val i32) ;; temporary value
+    (local $shiftAmt i32) ;; amount to shift by
+    (local $minShiftAmt i32)
 
-    (i32.store (local.get $destptr) (local.get $part1))
-    (i32.store (i32.add (local.get $destptr) (i32.const 4)) (local.get $part2))
-    (i32.store (i32.add (local.get $destptr) (i32.const 8)) (local.get $part3))
-    (i32.store (i32.add (local.get $destptr) (i32.const 12)) (local.get $part4))
-    (i32.store (i32.add (local.get $destptr) (i32.const 16)) (local.get $part5))
-  )
+    i32.const 0
+    local.set $len
 
-  (func $copyMemory (param $sourcePointer i32) (param $sourceLength i32) (param $destinationAddr i32)
-    (local $i i32)
-    ;; Initialize loop counter
-    (local.set $i (i32.const 0))
+    ;; main loop
+    (block $encodeBlock
+        ;; set input cursor upper bound
+        local.get $str
+        local.get $strlen
+        i32.add
+        local.set $strlen
 
-    (block $copyMemoryBlock
-      (loop $copyMemoryLoop
-        ;; Compare loop counter to source length
-        ;; if $i is greater than or equal $sourceLength
-        (i32.ge_u (local.get $i) (local.get $sourceLength))
-        (br_if $copyMemoryBlock)  ;; Exit the loop
+        ;; iterate through three octets, output four base64 characters
+        (loop $encodeLoop
+            local.get $str
+            local.get $strlen
+            i32.ge_s
+            br_if $encodeBlock
 
-        ;; Store the byte in destination memory
-        (i32.store8
-          (local.get $destinationAddr)
-          ;; Load a byte from source memory
-          (i32.load8_u (local.get $sourcePointer))
+            i32.const 18
+            local.set $minShiftAmt
+
+            ;; load three octets
+            (block $readOctetsBlock
+                i32.const 0
+                local.set $val
+
+                i32.const 16
+                local.set $shiftAmt
+
+                (loop $readOctetsLoop
+                    local.get $str
+                    local.get $strlen
+                    i32.ge_s
+                    br_if $readOctetsBlock
+
+                    local.get $str ;; input cursor
+                    i32.load8_u ;; load in byte (stack = byte)
+                    local.get $shiftAmt ;; (stack = byte, shiftAmt)
+                    i32.shl ;; shift octet into position (stack = byte << shiftAmt)
+                    local.get $val ;; (stack = byte', $val)
+                    i32.or ;; combine octet with existing concatenation
+                    local.set $val
+
+                    ;; increment step ;;
+
+                    ;; decrease shift amount
+                    local.get $shiftAmt
+                    i32.const 8
+                    i32.sub
+                    local.set $shiftAmt
+
+                    ;; decrease minimum shift amount for next step
+                    local.get $minShiftAmt
+                    i32.const 6
+                    i32.sub
+                    local.set $minShiftAmt
+
+                    ;; advance input cursor
+                    local.get $str
+                    i32.const 1
+                    i32.add
+                    local.set $str
+
+                    ;; loop if shift amount is not -8
+                    local.get $shiftAmt
+                    i32.const -8
+                    i32.ne
+                    br_if $readOctetsLoop
+                )
+            )
+
+            ;; write four base64 characters
+            (block $outputBlock
+                i32.const 18
+                local.set $shiftAmt
+
+                (loop $outputLoop
+                    local.get $out ;; output cursor
+                    local.get $val ;; (stack = $val)
+                    local.get $shiftAmt ;; (stack = $val, $shiftAmt)
+                    i32.shr_u ;; shift to position (stack = $val')
+                    i32.const 63 ;; bit mask 0x3f (stack = $val', 63)
+                    i32.and ;; apply bit mask (stack = $val' & 0x3f)
+                    global.get $b64tabledata
+                    i32.add ;; add table delta offset
+                    i32.load8_u ;; encode character (stack = $out, $char)
+                    i32.store8 ;; store character
+
+                    ;; increment step ;;
+                    local.get $shiftAmt
+                    i32.const 6
+                    i32.sub
+                    local.set $shiftAmt
+
+                    ;; increment length
+                    local.get $len
+                    i32.const 1
+                    i32.add
+                    local.set $len
+
+                    ;; increment cursor
+                    local.get $out
+                    i32.const 1
+                    i32.add
+                    local.set $out
+
+                    ;; loop if shift amount is above the minimum
+                    local.get $shiftAmt
+                    local.get $minShiftAmt
+                    i32.ge_s
+                    br_if $outputLoop
+                    ;; br $outputBlock
+                )
+            )
+
+            br $encodeLoop
         )
-
-        ;; Update memory addresses and loop counter
-        (local.set $i (i32.add (local.get $i) (i32.const 1)))
-        (local.set $sourcePointer (i32.add (local.get $sourcePointer) (i32.const 1)))
-        (local.set $destinationAddr (i32.add (local.get $destinationAddr) (i32.const 1)))
-
-        (br $copyMemoryLoop)  ;; Continue the loop
-      )
     )
-  )
 
-  ;; base64 encoding thanks to https://github.com/michaelg29/webassembly-tutorial/blob/main/base64/base64.wat
-  ;; b64 encoding table
-  ;; b64tabledata global
-  (data (;0;) (i32.const 107568) "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
-  ;; b64 encode function
-  (func $b64encode (export "b64encode")
-      (param $str i32)
-      (param $strlen i32)
-      (param $out i32)
-      (result i32)
+    ;; padding
+    (block $padBlock
+        (loop $padLoop
+            ;; break if no more characters to pad
+            local.get $len
+            i32.const 3 ;; bit mask
+            i32.and
+            i32.const 0
+            i32.eq
+            br_if $padBlock ;; break if divisible by 4
 
-      (local $len i32) ;; output string length
-      (local $val i32) ;; temporary value
-      (local $shiftAmt i32) ;; amount to shift by
-      (local $minShiftAmt i32)
+            ;; store padding character
+            local.get $out ;; cursor
+            i32.const 61 ;; padding character '='
+            i32.store8
 
-      i32.const 0
-      local.set $len
+            ;; increment step ;;
 
-      ;; main loop
-      (block $encodeBlock
-          ;; set input cursor upper bound
-          local.get $str
-          local.get $strlen
-          i32.add
-          local.set $strlen
+            local.get $len
+            i32.const 1
+            i32.add
+            local.set $len
 
-          ;; iterate through three octets, output four base64 characters
-          (loop $encodeLoop
-              local.get $str
-              local.get $strlen
-              i32.ge_s
-              br_if $encodeBlock
+            local.get $out
+            i32.const 1
+            i32.add
+            local.set $out
 
-              i32.const 18
-              local.set $minShiftAmt
-
-              ;; load three octets
-              (block $readOctetsBlock
-                  i32.const 0
-                  local.set $val
-
-                  i32.const 16
-                  local.set $shiftAmt
-
-                  (loop $readOctetsLoop
-                      local.get $str
-                      local.get $strlen
-                      i32.ge_s
-                      br_if $readOctetsBlock
-
-                      local.get $str ;; input cursor
-                      i32.load8_u ;; load in byte (stack = byte)
-                      local.get $shiftAmt ;; (stack = byte, shiftAmt)
-                      i32.shl ;; shift octet into position (stack = byte << shiftAmt)
-                      local.get $val ;; (stack = byte', $val)
-                      i32.or ;; combine octet with existing concatenation
-                      local.set $val
-
-                      ;; increment step ;;
-
-                      ;; decrease shift amount
-                      local.get $shiftAmt
-                      i32.const 8
-                      i32.sub
-                      local.set $shiftAmt
-
-                      ;; decrease minimum shift amount for next step
-                      local.get $minShiftAmt
-                      i32.const 6
-                      i32.sub
-                      local.set $minShiftAmt
-
-                      ;; advance input cursor
-                      local.get $str
-                      i32.const 1
-                      i32.add
-                      local.set $str
-
-                      ;; loop if shift amount is not -8
-                      local.get $shiftAmt
-                      i32.const -8
-                      i32.ne
-                      br_if $readOctetsLoop
-                  )
-              )
-
-              ;; write four base64 characters
-              (block $outputBlock
-                  i32.const 18
-                  local.set $shiftAmt
-
-                  (loop $outputLoop
-                      local.get $out ;; output cursor
-                      local.get $val ;; (stack = $val)
-                      local.get $shiftAmt ;; (stack = $val, $shiftAmt)
-                      i32.shr_u ;; shift to position (stack = $val')
-                      i32.const 63 ;; bit mask 0x3f (stack = $val', 63)
-                      i32.and ;; apply bit mask (stack = $val' & 0x3f)
-                      global.get $b64tabledata
-                      i32.add ;; add table delta offset
-                      i32.load8_u ;; encode character (stack = $out, $char)
-                      i32.store8 ;; store character
-
-                      ;; increment step ;;
-                      local.get $shiftAmt
-                      i32.const 6
-                      i32.sub
-                      local.set $shiftAmt
-
-                      ;; increment length
-                      local.get $len
-                      i32.const 1
-                      i32.add
-                      local.set $len
-
-                      ;; increment cursor
-                      local.get $out
-                      i32.const 1
-                      i32.add
-                      local.set $out
-
-                      ;; loop if shift amount is above the minimum
-                      local.get $shiftAmt
-                      local.get $minShiftAmt
-                      i32.ge_s
-                      br_if $outputLoop
-                      ;; br $outputBlock
-                  )
-              )
-
-              br $encodeLoop
-          )
-      )
-
-      ;; padding
-      (block $padBlock
-          (loop $padLoop
-              ;; break if no more characters to pad
-              local.get $len
-              i32.const 3 ;; bit mask
-              i32.and
-              i32.const 0
-              i32.eq
-              br_if $padBlock ;; break if divisible by 4
-
-              ;; store padding character
-              local.get $out ;; cursor
-              i32.const 61 ;; padding character '='
-              i32.store8
-
-              ;; increment step ;;
-
-              local.get $len
-              i32.const 1
-              i32.add
-              local.set $len
-
-              local.get $out
-              i32.const 1
-              i32.add
-              local.set $out
-
-              br $padLoop
-          )
-      )
-
-      ;; terminator character
-      local.get $out ;; cursor
-      i32.const 0
-      i32.store8
-
-      ;; return length
-      local.get $len
-  )
-
-  ;; char2num, b64decode taken from https://github.com/mitschabaude/fast-base64/blob/main/wat/base64.wat
-  (func $b64decode (export "b64decode")
-    (param $start i32) (param $end i32) (param $dest i32)
-    (local $i i32)
-    (local $j i32)
-    (local $x i32)
-    (local.set $i (local.get $start))
-    (local.set $j (local.get $dest))
-
-    (loop
-      (i32.load8_u (local.get $i))
-      call $char2num
-      i32.const 18
-      i32.shl
-
-      (i32.load8_u (i32.add (local.get $i) (i32.const 1)))
-      call $char2num
-      i32.const 12
-      i32.shl
-
-      i32.or
-
-      (i32.load8_u (i32.add (local.get $i) (i32.const 2)))
-      call $char2num
-      i32.const 6
-      i32.shl
-
-      i32.or
-
-      (i32.load8_u (i32.add (local.get $i) (i32.const 3)))
-      call $char2num
-
-      i32.or
-      local.set $x
-
-      local.get $j
-      local.get $x
-      i32.const 16
-      i32.shr_u
-      i32.store8
-
-      (i32.add (local.get $j) (i32.const 1))
-      local.get $x
-      i32.const 8
-      i32.shr_u
-      i32.const 0xff
-      i32.and
-      i32.store8
-
-      (i32.add (local.get $j) (i32.const 2))
-      local.get $x
-      i32.const 0xff
-      i32.and
-      i32.store8
-
-      (local.set $i (i32.add (local.get $i) (i32.const 4)))
-      (local.set $j (i32.add (local.get $j) (i32.const 3)))
-      (i32.lt_u (local.get $i) (local.get $end))
-      br_if 0
+            br $padLoop
+        )
     )
-  )
 
-  (func $char2num (param $x i32) (result i32)
-    ;; x + 4 - (x > 64) * 69 - (x > 96) * 6 + (x === 43) * 15 + (x === 47) * 12
+    ;; terminator character
+    local.get $out ;; cursor
+    i32.const 0
+    i32.store8
+
+    ;; return length
+    local.get $len
+)
+
+;; char2num, b64decode taken from https://github.com/mitschabaude/fast-base64/blob/main/wat/base64.wat
+(func $b64decode (export "b64decode")
+  (param $start i32) (param $end i32) (param $dest i32)
+  (local $i i32)
+  (local $j i32)
+  (local $x i32)
+  (local.set $i (local.get $start))
+  (local.set $j (local.get $dest))
+
+  (loop
+    (i32.load8_u (local.get $i))
+    call $char2num
+    i32.const 18
+    i32.shl
+
+    (i32.load8_u (i32.add (local.get $i) (i32.const 1)))
+    call $char2num
+    i32.const 12
+    i32.shl
+
+    i32.or
+
+    (i32.load8_u (i32.add (local.get $i) (i32.const 2)))
+    call $char2num
+    i32.const 6
+    i32.shl
+
+    i32.or
+
+    (i32.load8_u (i32.add (local.get $i) (i32.const 3)))
+    call $char2num
+
+    i32.or
+    local.set $x
+
+    local.get $j
     local.get $x
-    i32.const 4
-    i32.add
+    i32.const 16
+    i32.shr_u
+    i32.store8
 
-    (i32.mul
-      (i32.gt_u (local.get $x) (i32.const 64))
-      (i32.const 69)
-    )
-    i32.sub
+    (i32.add (local.get $j) (i32.const 1))
+    local.get $x
+    i32.const 8
+    i32.shr_u
+    i32.const 0xff
+    i32.and
+    i32.store8
 
-    (i32.mul
-      (i32.gt_u (local.get $x) (i32.const 96))
-      (i32.const 6)
-    )
-    i32.sub
+    (i32.add (local.get $j) (i32.const 2))
+    local.get $x
+    i32.const 0xff
+    i32.and
+    i32.store8
 
-    (i32.mul
-      (i32.eq (local.get $x) (i32.const 43))
-      (i32.const 15)
-    )
-    i32.add
+    (local.set $i (i32.add (local.get $i) (i32.const 4)))
+    (local.set $j (i32.add (local.get $j) (i32.const 3)))
+    (i32.lt_u (local.get $i) (local.get $end))
+    br_if 0
+  )
+)
 
-    (i32.mul
-      (i32.eq (local.get $x) (i32.const 47))
-      (i32.const 12)
+(func $char2num (param $x i32) (result i32)
+  ;; x + 4 - (x > 64) * 69 - (x > 96) * 6 + (x === 43) * 15 + (x === 47) * 12
+  local.get $x
+  i32.const 4
+  i32.add
+
+  (i32.mul
+    (i32.gt_u (local.get $x) (i32.const 64))
+    (i32.const 69)
+  )
+  i32.sub
+
+  (i32.mul
+    (i32.gt_u (local.get $x) (i32.const 96))
+    (i32.const 6)
+  )
+  i32.sub
+
+  (i32.mul
+    (i32.eq (local.get $x) (i32.const 43))
+    (i32.const 15)
+  )
+  i32.add
+
+  (i32.mul
+    (i32.eq (local.get $x) (i32.const 47))
+    (i32.const 12)
+  )
+  i32.add
+)
+
+(func $pow (export "pow") (param $base i64) (param $exp i32) (result i64)
+  (local $res i64)
+  (local.set $res (i64.const 1))
+  (block $powBlock
+    (loop $powLoop
+      (if (i32.and (local.get $exp) (i32.const 1))
+        (then (local.set $res (i64.mul (local.get $res) (local.get $base))))
+      )
+      (local.set $exp (i32.shr_u (local.get $exp) (i32.const 1)))
+
+      ;; if exp 0 break
+      (i32.eqz (local.get $exp))
+      (br_if $powBlock)
+
+      ;; exp > 0
+      (local.set $base (i64.mul (local.get $base) (local.get $base)))
+      (br $powLoop)  ;; Continue the loop
     )
-    i32.add
   )
 
-  (func $pow (export "pow") (param $base i64) (param $exp i32) (result i64)
-    (local $res i64)
-    (local.set $res (i64.const 1))
-    (block $powBlock
-      (loop $powLoop
-        (if (i32.and (local.get $exp) (i32.const 1))
-          (then (local.set $res (i64.mul (local.get $res) (local.get $base))))
+  (local.get $res)
+)
+
+(func $asciiToI64 (export "asciiToI64") (param $sourceptr i32) (param $sourcelen i32) (result i64)
+  (local $i i32)
+  (local $result i64)
+  (local $tempdigit i64)
+  (local $currentChar i32)
+  (local $isNegative i32)
+
+  ;; Initialize result and currentChar
+  (local.set $i (i32.const 0))
+  (local.set $result (i64.const 0))
+  (local.set $currentChar (i32.load8_u (local.get $sourceptr)))
+
+  ;; Check for negative sign (ascii -)
+  (local.set $isNegative (i32.eq  (i32.const 45) (local.get $currentChar)))
+  ;; If negative, move to the next character
+  (if (local.get $isNegative)
+    (then (local.set $sourceptr (i32.add (local.get $sourceptr) (i32.const 1))))
+  )
+
+  ;; Parse digits
+  (block $asciiToI64Block
+    (loop $asciiToI64Loop
+      (i32.ge_u (local.get $i) (local.get $sourcelen))
+      (br_if $asciiToI64Block) ;; Exit the loop
+
+      ;; sub ASCII zero
+      (local.set $currentChar (i32.load8_u (i32.add (local.get $sourceptr) (local.get $i))))
+      (local.set $tempdigit (i64.extend_i32_u (i32.sub (local.get $currentChar) (i32.const 48))))
+
+      ;; pow 10^x
+      (local.set $tempdigit (i64.mul (local.get $tempdigit) (call $pow  (i64.const 10) (i32.sub (i32.sub (local.get $sourcelen) (i32.const 1)) (local.get $i)))))
+
+      (local.set $result (i64.add (local.get $result) (local.get $tempdigit)))
+
+      ;; Update loop counter
+      (local.set $i (i32.add (local.get $i) (i32.const 1)))
+      (br $asciiToI64Loop)  ;; Continue the loop
+    )
+  )
+
+  ;; Apply negative sign if necessary
+  (if (local.get $isNegative)
+    (then (local.set $result (i64.mul (i64.const -1) (local.get $result))))
+  )
+  (local.get $result)
+)
+
+(func $getValueLengthFromJsonField (param $startptr i32) (param $sourcelen i32) (result i32)
+  ;; split at ,
+  (call $searchForChar (local.get $startptr) (local.get $sourcelen) (i32.const 44) )
+)
+
+(func $getStringValueLengthFromJsonField (param $startptr i32) (param $sourcelen i32) (result i32)
+  ;; split at "
+  (call $searchForChar (local.get $startptr) (local.get $sourcelen) (i32.const 34) )
+)
+
+(func $searchForString (export "searchForString") (param $sourceptr i32) (param $sourcelen i32) (param $wordptr i32) (param $wordlen i32) (result i32)
+  (local $foundptr i32)
+  (local $i i32)
+  (local $j i32)
+  (local $sourceChar i32)
+  (local $wordChar i32)
+  (local.set $foundptr (i32.const -1))
+  (local.set $i (i32.const 0))
+
+  (block $searchForStringBlock
+    (loop $searchForStringLoop
+      ;;;; loop exit conditions
+      ;; Compare loop counter to source length
+      ;; if $i is greater than or equal $length, exit
+      (if (i32.ge_u (local.get $i) (local.get $sourcelen))
+        (then
+          (local.set $foundptr (i32.const -1))
+          (br $searchForStringBlock) ;; Exit the loop
         )
-        (local.set $exp (i32.shr_u (local.get $exp) (i32.const 1)))
-
-        ;; if exp 0 break
-        (i32.eqz (local.get $exp))
-        (br_if $powBlock)
-
-        ;; exp > 0
-        (local.set $base (i64.mul (local.get $base) (local.get $base)))
-        (br $powLoop)  ;; Continue the loop
       )
-    )
 
-    (local.get $res)
-  )
+      ;;;; inner logic
+      ;; search for first char of the word
+      (local.set $foundptr (call $searchForChar
+        (i32.add (local.get $sourceptr) (local.get $i))
+        (i32.sub (local.get $sourcelen) (local.get $i))
+        (i32.load8_u (local.get $wordptr))
+      ))
 
-  (func $asciiToI64 (export "asciiToI64") (param $sourceptr i32) (param $sourcelen i32) (result i64)
-    (local $i i32)
-    (local $result i64)
-    (local $tempdigit i64)
-    (local $currentChar i32)
-    (local $isNegative i32)
-
-    ;; Initialize result and currentChar
-    (local.set $i (i32.const 0))
-    (local.set $result (i64.const 0))
-    (local.set $currentChar (i32.load8_u (local.get $sourceptr)))
-
-    ;; Check for negative sign (ascii -)
-    (local.set $isNegative (i32.eq  (i32.const 45) (local.get $currentChar)))
-    ;; If negative, move to the next character
-    (if (local.get $isNegative)
-      (then (local.set $sourceptr (i32.add (local.get $sourceptr) (i32.const 1))))
-    )
-
-    ;; Parse digits
-    (block $asciiToI64Block
-      (loop $asciiToI64Loop
-        (i32.ge_u (local.get $i) (local.get $sourcelen))
-        (br_if $asciiToI64Block) ;; Exit the loop
-
-        ;; sub ASCII zero
-        (local.set $currentChar (i32.load8_u (i32.add (local.get $sourceptr) (local.get $i))))
-        (local.set $tempdigit (i64.extend_i32_u (i32.sub (local.get $currentChar) (i32.const 48))))
-
-        ;; pow 10^x
-        (local.set $tempdigit (i64.mul (local.get $tempdigit) (call $pow  (i64.const 10) (i32.sub (i32.sub (local.get $sourcelen) (i32.const 1)) (local.get $i)))))
-
-        (local.set $result (i64.add (local.get $result) (local.get $tempdigit)))
-
-        ;; Update loop counter
-        (local.set $i (i32.add (local.get $i) (i32.const 1)))
-        (br $asciiToI64Loop)  ;; Continue the loop
+      ;; return if not found
+      (if (i32.eq (local.get $foundptr) (i32.const -1))
+        (then
+          (br $searchForStringBlock)
+        )
       )
-    )
 
-    ;; Apply negative sign if necessary
-    (if (local.get $isNegative)
-      (then (local.set $result (i64.mul (i64.const -1) (local.get $result))))
-    )
-    (local.get $result)
-  )
+      ;; add delta
+      (local.set $foundptr (i32.add (local.get $foundptr) (local.get $i)))
 
-  (func $getValueLengthFromJsonField (param $startptr i32) (param $sourcelen i32) (result i32)
-    ;; split at ,
-    (call $searchForChar (local.get $startptr) (local.get $sourcelen) (i32.const 44) )
-  )
+      ;; check if the entire word is contained
+      (local.set $j (i32.const 0))
+      (loop $searchForStringLoop2
+        ;; we reached the end of the word => we found it => return
+        (i32.ge_u (local.get $j) (local.get $wordlen))
+        (br_if $searchForStringBlock) ;; we found the string
 
-  (func $getStringValueLengthFromJsonField (param $startptr i32) (param $sourcelen i32) (result i32)
-    ;; split at "
-    (call $searchForChar (local.get $startptr) (local.get $sourcelen) (i32.const 34) )
-  )
-
-  (func $searchForString (export "searchForString") (param $sourceptr i32) (param $sourcelen i32) (param $wordptr i32) (param $wordlen i32) (result i32)
-    (local $foundptr i32)
-    (local $i i32)
-    (local $j i32)
-    (local $sourceChar i32)
-    (local $wordChar i32)
-    (local.set $foundptr (i32.const -1))
-    (local.set $i (i32.const 0))
-
-    (block $searchForStringBlock
-      (loop $searchForStringLoop
-        ;;;; loop exit conditions
-        ;; Compare loop counter to source length
-        ;; if $i is greater than or equal $length, exit
-        (if (i32.ge_u (local.get $i) (local.get $sourcelen))
+        (if (i32.ne
+            (i32.load8_u (i32.add (local.get $wordptr) (local.get $j)))
+            (i32.load8_u (i32.add (i32.add (local.get $sourceptr) (local.get $i)) (local.get $j)))
+          )
           (then
-            (local.set $foundptr (i32.const -1))
-            (br $searchForStringBlock) ;; Exit the loop
+            ;; Update main loop counter and return to it
+            (local.set $i (i32.add (local.get $i) (i32.const 1)))
+            (br $searchForStringLoop) ;; not word -> we continue the first loop
           )
         )
 
-        ;;;; inner logic
-        ;; search for first char of the word
-        (local.set $foundptr (call $searchForChar
-          (i32.add (local.get $sourceptr) (local.get $i))
-          (i32.sub (local.get $sourcelen) (local.get $i))
-          (i32.load8_u (local.get $wordptr))
-        ))
-
-        ;; return if not found
-        (if (i32.eq (local.get $foundptr) (i32.const -1))
-          (then
-            (br $searchForStringBlock)
-          )
-        )
-
-        ;; add delta
-        (local.set $foundptr (i32.add (local.get $foundptr) (local.get $i)))
-
-        ;; check if the entire word is contained
-        (local.set $j (i32.const 0))
-        (loop $searchForStringLoop2
-          ;; we reached the end of the word => we found it => return
-          (i32.ge_u (local.get $j) (local.get $wordlen))
-          (br_if $searchForStringBlock) ;; we found the string
-
-          (if (i32.ne
-              (i32.load8_u (i32.add (local.get $wordptr) (local.get $j)))
-              (i32.load8_u (i32.add (i32.add (local.get $sourceptr) (local.get $i)) (local.get $j)))
-            )
-            (then
-              ;; Update main loop counter and return to it
-              (local.set $i (i32.add (local.get $i) (i32.const 1)))
-              (br $searchForStringLoop) ;; not word -> we continue the first loop
-            )
-          )
-
-          ;; update loop2 counter
-          (local.set $j (i32.add (local.get $j) (i32.const 1)))
-          (br $searchForStringLoop2)
-        )
-
-        ;; Update loop counter
-        (local.set $i (i32.add (local.get $i) (i32.const 1)))
-        (br $searchForStringLoop)  ;; Continue the loop
+        ;; update loop2 counter
+        (local.set $j (i32.add (local.get $j) (i32.const 1)))
+        (br $searchForStringLoop2)
       )
+
+      ;; Update loop counter
+      (local.set $i (i32.add (local.get $i) (i32.const 1)))
+      (br $searchForStringLoop)  ;; Continue the loop
     )
-    (local.get $foundptr)
   )
+  (local.get $foundptr)
+)
 
-  (func $searchForChar (export "searchForChar") (param $sourceptr i32) (param $sourcelen i32) (param $asciival i32) (result i32)
-    (local $foundptr i32)
-    (local $i i32)
-    (local $tempvalue i32)
-    (local.set $i (i32.const 0))
-    (local.set $foundptr (i32.const -1))
+(func $searchForChar (export "searchForChar") (param $sourceptr i32) (param $sourcelen i32) (param $asciival i32) (result i32)
+  (local $foundptr i32)
+  (local $i i32)
+  (local $tempvalue i32)
+  (local.set $i (i32.const 0))
+  (local.set $foundptr (i32.const -1))
 
-    (block $searchForCharBlock
-      (loop $searchForCharLoop
-        ;; Compare loop counter to source length
-        ;; if $i is greater than or equal $length
-        (i32.ge_u (local.get $i) (local.get $sourcelen))
-        (br_if $searchForCharBlock)  ;; Exit the loop
+  (block $searchForCharBlock
+    (loop $searchForCharLoop
+      ;; Compare loop counter to source length
+      ;; if $i is greater than or equal $length
+      (i32.ge_u (local.get $i) (local.get $sourcelen))
+      (br_if $searchForCharBlock)  ;; Exit the loop
 
-        ;; Load a byte (uint8) from the source memory
-        (local.set $tempvalue (i32.load8_u (local.get $sourceptr)))
+      ;; Load a byte (uint8) from the source memory
+      (local.set $tempvalue (i32.load8_u (local.get $sourceptr)))
 
-        (if (i32.eq (local.get $tempvalue) (local.get $asciival))
-          (then
-            (local.set $foundptr (local.get $i))
-            (br $searchForCharBlock)
-          )
+      (if (i32.eq (local.get $tempvalue) (local.get $asciival))
+        (then
+          (local.set $foundptr (local.get $i))
+          (br $searchForCharBlock)
         )
-
-        ;; Update loop counter
-        (local.set $i (i32.add (local.get $i) (i32.const 1)))
-        (local.set $sourceptr (i32.add (local.get $sourceptr) (i32.const 1)))
-        (br $searchForCharLoop)  ;; Continue the loop
       )
+
+      ;; Update loop counter
+      (local.set $i (i32.add (local.get $i) (i32.const 1)))
+      (local.set $sourceptr (i32.add (local.get $sourceptr) (i32.const 1)))
+      (br $searchForCharLoop)  ;; Continue the loop
     )
-    (local.get $foundptr)
   )
+  (local.get $foundptr)
+)
 
-  ;; Loop to convert each byte (uint8) to a hex character
-  ;; destination must be double in length
-  (func $bytesToHex (export "bytesToHex") (param $sourceptr i32) (param $length i32) (param $destptr i32)
-    (local $i i32)
-    (local $tempvalue i32)
-    ;; Initialize loop counter
-    (local.set $i (i32.const 0))
+;; Loop to convert each byte (uint8) to a hex character
+;; destination must be double in length
+(func $bytesToHex (export "bytesToHex") (param $sourceptr i32) (param $length i32) (param $destptr i32)
+  (local $i i32)
+  (local $tempvalue i32)
+  ;; Initialize loop counter
+  (local.set $i (i32.const 0))
 
-    (block $bytesToHexBlock
-      (loop $bytesToHexLoop
-        ;; Compare loop counter to source length
-        ;; if $i is greater than or equal $length
-        (i32.ge_u (local.get $i) (local.get $length))
-        (br_if $bytesToHexBlock)  ;; Exit the loop
+  (block $bytesToHexBlock
+    (loop $bytesToHexLoop
+      ;; Compare loop counter to source length
+      ;; if $i is greater than or equal $length
+      (i32.ge_u (local.get $i) (local.get $length))
+      (br_if $bytesToHexBlock)  ;; Exit the loop
 
-        ;; Load a byte (uint8) from the source memory
-        (local.set $tempvalue (i32.load8_u (local.get $sourceptr)))
+      ;; Load a byte (uint8) from the source memory
+      (local.set $tempvalue (i32.load8_u (local.get $sourceptr)))
 
-        ;; Convert the byte to two hex characters and store in the hex string
-        ;; first nibble
-        (i32.store8
-          (local.get $destptr)
-          ;; value / 16
-          (call $nibbleToAscii (i32.div_u (local.get $tempvalue) (i32.const 16)))
-        )
-        ;; second nibble
-        (i32.store8
-          (i32.add (local.get $destptr) (i32.const 1))
-          ;; value % 16
-          (call $nibbleToAscii (i32.rem_u (local.get $tempvalue) (i32.const 16)))
-        )
-
-        ;; Update loop counter
-        (local.set $i (i32.add (local.get $i) (i32.const 1)))
-        (local.set $sourceptr (i32.add (local.get $sourceptr) (i32.const 1)))
-        (local.set $destptr (i32.add (local.get $destptr) (i32.const 2)))
-
-        (br $bytesToHexLoop)  ;; Continue the loop
+      ;; Convert the byte to two hex characters and store in the hex string
+      ;; first nibble
+      (i32.store8
+        (local.get $destptr)
+        ;; value / 16
+        (call $nibbleToAscii (i32.div_u (local.get $tempvalue) (i32.const 16)))
       )
-    )
+      ;; second nibble
+      (i32.store8
+        (i32.add (local.get $destptr) (i32.const 1))
+        ;; value % 16
+        (call $nibbleToAscii (i32.rem_u (local.get $tempvalue) (i32.const 16)))
+      )
 
-    ;; Null-terminate the hex string
-    (i32.store8
-      (i32.add (local.get $destptr) (local.get $length))
-      (i32.const 0)
+      ;; Update loop counter
+      (local.set $i (i32.add (local.get $i) (i32.const 1)))
+      (local.set $sourceptr (i32.add (local.get $sourceptr) (i32.const 1)))
+      (local.set $destptr (i32.add (local.get $destptr) (i32.const 2)))
+
+      (br $bytesToHexLoop)  ;; Continue the loop
     )
   )
 
-  ;; nibble must be < 16
-  ;; 0 -> 9: 0x30 -> 0x39 (48 -> 57)
-  ;; a -> f: 0x61 -> 0x66 (97 -> 102)
-  (func $nibbleToAscii (param $value i32) (result i32)
-    (local $asciival i32)
-    ;; add ascii code for 0
-    (local.set $asciival (i32.add (local.get $value) (i32.const 0x30)))
-    (if (i32.gt_u (local.get $value) (i32.const 9))
-      (then
-        (local.set $asciival (i32.add (i32.const 0x60)
-          (i32.sub (local.get $value) (i32.const 9))
-        ))
-      )
-    )
-    (local.get $asciival)
+  ;; Null-terminate the hex string
+  (i32.store8
+    (i32.add (local.get $destptr) (local.get $length))
+    (i32.const 0)
   )
+)
 
-  (global $cb_dest (mut i32) (i32.const 0))
-  (global $sp (mut i32) (i32.const -32))
-  (global $init (mut i32) (i32.const 0))
-
-  ;; memory related global
-  ;; (global $evmbytecodestart i32  (i32.const 66600))
-  ;; (global $memstart (mut i32)  (i32.const 107560))
-  ;; the number of 256 words stored in memory
-  (global $wordCount (mut i64) (i64.const 0))
-  ;; what was charged for the last memory allocation
-  (global $prevMemCost (mut i64) (i64.const 0))
-
-  ;; for SHL, SHR, SAR
-  (global $global_ (mut i64) (i64.const 0))
-  (global $global__1 (mut i64) (i64.const 0))
-  (global $global__2 (mut i64) (i64.const 0))
-
-  (func $get_sp (export "get_sp") (result i32) (global.get $sp))
-  (func $get_memstart (export "get_memstart") (result i32) (i32.load (global.get $memstartevm)))
-  (func $get_wordCount (export "get_wordCount") (result i64) (global.get $wordCount))
+;; nibble must be < 16
+;; 0 -> 9: 0x30 -> 0x39 (48 -> 57)
+;; a -> f: 0x61 -> 0x66 (97 -> 102)
+(func $nibbleToAscii (param $value i32) (result i32)
+  (local $asciival i32)
+  ;; add ascii code for 0
+  (local.set $asciival (i32.add (local.get $value) (i32.const 0x30)))
+  (if (i32.gt_u (local.get $value) (i32.const 9))
+    (then
+      (local.set $asciival (i32.add (i32.const 0x60)
+        (i32.sub (local.get $value) (i32.const 9))
+      ))
+    )
+  )
+  (local.get $asciival)
+)
 
 
-  ;; TODO: memory should only be 1, but can't resize right now
-  (memory 500)
-  (export "memory" (memory 0))
+
+
 
     (func $instantiate
         (local $jump_dest i32) (local $jump_map_switch i32)
@@ -2410,12 +2425,8 @@
   ;; subttract gas useage
   (call $memusegas (local.get $offset) (i32.const  32))
 
-  ;; (call $debugI32 (local.get $offset))
-
   ;; FIXME: how to deal with overflow?
   (local.set $offset (i32.add (local.get $offset) (i32.load (global.get $memstartevm))))
-
-  ;; (call $doDebugAndDealloc (call $cw_region (local.get $offset) (i32.const 32)))
 
   (i64.store (i32.add (global.get $sp) (i32.const 24)) (i64.load (i32.add (local.get $offset) (i32.const 24))))
   (i64.store (i32.add (global.get $sp) (i32.const 16)) (i64.load (i32.add (local.get $offset) (i32.const 16))))
