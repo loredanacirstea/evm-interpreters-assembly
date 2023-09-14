@@ -1,21 +1,6 @@
 ;; evm interpreter for cosmwasm
 ;; the base is evm_interpreter.wat
 (module
-  (type (;1;) (func (param i32 i32)))
-  (type (;2;) (func (param i32 i32 i32) (result i32)))
-  (type (;3;) (func (param i32 i32 i32)))
-  (type (;4;) (func (param i32) (result i32)))
-  (type (;5;) (func (param i32 i32 i32 i32)))
-  (type (;6;) (func (param i32 i32 i32 i32 i32)))
-  (type (;7;) (func (param i32)))
-  (type (;8;) (func (param i32) (result i64)))
-  (type (;9;) (func))
-  (type (;10;) (func (param i32 i32 i32 i32 i32 i32 i32 i32)))
-  (type (;11;) (func (param i32 i32 i32 i32 i32 i32)))
-  (type (;12;) (func (param i32 i32 i32 i32) (result i32)))
-  (type (;13;) (func (param i32 i32 i32 i32 i32 i32 i32)))
-  (type (;14;) (func (param i32 i32 i32 i32 i32) (result i32)))
-
   (func $cw_abort (import "env" "abort") (param i32))
   (func $cw_db_read (import "env" "db_read") (param i32) (result i32))
   (func $cw_db_write (import "env" "db_write") (param i32 i32))
@@ -25,11 +10,10 @@
   (func $cw_addr_validate (import "env" "addr_validate") (param i32) (result i32))
   (func $cw_addr_canonicalize (import "env" "addr_canonicalize") (param i32 i32) (result i32))
   (func $cw_addr_humanize (import "env" "addr_humanize") (param i32 i32) (result i32))
-
-  ;; (import "env" "secp256k1_verify" (func (;9;) (type 2)))
-  ;; (import "env" "secp256k1_recover_pubkey" (func (;10;) (type 15)))
-  ;; (import "env" "ed25519_verify" (func (;11;) (type 2)))
-  ;; (import "env" "ed25519_batch_verify" (func (;12;) (type 2)))
+  (func $cw_secp256k1_verify (import "env" "secp256k1_verify") (param i32 i32 i32) (result i32))
+  (func $cw_secp256k1_recover_pubkey (import "env" "secp256k1_recover_pubkey") (param i32 i32 i32) (result i64))
+  (func $cw_ed25519_verify (import "env" "ed25519_verify") (param i32 i32 i32) (result i32))
+  (func $cw_ed25519_batch_verify (import "env" "ed25519_batch_verify") (param i32 i32 i32) (result i32))
   (func $cw_query_chain (import "env" "query_chain") (param i32) (result i32))
   (func $cw_debug (import "env" "debug") (param i32))
 
@@ -285,12 +269,16 @@
 ;; ethereum_getBalance
 (func $getBalance (param $resultptr i32)
   (local $result i32)
+  (local $resultlen i32)
+  (local $resultAmountPtr i32)
   (local $addrStrRegion i32)
   (local $deltaoffset i32)
   (local $currentptr i32)
   (local $tmplen i32)
   (local $requestRegion i32)
   (local $responseData i32)
+  (local $ndx i32)
+  (local $valuelen i32)
 
   ;; TODO change denom
   ;; {"bank":{"balance":{"address":"","denom":"denom"}}}
@@ -354,6 +342,47 @@
 
   (local.set $result (call $cw_query_chain (local.get $requestRegion)))
   (call $doDebug (local.get $result))
+
+  ;; TODO could be an error
+
+  ;; {"ok":{"ok":"<base64>"}}
+  (local.set $resultAmountPtr (i32.load (local.get $result)))
+  (local.set $resultlen (i32.load (i32.add (local.get $result) (i32.const 4))))
+  (local.set $ndx (call $searchForString (local.get $resultAmountPtr) (local.get $resultlen) (global.get $jsonFieldResponseOk) (global.get $jsonFieldResponseOkLen)))
+  (local.set $resultAmountPtr (i32.add (local.get $resultAmountPtr) (local.get $ndx)))
+
+  (call $cw_debug (call $cw_region (local.get $resultAmountPtr) (local.get $resultlen)))
+
+  (local.set $ndx (call $searchForString (local.get $resultAmountPtr) (local.get $resultlen) (global.get $jsonFieldResponseOk) (global.get $jsonFieldResponseOkLen)))
+
+  (call $cw_debug (call $cw_region (local.get $resultAmountPtr) (local.get $resultlen)))
+
+  ;; TODO could be -1
+
+  (local.set $resultAmountPtr (i32.add (local.get $resultAmountPtr) (local.get $ndx)))
+  (local.set $resultAmountPtr (i32.add (local.get $resultAmountPtr) (global.get $jsonFieldResponseOkLen)))
+
+  ;; "
+  (local.set $resultAmountPtr (i32.add (local.get $resultAmountPtr) (i32.const 1)))
+  (local.set $valuelen (call $getStringValueLengthFromJsonField
+    (local.get $resultAmountPtr)
+    (local.get $resultlen)
+  ))
+
+  (call $cw_debug (call $cw_region (local.get $resultAmountPtr) (local.get $valuelen)))
+
+  ;; TODO
+  ;; move $resultAmountPtr to $responseData
+
+  ;; (call $b64decode (local.get $resultAmountPtr) (local.get $valuelen) )
+
+  ;; jsonFieldResponseOk
+
+
+  ;; let rem = n % 4;
+  ;; let k = rem && rem - 1;
+  ;; let m = (n >> 2) * 3 + k;
+
 )
 
 ;; ethereum_selfDestruct ;; TODO
@@ -541,6 +570,11 @@
   (data (i32.const 117901) "\"denom\":\"denom\",\"amount\":")
   (global $jsonFieldInfoFundsAmount i32  (i32.const 117901))
   (global $jsonFieldInfoFundsAmountLen i32  (i32.const 25))
+
+  ;; query response
+  (data (i32.const 117926) "\"ok\":")
+  (global $jsonFieldResponseOk i32  (i32.const 117926))
+  (global $jsonFieldResponseOkLen i32  (i32.const 5))
 
   ;; scratch space for temporary operations 10000 bytes - e.g. composing requests
   (global $cosmwasmScratchSpace i32  (i32.const 118228))
@@ -1066,6 +1100,99 @@
 
       ;; return length
       local.get $len
+  )
+
+  ;; char2num, b64decode taken from https://github.com/mitschabaude/fast-base64/blob/main/wat/base64.wat
+  (func $b64decode (export "b64decode")
+    (param $start i32) (param $end i32) (param $dest i32)
+    (local $i i32)
+    (local $j i32)
+    (local $x i32)
+    (local.set $i (local.get $start))
+    (local.set $j (local.get $dest))
+
+    (loop
+      (i32.load8_u (local.get $i))
+      call $char2num
+      i32.const 18
+      i32.shl
+
+      (i32.load8_u (i32.add (local.get $i) (i32.const 1)))
+      call $char2num
+      i32.const 12
+      i32.shl
+
+      i32.or
+
+      (i32.load8_u (i32.add (local.get $i) (i32.const 2)))
+      call $char2num
+      i32.const 6
+      i32.shl
+
+      i32.or
+
+      (i32.load8_u (i32.add (local.get $i) (i32.const 3)))
+      call $char2num
+
+      i32.or
+      local.set $x
+
+      local.get $j
+      local.get $x
+      i32.const 16
+      i32.shr_u
+      i32.store8
+
+      (i32.add (local.get $j) (i32.const 1))
+      local.get $x
+      i32.const 8
+      i32.shr_u
+      i32.const 0xff
+      i32.and
+      i32.store8
+
+      (i32.add (local.get $j) (i32.const 2))
+      local.get $x
+      i32.const 0xff
+      i32.and
+      i32.store8
+
+      (local.set $i (i32.add (local.get $i) (i32.const 4)))
+      (local.set $j (i32.add (local.get $j) (i32.const 3)))
+      (i32.lt_u (local.get $i) (local.get $end))
+      br_if 0
+    )
+  )
+
+  (func $char2num (param $x i32) (result i32)
+    ;; x + 4 - (x > 64) * 69 - (x > 96) * 6 + (x === 43) * 15 + (x === 47) * 12
+    local.get $x
+    i32.const 4
+    i32.add
+
+    (i32.mul
+      (i32.gt_u (local.get $x) (i32.const 64))
+      (i32.const 69)
+    )
+    i32.sub
+
+    (i32.mul
+      (i32.gt_u (local.get $x) (i32.const 96))
+      (i32.const 6)
+    )
+    i32.sub
+
+    (i32.mul
+      (i32.eq (local.get $x) (i32.const 43))
+      (i32.const 15)
+    )
+    i32.add
+
+    (i32.mul
+      (i32.eq (local.get $x) (i32.const 47))
+      (i32.const 12)
+    )
+    i32.add
   )
 
   (func $pow (export "pow") (param $base i64) (param $exp i32) (result i64)
